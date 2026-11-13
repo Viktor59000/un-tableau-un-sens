@@ -1,0 +1,9 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <g fill="none" stroke="#111111" stroke-width="11" stroke-linecap="round">
+    <!-- hublot / galerie circulaire du vaisseau, avec une ouverture (le sas) -->
+    <path d="M147 50 A80 80 0 1 1 109 50"/>
+  </g>
+  <!-- noeud d'entrée + point de perception (toi, dans la galerie) -->
+  <circle cx="128" cy="48" r="11" fill="#111111"/>
+  <circle cx="128" cy="128" r="9" fill="#111111"/>
+</svg>

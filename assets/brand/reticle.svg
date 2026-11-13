@@ -1,0 +1,9 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="un tableau, un sens">
+  <g fill="none" stroke="currentColor" stroke-width="11" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M44 80 V44 H80"/>
+    <path d="M176 44 H212 V80"/>
+    <path d="M212 176 V212 H176"/>
+    <path d="M80 212 H44 V176"/>
+    <path d="M70 130 H108 L118 130 L126 102 L134 160 L142 130 H186"/>
+  </g>
+</svg>

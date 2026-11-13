@@ -1,20 +1,28 @@
-# Un tableau, un sens
+# un tableau, un sens — SPES
 
-Parcours sensoriel & sonore pour découvrir l'art en famille — projet pédagogique **Design graphique avancé**, Télécom Saint-Étienne B3 (2026), en partenariat avec la galerie **Ceysson & Bénétière** (clôture de l'exposition *Résonances*).
+Parcours sensoriel pour la clôture de l'exposition **Résonances** à la galerie **Ceysson & Bénétière** (Saint-Étienne). Projet pédagogique **Design graphique avancé**, Télécom Saint-Étienne B3 (2026).
 
-Ce dépôt contient le **Kit Média Online** demandé : une page d'accueil unique réunissant **la bannière web** (titre du parcours, baseline, dates, appel à l'action) et **la maquette de page web explicative** (promesse de la visite, partenariat, les 4 œuvres / 4 sens, fonctionnement de l'audioguide, infos pratiques pour les familles).
+Ce dépôt contient le **Kit Média Online** : une page d'accueil réunissant la bannière web et la maquette explicative du parcours.
 
-## Charte graphique respectée
-- **Couleurs** : Azur clair `#B5D4E4` (ouïe) · Vert grisé pastel `#B8D6BD` (odorat) · Orange pastel `#F8C78E` (goût) · Orange `#DC7B62` (toucher)
-- **Polices** : titres *Bryndan Write* (secours : *Caveat*) · corps *Quicksand*
-- **Logo** : lockup `tableau / sens`, le mot *sens* en 4 couleurs = les 4 sens
+## Le concept
+On abandonne les 5 sens d'Aristote (extéroceptifs, incomplets) pour les **sens internes** des neurosciences. En galerie, l'interdit de toucher/goûter devient le **déclencheur** : privé de contact, le cerveau bascule sur ses sens internes, et le visiteur lit sa propre réaction. Cadre narratif : le vaisseau **SPES** et l'IA **Gladys** font passer 4 « recalibrations » sensorielles à travers 4 œuvres.
+
+| # | Œuvre | Sens interne |
+|---|-------|--------------|
+| 01 | Plume sur Rhodoïde (L. Cane) | Kinesthésie |
+| 02 | Résine sur grillage (L. Cane) | Toucher haptique virtuel |
+| 03 | Arpenter ⅔ (A. Pétrel) | Proprioception spatiale |
+| 04 | n°60 (P. Favier) | Intéroception / chronoception |
+
+## Direction artistique (SPES)
+Sobre, futuriste, minimaliste. Fond spatial `#070B11`, bleu acier `#4c6783`, blanc `#EAF0F6`, accent ambre `#E3A24C`. Typo **Space Grotesk** + **Space Mono**. Logo : réticule-pulsation + « sens » signé. Détails dans [`branding/guide-de-marque.md`](branding/guide-de-marque.md).
 
 ## Infos
-- **Dates** : samedi 21 & dimanche 22 novembre 2026, 11h – 19h
+- **Dates** : 21 & 22 novembre 2026, 11h – 19h
 - **Lieu** : Galerie Ceysson & Bénétière, 10 rue des Aciéries, 42000 Saint-Étienne
 - **Entrée** : libre · audioguide offert
 
 ## Déploiement
-Site statique (`index.html`). Publié via **GitHub Pages** (branche `main`, racine `/`).
+Site statique (`index.html`) publié via **GitHub Pages** (branche `main`, racine).
 
-> *Bryndan Write* est une police commerciale ; pour un rendu 100 % exact, déposer le fichier de police et l'appeler via `@font-face`.
+> Les photos des œuvres sont des clichés pris en galerie (œuvres de Louis Cane, Aurélie Pétrel, Philippe Favier) : usage pédagogique. Pour un usage public durable, prévoir un accord galerie/artistes.
