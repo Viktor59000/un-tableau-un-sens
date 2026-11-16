@@ -15,13 +15,16 @@ On abandonne les 5 sens d'Aristote (extéroceptifs, incomplets) pour les **sens 
 | 04 | n°60 (P. Favier) | Intéroception / chronoception |
 
 ## L'expérience (index.html)
-Récit 3D à la première personne, en trois actes :
-1. **Réveil** — sortie du caisson cryogénique, appel entrant de l'IA Gladys (portrait holographique, voix + sous-titres).
-2. **Ce qui reste** — la baie d'observation : la Terre désertifiée, les débris, la flotte HOPE.
-3. **Danse sensorielle** — connexion à la liaison neurale, couloir où des fragments holographiques des 4 œuvres se rassemblent et font éprouver chaque sens interne.
+Récit 3D à la première personne. Tu es le **sujet R26-0417**, en stase depuis 474 ans à bord de l'arche **SPES-07** ; l'IA Gladys déclenche le **protocole RÉSONANCE**.
+0. **Prologue** — trois entrées du journal de bord (2026 → 2500).
+1. **Réveil** — vitre givrée du caisson, appel entrant de Gladys, choix de dialogue, sortie dans la baie cryo (dormeurs visibles sous les vitres, bras de maintenance sur rail, drones, robots au sol).
+2. **Ce qui reste** — la baie d'observation : la Terre sous la Grande Poussière, les débris, la flotte HOPE, un robot soudeur sur la coque. Puis le poste de liaison N-7 : on s'assoit, le câble cervical se branche, le casque descend.
+3. **Danse sensorielle** — les quatre œuvres (lot 42-SE, artefacts CB-01 à 04) reconstituées à taille réelle avec leurs cotes, chacune faisant éprouver un sens interne.
 
-Technique : Three.js r160 en modules ES (importmap, aucun build), post-traitement (bloom, aberration, glitch), qualité adaptative, version texte accessible (`Version texte`). Code dans `app/main.js` (récit, HUD, son, voix) et `app/world.js` (décors, shaders).
-Paramètres de test : `?act=2|3`, `?st=0..3`, `?auto`, `?quick`, `?lite`, `?hold=<point>`.
+Technique : Three.js r160 en modules ES (importmap, aucun build), post-traitement (bloom, aberration, glitch), qualité adaptative, version texte accessible.
+- `app/main.js` : récit, HUD, son, voix. `app/world.js` : décors et shaders. `app/lines.json` : répliques de Gladys.
+- Voix : fichiers `assets/voice/*.mp3` générés par `tools/voix.ps1` (voix Windows Hortense + `lameenc`). À relancer après toute modification de `app/lines.json`. Sans fichier, repli sur la synthèse du navigateur puis sur les sous-titres seuls.
+- Paramètres de test : `?act=2|3`, `?st=0..3`, `?auto`, `?quick`, `?lite`, `?hold=<point>`.
 
 Versions précédentes conservées : `galerie.html`, `scroll.html`, `voyage.html`, `pont.html`, `classic.html`.
 

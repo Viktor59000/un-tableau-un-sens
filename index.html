@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Krona+One&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet" />
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
-<noscript><style>#boot,#hud,#gl,#outro{display:none!important}#dossier{display:block!important}body{overflow:auto!important}</style></noscript>
+<noscript><style>#boot,#hud,#gl,#outro,#prologue,#visor{display:none!important}#dossier{display:block!important}body{overflow:auto!important}</style></noscript>
 <style>
 :root{
   --bg:#06080c; --ink:#f1f2f4; --dim:#9aa7b5; --mute:#5f6b78;
@@ -32,7 +32,7 @@ a{color:inherit}
 .skip{position:absolute;left:-9999px;top:0;z-index:99;background:var(--safran);color:#111;padding:10px 14px}
 .skip:focus{left:0}
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
-body.read #gl,body.read #hud,body.read #boot,body.read #outro{display:none}
+body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologue,body.read #visor{display:none}
 
 /* ---------- écran de démarrage ---------- */
 #boot{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:#030407;transition:opacity 1.4s ease,visibility 1.4s}
@@ -108,7 +108,7 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro{display:none}
 #cardN::after{content:" — acte"}
 #cardT{font-family:var(--disp);font-weight:400;font-size:clamp(26px,4.6vw,56px);line-height:1.05;margin:0;text-shadow:0 2px 30px rgba(0,0,0,.8)}
 /* relevé d'œuvre */
-#scan{position:absolute;right:28px;top:210px;width:min(350px,80vw);padding:14px 16px 15px;background:rgba(6,8,12,.72);border-left:2px solid var(--sig,var(--cyan));clip-path:var(--cut);opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s;text-transform:none}
+#scan{position:absolute;left:28px;top:168px;width:min(350px,80vw);padding:14px 16px 15px;background:rgba(6,8,12,.72);border-left:2px solid var(--sig,var(--cyan));clip-path:var(--cut);opacity:0;transform:translateY(10px);transition:opacity .5s,transform .5s;text-transform:none}
 #scan.on{opacity:1;transform:none}
 .sn{font-size:12px;font-weight:700;letter-spacing:.26em;color:var(--sig,var(--cyan));text-transform:uppercase}
 #scS{font-family:var(--disp);font-weight:400;font-size:16px;line-height:1.2;margin:8px 0 3px;text-transform:uppercase}
@@ -129,9 +129,36 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro{display:none}
   #quest{right:14px;top:14px}#qO{font-size:15px}
   #vit{left:14px;bottom:14px;gap:12px;font-size:11px}#vit span:last-child{display:none}
   .tools{right:14px;bottom:44px}.tools kbd{display:none}
-  #scan{right:14px;top:auto;bottom:92px}#sub{bottom:24vh}
+  #scan{left:14px;top:auto;bottom:92px}#sub{bottom:24vh}
 }
 
+
+/* ---------- prologue (journal de bord) ---------- */
+#prologue{position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:#030407;opacity:0;visibility:hidden;transition:opacity .9s,visibility .9s;cursor:pointer}
+#prologue.on{opacity:1;visibility:visible}
+.pro-in{width:min(760px,86vw);min-height:230px}
+#proT{font-size:clamp(20px,2.6vw,30px);font-weight:500;line-height:1.35;margin:22px 0 0;min-height:4.1em}
+#proT::after{content:"";display:inline-block;width:.55em;height:1em;background:var(--cyan);vertical-align:-.12em;margin-left:4px;animation:kb2 .9s steps(1) infinite}
+@keyframes kb2{50%{opacity:0}}
+.pro-skip{display:block;margin-top:26px;font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute)}
+/* ---------- choix de dialogue ---------- */
+#choices{position:absolute;left:50%;bottom:13vh;transform:translateX(-50%) translateY(10px);display:grid;gap:8px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;text-transform:none}
+#choices.on{opacity:1;transform:translateX(-50%);pointer-events:auto}
+#choices button{display:flex;gap:14px;align-items:center;text-align:left;font-size:19px;font-weight:600;padding:9px 20px 9px 10px;background:rgba(6,8,12,.66);border-left:2px solid var(--cyan);min-width:min(430px,80vw);transition:background .15s,border-color .15s,padding .15s}
+#choices button:hover,#choices button:focus-visible{background:rgba(127,227,230,.16);border-color:var(--safran);padding-left:16px}
+#choices kbd{font-family:var(--ui);font-weight:700;display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--dim);color:var(--dim);font-size:14px}
+/* ---------- intérieur du casque de liaison ---------- */
+#visor{position:fixed;inset:0;z-index:9;display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .7s,visibility .7s;text-transform:uppercase;
+  background:radial-gradient(ellipse 34% 46% at 31% 50%,rgba(127,227,230,.07),transparent 70%),radial-gradient(ellipse 34% 46% at 69% 50%,rgba(127,227,230,.07),transparent 70%),repeating-linear-gradient(0deg,rgba(127,227,230,.045) 0 1px,transparent 1px 4px),#020406}
+#visor.on{opacity:1;visibility:visible}
+.v-in{width:min(520px,82vw)}
+.v-in .kick{color:var(--cyan)}.v-in .kick::after{background:linear-gradient(90deg,rgba(127,227,230,.6),transparent)}
+.v-big{font-family:var(--disp);font-size:clamp(46px,9vw,96px);line-height:1;margin:18px 0 12px;font-variant-numeric:tabular-nums}
+.v-big small{font-family:var(--ui);font-size:.22em;letter-spacing:.2em;color:var(--dim);margin-left:14px}
+.v-bar{height:3px;background:rgba(127,227,230,.18)}#vBar{display:block;height:100%;background:var(--cyan);transform-origin:left;transform:scaleX(0)}
+#vRows{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:6px;font-size:14px;letter-spacing:.16em;color:var(--dim);min-height:104px}
+#vRows li::before{content:"▸ ";color:var(--cyan)}
+#vRows li{animation:qin .35s ease}
 /* ---------- fin ---------- */
 #outro{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#f1f2f4;color:#0a0c10;opacity:0;visibility:hidden;transition:opacity 1.6s,visibility 1.6s}
 #outro.on{opacity:1;visibility:visible}
@@ -191,32 +218,36 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 
 <section id="boot" aria-label="Démarrage">
   <div class="boot-in">
-    <div class="kick">SPES · caisson 0417 · stase</div>
+    <div class="kick">SPES-07 · pont 12 · caisson R26-0417</div>
     <h1 class="wm"><span>Galerie Ceysson &amp; Bénétière</span>un tableau,<br><b data-t="un sens">un sens</b></h1>
-    <p class="lede">Tu dors depuis 474 ans à bord d'un vaisseau. Une voix t'appelle. Quatre œuvres t'attendent pour réapprendre à percevoir.</p>
+    <p class="lede">Tu es le sujet R26-0417. Tu dors depuis 474 ans à bord d'une arche en orbite. Une voix t'appelle : le protocole RÉSONANCE commence.</p>
     <button id="start" class="cta" type="button" disabled>Chargement…</button>
     <a class="lnk" href="#dossier" data-dossier>Version texte</a>
     <p id="bootMsg">Initialisation des systèmes</p>
-    <p class="keys"><kbd>F</kbd> agir · <kbd>Espace</kbd> passer une réplique · souris pour regarder</p>
+    <p class="keys"><kbd>F</kbd> agir · <kbd>1</kbd><kbd>2</kbd> répondre · <kbd>Espace</kbd> passer une réplique · souris pour regarder</p>
   </div>
 </section>
+
+<div id="prologue"><div class="pro-in"><div class="kick" id="proH"></div><p id="proT"></p><span class="pro-skip">Espace ou clic pour passer</span></div></div>
+<div id="visor" aria-hidden="true"><div class="v-in"><div class="kick">Liaison N-7 · synchronisation neurale</div><div class="v-big"><span id="vPct">000</span><small>%</small></div><div class="v-bar"><span id="vBar"></span></div><ul id="vRows"></ul></div></div>
 
 <div id="hud">
   <div id="call" data-s="off"><div class="pf"><canvas id="face" width="184" height="220"></canvas></div><div class="cm"><span id="callS">Appel entrant</span><b>Gladys</b><i>IA de bord · SPES</i><span id="callT">00:00</span></div></div>
   <div id="quest"><span id="qT">Réveil</span><div id="qO"></div>
-    <ul id="qL"><li data-i="0" style="--c:var(--amber)">Kinesthésie</li><li data-i="1" style="--c:var(--cyan)">Toucher virtuel</li><li data-i="2" style="--c:var(--lime)">Proprioception</li><li data-i="3" style="--c:var(--coral)">Intéroception</li></ul>
+    <ul id="qL"><li data-i="0" style="--c:var(--amber)">Canal K · Kinesthésie</li><li data-i="1" style="--c:var(--cyan)">Canal H · Toucher virtuel</li><li data-i="2" style="--c:var(--lime)">Canal P · Proprioception</li><li data-i="3" style="--c:var(--coral)">Canal I · Intéroception</li></ul>
   </div>
   <div id="card"><span id="cardN">01</span><h2 id="cardT">Réveil</h2></div>
   <button id="prompt" type="button"><kbd>F</kbd><span id="promptT">Répondre</span></button>
-  <aside id="scan"><div class="sn">Relevé // <span id="scN">01</span></div><h3 id="scS"></h3><p id="scBy"></p><p id="scDef"></p><p id="scC"></p></aside>
+  <aside id="scan"><div class="sn">Artefact // <span id="scN">CB-01</span></div><h3 id="scS"></h3><p id="scBy"></p><p id="scDef"></p><p id="scC"></p></aside>
+  <div id="choices"></div>
   <div id="sub" aria-live="polite"><b>Gladys</b><span id="subT"></span></div>
-  <div id="vit"><span>Pouls <b id="bpm">38</b></span><span>Temp. <b id="tmp">4,0</b> °C</span><span id="loc">Caisson 0417</span></div>
+  <div id="vit"><span>Pouls <b id="bpm">8</b></span><span>Temp. <b id="tmp">4,0</b> °C</span><span id="loc">Pont 12 · caisson R26-0417</span></div>
   <div class="tools"><button id="bSkip" type="button">Passer</button><button id="bVoice" type="button">Voix</button><button id="bSound" type="button">Son</button><a href="#dossier" data-dossier>Version texte</a></div>
 </div>
 
 <section id="outro" aria-label="Fin de l'expérience">
   <div class="o-in">
-    <div class="kick">Recalibration terminée</div>
+    <div class="kick">Protocole RÉSONANCE · 4/4 canaux rouverts</div>
     <h2>Viens l'éprouver pour de vrai</h2>
     <p>Les quatre œuvres que tu viens de traverser existent. Elles t'attendent pour la clôture de l'exposition Résonances.</p>
     <dl class="facts"><div><dt>Dates</dt><dd>21 &amp; 22 novembre 2026<br>11h – 19h</dd></div><div><dt>Lieu</dt><dd>Galerie Ceysson &amp; Bénétière<br>10 rue des Aciéries, Saint-Étienne</dd></div><div><dt>Accès</dt><dd>Entrée libre<br>Audioguide offert</dd></div></dl>

@@ -1,0 +1,105 @@
+{
+ "g01": {
+  "t": "Sujet R26-0417, tu m'entends ? Ici Gladys, unité de veille du SPES. Ne bouge pas encore : ton cœur vient de repartir, après cent soixante-treize mille jours de stase.",
+  "say": "Sujet R vingt-six, zéro quatre cent dix-sept, tu m'entends ? Ici Gladys, unité de veille du Spèss. Ne bouge pas encore : ton cœur vient de repartir, après cent soixante-treize mille jours de stase.",
+  "d": 13.57
+ },
+ "g02a": {
+  "t": "Pont 12, baie cryo C, à bord du SPES : Station Pour l'Éveil des Sens. Une arche du programme HOPE, en orbite basse autour de ce qui reste de la Terre.",
+  "say": "Pont douze, baie cryo C, à bord du Spèss : Station Pour l'Éveil des Sens. Une arche du programme Hôpe, en orbite basse autour de ce qui reste de la Terre.",
+  "d": 9.66
+ },
+ "g02b": {
+  "t": "Quatre cent soixante-quatorze ans. Tu t'es endormi en 2026, avec la cohorte R-26. Nous sommes en 2500, et j'ai compté chaque jour.",
+  "say": "Quatre cent soixante-quatorze ans. Tu t'es endormi en 2026, avec la cohorte R vingt-six. Nous sommes en 2500, et j'ai compté chaque jour.",
+  "d": 10.04
+ },
+ "g03": {
+  "t": "La stase a conservé ton corps, mais elle a éteint tes sens profonds. Tu ne sens plus ton poids, ni ton souffle, ni le temps qui passe. Le protocole Résonance va les rallumer. Sors de ton caisson.",
+  "d": 12.91
+ },
+ "g04": {
+  "t": "Doucement. Deux mille sujets dorment autour de toi. Les Veilleurs, mes unités de maintenance, les gardent en vie depuis cinq siècles. Tu es le premier que je réveille.",
+  "d": 11.21
+ },
+ "g05": {
+  "t": "Suis les lignes au sol jusqu'à la baie d'observation. Il faut que tu voies pourquoi nous sommes partis.",
+  "d": 5.66
+ },
+ "g06": {
+  "t": "Voilà la Terre. Indice de Voile : 9,7. La Grande Poussière a recouvert les continents, et les océans se sont retirés. Elle ne peut plus nous porter.",
+  "say": "Voilà la Terre. Indice de Voile : neuf virgule sept. La Grande Poussière a recouvert les continents, et les océans se sont retirés. Elle ne peut plus nous porter.",
+  "d": 10.93
+ },
+ "g07": {
+  "t": "Deux cent douze arches attendent en orbite qu'elle guérisse. Dans nos soutes, il y a des graines, des livres, et le lot 42-SE : des œuvres d'art.",
+  "say": "Deux cent douze arches attendent en orbite qu'elle guérisse. Dans nos soutes, il y a des graines, des livres, et le lot quarante-deux, S E : des œuvres d'art.",
+  "d": 8.68
+ },
+ "g08a": {
+  "t": "Parce qu'une œuvre ne sert à rien d'autre qu'à faire réagir un corps. C'est exactement l'outil qu'il me faut pour rallumer le tien.",
+  "d": 6.89
+ },
+ "g08b": {
+  "t": "Parce que tu as entre dix-huit et vingt-cinq ans. À cet âge, un cerveau se recalibre encore. Et parce qu'il fallait bien commencer par quelqu'un.",
+  "d": 8.9
+ },
+ "g09": {
+  "t": "Tu crois avoir cinq sens. C'est une vieille erreur : tu en possèdes plus de vingt, et les plus puissants regardent vers l'intérieur. Ce sont eux que la stase a éteints.",
+  "d": 9.76
+ },
+ "g10": {
+  "t": "Le lot 42-SE, ce sont quatre œuvres d'une galerie de Saint-Étienne : Ceysson et Bénétière. Je les regarde depuis quatre siècles sans rien éprouver. Toi, tu peux. Installe-toi au poste de liaison.",
+  "say": "Le lot quarante-deux, S E, ce sont quatre œuvres d'une galerie de Saint-Étienne : Ceysson et Bénétière. Je les regarde depuis quatre siècles sans rien éprouver. Toi, tu peux. Installe-toi au poste de liaison.",
+  "d": 13.88
+ },
+ "g10b": {
+  "t": "Je branche le câble sur ton port cervical. Ne bouge pas. Maintenant le casque : tu vas perdre la vue pendant trois secondes.",
+  "d": 8.46
+ },
+ "g11": {
+  "t": "Tu es dans une danse sensorielle : un espace que je projette directement dans ton cortex. Les quatre œuvres y sont reconstituées à taille réelle. Avance.",
+  "d": 9.7
+ },
+ "s1a": {
+  "t": "Artefact CB-01. Plume sur Rhodoïde, Louis Cane, 1998. Des plumes de couleur, figées dans une feuille transparente. Choisis-en une, et ne la quitte plus des yeux.",
+  "say": "Artefact C B zéro un. Plume sur Rhodoïde, Louis Cane, 1998. Des plumes de couleur, figées dans une feuille transparente. Choisis-en une, et ne la quitte plus des yeux.",
+  "d": 13.18
+ },
+ "s1b": {
+  "t": "Tu la sens tomber ? Rien ne bouge, pourtant. C'est ta kinesthésie : ton cerveau simule le mouvement dans tes propres muscles.",
+  "d": 8.37
+ },
+ "s2a": {
+  "t": "Artefact CB-02. Résine sur grillage, Louis Cane, 2018. De la résine colorée, coulée sur du fer. Dans la galerie, il est interdit de toucher. Alors touche avec les yeux.",
+  "say": "Artefact C B zéro deux. Résine sur grillage, Louis Cane, 2018. De la résine colorée, coulée sur du fer. Dans la galerie, il est interdit de toucher. Alors touche avec les yeux.",
+  "d": 14.11
+ },
+ "s2b": {
+  "t": "Le froid du métal, le lisse de la résine : ton cortex du toucher s'allume sans aucun contact. C'est le toucher haptique virtuel.",
+  "d": 8.26
+ },
+ "s3a": {
+  "t": "Artefact CB-03. Arpenter ⅔, Aurélie Pétrel, 2025. Un sous-bois imprimé sur cuivre, presque deux mètres de haut. Lève les yeux.",
+  "say": "Artefact C B zéro trois. Arpenter, deux tiers, Aurélie Pétrel, 2025. Un sous-bois imprimé sur cuivre, presque deux mètres de haut. Lève les yeux.",
+  "d": 12.03
+ },
+ "s3b": {
+  "t": "Les troncs te dominent, et tu te sens rétrécir. Ta proprioception recalcule ta taille et ta place dans l'espace.",
+  "d": 7.05
+ },
+ "s4a": {
+  "t": "Artefact CB-04. n°60, Philippe Favier, 2025. Des bocaux de confiture, gravés à la pointe sur du verre peint. C'est tout petit. Approche. Ralentis.",
+  "say": "Artefact C B zéro quatre. Numéro soixante, Philippe Favier, 2025. Des bocaux de confiture, gravés à la pointe sur du verre peint. C'est tout petit. Approche. Ralentis.",
+  "d": 14.81
+ },
+ "s4b": {
+  "t": "Un souvenir d'enfance remonte, et ton cœur change de rythme. C'est l'intéroception : sentir l'intérieur de ton corps. Voilà ce qui te sépare de moi.",
+  "d": 9.73
+ },
+ "g12": {
+  "t": "Protocole Résonance terminé : quatre canaux rouverts. Tu viens d'éprouver ce que je ne connaîtrai jamais. Ces œuvres existent vraiment. Va les voir tant qu'elles sont encore sur Terre : galerie Ceysson et Bénétière, à Saint-Étienne, les 21 et 22 novembre 2026. Entrée libre.",
+  "say": "Protocole Résonance terminé : quatre canaux rouverts. Tu viens d'éprouver ce que je ne connaîtrai jamais. Ces œuvres existent vraiment. Va les voir tant qu'elles sont encore sur Terre : galerie Ceysson et Bénétière, à Saint-Étienne, les vingt et un et vingt-deux novembre 2026. Entrée libre.",
+  "d": 18.97
+ }
+}
