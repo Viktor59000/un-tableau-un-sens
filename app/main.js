@@ -22,9 +22,9 @@ if (touch) document.body.classList.add('touch');
 const V3 = THREE.Vector3, PI = Math.PI, sm = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
 
 // Les quatre artefacts du lot 42-SE, reconstitués à taille réelle (dimensions en mètres). Les textes traduits viennent de i18n.js.
-// ck/base : seuils de saturation de la matérialisation ; cell : taille d'un fragment ; cy : hauteur du centre ; dist : recul du visiteur.
+// ck/base : seuils de saturation de la matérialisation ; bg : luminance du fond à effacer ; cell : taille d'un fragment ; cy : hauteur du centre ; dist : recul du visiteur.
 const WORKS = [
-  { id: 's1', col: COL.amber, css: '#fca311', img: 'assets/works/ouie.jpg', title: 'Plume sur Rhodoïde', artist: 'Louis Cane, 1998', w: 0.975, h: 0.975, ar: 653 / 558, mode: 0, ck: [0.09, 0.3], base: 0.1, cell: 0.012, cy: 1.5, dist: 1.9 },
+  { id: 's1', col: COL.amber, css: '#fca311', img: 'assets/works/ouie.jpg', title: 'Plume sur Rhodoïde', artist: 'Louis Cane, 1998', w: 0.975, h: 0.975, ar: 653 / 558, mode: 0, ck: [0.17, 0.4], base: 0.03, bg: 0.47, cell: 0.012, cy: 1.5, dist: 1.9 },
   { id: 's2', col: COL.cyan, css: '#7fe3e6', img: 'assets/works/toucher.jpg', title: 'Résine sur grillage', artist: 'Louis Cane, 2018', w: 1.41, h: 1.41, ar: 587 / 552, mode: 0, relief: 1, ck: [0.03, 0.2], base: 0.3, cell: 0.016, cy: 1.55, dist: 2.5 },
   { id: 's3', col: COL.lime, css: '#a8e61d', img: 'assets/works/odorat.jpg', title: 'Arpenter ⅔', artist: 'Aurélie Pétrel, 2025', w: 1.0, h: 1.92, ar: 300 / 764, mode: 1, cell: 0.013, cy: 1.3, dist: 2.9 },
   { id: 's4', col: COL.coral, css: '#ff4f38', img: 'assets/works/gout.jpg', title: 'n°60', artist: 'Philippe Favier, 2025', w: 0.44, h: 0.35, ar: 682 / 460, mode: 2, cell: 0.0055, cy: 1.5, dist: 1.15 }
@@ -187,7 +187,7 @@ const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), hitL = new V3(), h
 let heart = null;
 function frame() {
   if (!running) return; requestAnimationFrame(frame);
-  const raw = clock.getDelta(), dt = Math.min(raw, 0.05), tdt = Math.min(raw, 0.6); T += dt; adapt(raw);
+  const raw = clock.getDelta(), dt = Math.min(raw, 0.1), tdt = Math.min(raw, 0.6); T += dt; adapt(raw);
   for (let i = tweens.length - 1; i >= 0; i--) { const tw = tweens[i]; tw.t += tdt; const k = Math.min(1, tw.t / tw.dur); tw.fn(tw.ease(k)); if (k >= 1) { tweens.splice(i, 1); tw.res(); } }
   if (touch && !drag) { S.mx *= 0.97; S.my *= 0.97; } S.lx += (S.mx - S.lx) * 0.06; S.ly += (S.my - S.ly) * 0.06;
   camera.position.copy(S.pos); camera.position.y += (S.walk ? Math.sin(T * 7.4) * 0.034 * S.walk : 0) + Math.sin(T * 0.9) * 0.006;
@@ -233,7 +233,7 @@ async function act1() {
   quest(P1, UI.q.askG); const c = await choose(UI.ch1); await say(c ? 'g02b' : 'g02a');
   await say('g03');
   quest(P1, UI.q.exit); await ask(UI.a.exit);
-  sfx.hiss(); W.wakeHold = false; W.guideMat.color.setHex(COL.safran).multiplyScalar(1.5);
+  sfx.hiss(); W.wakeHold = false; tween(3, (k) => { W.frost.value = 1 + k * 0.4; }); W.guideMat.color.setHex(COL.safran).multiplyScalar(1.5);
   tween(8, (k) => { W.beacon.intensity = 26 * Math.abs(Math.sin(k * 14)) * (1 - k * k); }, lin);
   await tween(2.6, (k) => { W.lidPivot.rotation.x = -k * 1.9; }, out); quest(P1, UI.q.sit);
   await camTo({ pos: new V3(-4.0, 1.3, 1.3), yaw: -PI / 2, pitch: -0.04, fov: 60 }, 3); S.free = 1; await dbg('sit');
@@ -252,7 +252,7 @@ async function visorBoot() {
     while (ul.children.length < n) { const li = document.createElement('li'); li.textContent = rows[ul.children.length]; ul.appendChild(li); sfx.blip(); } fx.uniforms.uGlitch.value = k * k; v.style.setProperty('--g', k); }, lin);
 }
 async function act2() {
-  W.lidPivot.rotation.x = -1.9; W.frost.value = 1; W.wakeHold = false; vit.bpm = 92; vit.tmp = 36.8; vit.loc = UI.loc[2]; vitals(); callState('live');
+  W.lidPivot.rotation.x = -1.9; W.frost.value = 1.4; W.wakeHold = false; vit.bpm = 92; vit.tmp = 36.8; vit.loc = UI.loc[2]; vitals(); callState('live');
   card('02', UI.card[1]); quest(P2, UI.q.earth);
   await dbg('window'); await camTo({ pos: new V3(0.2, 1.72, -12.3), look: new V3(-0.55, 2.05, -15), fov: 56 }, 3.4); await dbg('earth');
   await say('g06');
@@ -299,10 +299,10 @@ async function act3() {
     await say(w.id + 'a'); await ask(w.verb); st.fx.on = true; let back = null; const p = S.pos.clone();
     if (i === 0) tween(8, (k) => { S.sway = Math.sin(k * PI) * 0.05; }, lin);
     if (i === 2) { back = () => camTo({ pos: p, look: st.stop.look, fov: 60 }, 2.4); camTo({ pos: p.clone().add(new V3(0, -0.55, 0)), pitch: 0.46, fov: 84 }, 3.6); }
-    if (i === 3) { back = () => camTo({ pos: p, look: st.stop.look, fov: 60 }, 2.6); const near = st.wallPos.clone().addScaledVector(st.n, 0.5); near.y += 0.02 + DSY; camTo({ pos: near, look: st.stop.look, fov: 50 }, 5); heart = { t: 0.2, gap: 0.62 }; tween(4, (k) => { W.dsTime = 1 - k * 0.8; }); }
+    if (i === 3) { back = () => camTo({ pos: p, look: st.stop.look, fov: 60 }, 2.6); const near = st.wallPos.clone().addScaledVector(st.n, 0.5); near.y += 0.02 + DSY; st.near = true; camTo({ pos: near, look: st.stop.look, fov: 50 }, 5); heart = { t: 0.2, gap: 0.62 }; tween(4, (k) => { W.dsTime = 1 - k * 0.8; }); }
     await wait(2.2); await dbg('fx' + i); await say(w.id + 'b'); mark(i); await wait(0.9);
     S.sway = 0; if (i === 3) { heart = null; tween(2, (k) => { W.dsTime = 0.2 + k * 0.8; }); vit.bpm = 92; vitals(); } if (back) await back();
-    if (i === 2) st.fx.on = false; /* les troncs se rétractent avant de repartir */
+    if (i === 2) st.fx.on = false; /* les troncs se rétractent avant de repartir */ st.near = false;
     $('#scan').classList.remove('on');
   }
   document.querySelectorAll('#qL li').forEach((li) => li.classList.remove('cur'));
@@ -316,7 +316,7 @@ async function run() {
   if (ACT <= 1) await act1(); else { S.pos.set(0, 1.68, -10.6); S.yaw = 0; S.pitch = 0.05; fx.uniforms.uFade.value = 1; }
   if (ACT <= 2) await act2();
   await act3();
-  hud.classList.remove('on'); callState('off'); $('#outro').classList.add('on'); if (synth) synth.cancel();
+  hud.classList.remove('on'); callState('off'); $('#outro').classList.add('on'); theme('#f1f2f4'); if (synth) synth.cancel();
 }
 
 /* ============================== ENTRÉES ============================== */
@@ -336,12 +336,12 @@ $('#prologue').addEventListener('click', () => skipLine && skipLine());
 $('#bSkip').addEventListener('click', () => skipLine && skipLine());
 $('#bVoice').addEventListener('click', (e) => { voiceOn = !voiceOn; if (!voiceOn && synth) synth.cancel(); if (A.vOut) A.vOut.gain.setTargetAtTime(voiceOn ? 1 : 0.0001, A.ctx.currentTime, 0.1); e.currentTarget.classList.toggle('off', !voiceOn); });
 $('#bSound').addEventListener('click', (e) => { A.on = !A.on; if (A.out) A.out.gain.setTargetAtTime(A.on ? 0.5 : 0.0001, A.ctx.currentTime, 0.2); e.currentTarget.classList.toggle('off', !A.on); });
-function toDossier() { running = false; if (synth) synth.cancel(); if (A.ctx) { A.out.gain.setTargetAtTime(0.0001, A.ctx.currentTime, 0.3); A.vOut.gain.setTargetAtTime(0.0001, A.ctx.currentTime, 0.1); } document.body.classList.add('read'); $('#dossier').scrollIntoView(); }
+function toDossier() { running = false; if (synth) synth.cancel(); if (A.ctx) { A.out.gain.setTargetAtTime(0.0001, A.ctx.currentTime, 0.3); A.vOut.gain.setTargetAtTime(0.0001, A.ctx.currentTime, 0.1); } document.body.classList.add('read'); theme('#f1f2f4'); $('#dossier').scrollIntoView(); }
 document.querySelectorAll('[data-dossier]').forEach((b) => b.addEventListener('click', (e) => { e.preventDefault(); toDossier(); }));
 document.querySelectorAll('[data-replay]').forEach((b) => b.addEventListener('click', () => { location.href = location.pathname; }));
 document.addEventListener('visibilitychange', () => { if (!document.hidden && running) clock.getDelta(); });
 
-const startBtn = $('#start'), bootMsg = $('#bootMsg');
+const startBtn = $('#start'), bootMsg = $('#bootMsg'), theme = (c) => { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = c; };
 async function boot() {
   try { await Promise.race([document.fonts.load('600 20px Rajdhani').then(() => document.fonts.load('20px "Krona One"')), new Promise((r) => setTimeout(r, 2500))]); } catch (e) { /* polices de secours */ }
   localizeDom(); startBtn.textContent = UI.loading;

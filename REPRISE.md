@@ -31,6 +31,7 @@ Ne **jamais** committer `.mcp.json` (jeton d'accès Figma, déjà dans `.gitigno
 | `app/lines.json` | Répliques de Gladys, par langue : `{ t: sous-titre, say?: graphie pour la synthèse, d: durée en s }`. |
 | `tools/voix.py` | Régénère les voix (`assets/voice/<langue>/<id>.mp3`) et les durées. |
 | `tools/corps.py` | Fabrique `assets/models/sleeper.bin` (corps des dormeurs) et `echo.bin` (silhouettes de visiteurs) à partir de `tools/sources/Xbot.glb`. |
+| `assets/brand/partage.jpg` | Image d'aperçu pour les partages (1200 × 630), fabriquée à partir d'une capture de l'entrée de la galerie. |
 | `galerie.html`, `scroll.html`, `voyage.html`, `pont.html`, `classic.html` | Anciennes versions, gardées pour mémoire. Ne pas s'en inspirer : le commanditaire les a rejetées. |
 
 Outils du récit dans `main.js` : `tween(durée, fn, ease)`, `wait(s)`, `camTo({pos, look|yaw|pitch, fov}, durée)`, `walk(tronçon, regard, rappel)`, `say(id)`, `ask(libellé)` (invite [F] ou bouton tactile), `choose([a, b])`, `quest()`, `card()`, `scan(i)`, `mark(i)`. L'état de la caméra est l'objet `S`.
@@ -109,6 +110,8 @@ Pièges déjà payés :
 - Tester aussi **sans** `?lite` : un bug du chemin « qualité normale » y est invisible.
 - Donner des échantillons MSAA aux tampons du composer coûte une résolution par passe ; d'où la cible MSAA unique.
 - Les objets transparents ne s'occultent pas entre eux : dans la galerie, les reflets sont en `renderOrder -2`, le sol en `-1`, et les cimaises derrière les œuvres sont des plans opaques.
+- Les textures sont décodées en **linéaire** dans les shaders : un seuil mesuré sur l'image (sRGB) doit être converti (≈ valeur^2,2). Un gris à 0,71 vaut 0,47.
+- Si la fenêtre du navigateur est masquée par une autre, elle tombe à ~3 images/s et les animations du décor paraissent figées. Pour juger un plan figé quand même, avancer le décor à la main dans la console : `for (let i = 0; i < 180; i++) __spes.W.update(200 + i * 0.05, 0.05, __spes.camera.position); __spes.composer.render();`
 - Fermer les onglets de test : ils continuent de faire tourner la 3D.
 
 ## 10. À faire
@@ -116,10 +119,11 @@ Pièges déjà payés :
 ### Maintenant (avant le 21 novembre)
 
 1. **Écouter la voix** dans les trois langues sur un vrai appareil : elle n'a été contrôlée qu'à la présence des fichiers et à leur durée. Points à surveiller : « SPES », « R26-0417 », « 42-SE », les dates.
-2. **Essayer sur de vrais téléphones** (Safari iOS et Chrome Android) : fluidité, bouton d'action dans la zone du pouce, encoches, démarrage du son au premier appui. Le contrôle mobile n'a été fait qu'en émulation.
+2. **Essayer sur de vrais téléphones** (Safari iOS et Chrome Android) : fluidité, bouton d'action dans la zone du pouce, encoches, démarrage du son au premier appui, retour visuel à l'appui (`:active`), absence de flash gris au toucher, couleur de la barre du navigateur (sombre pendant l'expérience, claire sur l'écran de fin). Le contrôle mobile n'a été fait qu'en émulation, qui ne reproduit aucun de ces points.
 3. **Faire relire l'anglais et l'espagnol** par quelqu'un dont c'est la langue (interface, sous-titres, version texte).
 4. **Confronter la galerie reconstituée au lieu** : place réelle des quatre œuvres, sens de l'escalier, hauteur du niveau 1. Corriger `ART[]`, `W.legs` et les murs dans `world.js` si l'accrochage diffère du plan du groupe.
 5. **Droits** : les photos des œuvres sont des clichés pris en galerie, à usage pédagogique. Demander l'accord de la galerie avant toute diffusion durable.
+6. **Vérifier l'aperçu de partage** (image `assets/brand/partage.jpg`, balises `og:`) en collant le lien dans une messagerie : les réseaux gardent l'ancien aperçu en cache quelque temps.
 
 ### Plus tard
 

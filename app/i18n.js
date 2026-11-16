@@ -2,7 +2,7 @@
 // Les répliques de Gladys (voix + sous-titres) sont dans app/lines.json ; le français de la page est écrit dans index.html.
 const STR = {
   fr: {
-    speech: 'fr-FR', dec: ',', quo: ['« ', ' »'],
+    speech: 'fr-FR', dec: ',', quo: ['«\u00a0', '\u00a0»'],
     ui: { loading: 'Chargement…', start: 'Lancer le dégel', ready: 'Systèmes prêts — casque audio conseillé.', reduced: 'Animations réduites détectées : la version texte est recommandée.',
       noGL: "La 3D n'est pas disponible sur cet appareil — version texte ci-dessous.", ring: 'APPEL ENTRANT', live: 'EN LIGNE', proto: 'PROTOCOLE RÉSONANCE', lot: 'LOT 42-SE', art: 'Artefact',
       card: ['Réveil', 'Ce qui reste', 'Danse sensorielle'],
@@ -11,7 +11,7 @@ const STR = {
         earth: 'Observer la Terre', link: 'Rejoindre le poste de liaison N-7', cable: 'Branchement du câble cervical', visor: 'Casque de liaison — synchronisation', enter: 'Entrer dans la galerie', up: 'Monter au niveau 1', end: 'Regarder la nef une dernière fois' },
       a: { answer: 'Répondre', exit: 'Sortir du caisson', walk: 'Avancer', seat: "S'installer", enter: 'Entrer' },
       ch1: ['Où suis-je ?', 'Combien de temps ai-je dormi ?'], ch2: ['Pourquoi des œuvres ?', 'Pourquoi me réveiller, moi ?'],
-      visor: ['PORT CERVICAL C2 · VERROUILLÉ', 'CORTEX VISUEL · PRIS EN CHARGE', 'CORTEX SOMATOSENSORIEL · PRIS EN CHARGE', 'CHARGEMENT DS-04 « RÉSONANCES » · LOT 42-SE'] },
+      visor: ['PORT CERVICAL C2 · VERROUILLÉ', 'CORTEX VISUEL · PRIS EN CHARGE', 'CORTEX SOMATOSENSORIEL · PRIS EN CHARGE', 'CHARGEMENT DS-04 «\u00a0RÉSONANCES\u00a0» · LOT 42-SE'] },
     works: [
       { sense: 'Kinesthésie', canal: 'Canal K', verb: 'Fixer une plume', tech: 'plumes sur Rhodoïde · 97,5 × 97,5 cm', dw: '97,5 cm', dh: '97,5 cm',
         def: 'Percevoir un mouvement dans son propre corps, même devant une image immobile.', cns: 'Fixe une seule plume, dix secondes, sans bouger.' },
@@ -82,7 +82,7 @@ const STR = {
       foot2: 'Scanned head: Lee Perry-Smith / Infinite-Realities (CC BY 3.0) · Body: X Bot mannequin, Mixamo · Materials: Poly Haven (CC0) · Earth: NASA (public domain) · Voice: speech synthesis' }
   },
   es: {
-    speech: 'es-ES', dec: ',', quo: ['« ', ' »'],
+    speech: 'es-ES', dec: ',', quo: ['«', '»'],
     ui: { loading: 'Cargando…', start: 'Iniciar el deshielo', ready: 'Sistemas listos — se recomiendan auriculares.', reduced: 'Animaciones reducidas detectadas: se recomienda la versión de texto.',
       noGL: 'El 3D no está disponible en este dispositivo — versión de texto más abajo.', ring: 'LLAMADA ENTRANTE', live: 'EN LÍNEA', proto: 'PROTOCOLO RESONANCIA', lot: 'LOTE 42-SE', art: 'Artefacto',
       card: ['Despertar', 'Lo que queda', 'Danza sensorial'],

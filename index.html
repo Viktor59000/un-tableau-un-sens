@@ -9,6 +9,10 @@
 <meta property="og:title" content="un tableau, un sens — SPES" />
 <meta property="og:description" content="Une expérience narrative en 3D : 474 ans de stase, une Terre à l'abandon, quatre œuvres pour réapprendre à percevoir. 21 & 22 nov. 2026, Ceysson & Bénétière." />
 <meta property="og:type" content="website" />
+<meta property="og:url" content="https://viktor59000.github.io/un-tableau-un-sens/" />
+<meta property="og:image" content="https://viktor59000.github.io/un-tableau-un-sens/assets/brand/partage.jpg" />
+<meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
 <link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -25,7 +29,10 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-weight:500;font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased}
 body.play{overflow:hidden;height:100vh;height:100dvh;touch-action:none;overscroll-behavior:none}
-#hud,#boot,#prologue{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+#hud,#boot,#prologue{-webkit-user-select:none;user-select:none}
+button,a{touch-action:manipulation}button{-webkit-touch-callout:none}
+#prompt:active,#choices button:active,.tools button:active,.tools a:active,.langs button:active,.lnk:active{filter:brightness(1.4)}
 body.read{overflow:auto;height:auto}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
 a{color:inherit}
@@ -51,10 +58,10 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologu
 @keyframes gl2{0%,91%,100%{opacity:0}92%{opacity:.9;transform:translate(6px,0);clip-path:inset(48% 0 30% 0)}95%{opacity:.9;transform:translate(-4px,0);clip-path:inset(5% 0 78% 0)}97%{opacity:0}}
 .lede{color:var(--dim);max-width:46ch;font-size:18px;margin:0 0 30px}
 .cta{font-family:var(--ui);font-weight:700;font-size:16px;letter-spacing:.16em;text-transform:uppercase;background:var(--safran);color:#0b0900;padding:16px 30px;clip-path:var(--cut);transition:background .2s,transform .2s}
-.cta:hover{background:#ffd633}.cta:active{transform:translateY(1px)}
+@media(hover:hover) and (pointer:fine){.cta:hover{background:#ffd633}}.cta:active{transform:translateY(1px)}
 .cta:disabled{background:#2a2f36;color:var(--mute);cursor:default}
 .lnk{margin-left:22px;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--mute);padding-bottom:3px}
-.lnk:hover{color:var(--ink);border-color:var(--ink)}
+@media(hover:hover) and (pointer:fine){.lnk:hover{color:var(--ink);border-color:var(--ink)}}
 #bootMsg{margin-top:30px;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
 .keys{margin-top:10px;font-size:13px;letter-spacing:.08em;color:var(--mute)}
 .keys kbd,#prompt kbd,.tools kbd{font-family:var(--ui);font-weight:700}
@@ -62,7 +69,7 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologu
 .keys kbd{border:1px solid var(--mute);padding:1px 7px;margin:0 3px;color:var(--dim)}
 .langs{position:absolute;top:max(18px,env(safe-area-inset-top));right:max(22px,env(safe-area-inset-right));display:flex;gap:6px;z-index:3}
 .langs button{min-width:44px;min-height:44px;font:700 12px var(--ui);letter-spacing:.18em;color:var(--dim);border:1px solid rgba(154,167,181,.35);background:rgba(6,8,12,.5);cursor:pointer;transition:color .2s,border-color .2s}
-.langs button:hover{color:var(--ink);border-color:var(--ink)}.langs button.on{color:#06080c;background:var(--safran);border-color:var(--safran)}
+@media(hover:hover) and (pointer:fine){.langs button:hover{color:var(--ink);border-color:var(--ink)}}.langs button.on{color:#06080c;background:var(--safran);border-color:var(--safran)}
 
 /* ---------- HUD ---------- */
 #hud{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0;transition:opacity 1.2s;text-transform:uppercase}
@@ -126,7 +133,7 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologu
 #vit span:first-child b{color:var(--coral)}
 .tools{position:absolute;right:28px;bottom:22px;display:flex;gap:8px;pointer-events:auto}
 .tools button,.tools a{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--dim);border:1px solid rgba(154,167,181,.35);padding:7px 11px;background:rgba(6,8,12,.5);transition:color .2s,border-color .2s}
-.tools button:hover,.tools a:hover{color:var(--ink);border-color:var(--ink)}
+@media(hover:hover) and (pointer:fine){.tools button:hover,.tools a:hover{color:var(--ink);border-color:var(--ink)}}
 .tools .off{text-decoration:line-through;color:var(--mute)}
 .tools a{color:var(--safran);border-color:rgba(245,196,0,.45)}
 /* ---- téléphone (portrait) : HUD compact, actions dans la zone du pouce, marges de sécurité ---- */
@@ -173,7 +180,7 @@ body.touch .keys{display:none}
 #choices{position:absolute;left:50%;bottom:13vh;transform:translateX(-50%) translateY(10px);display:grid;gap:8px;opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;text-transform:none}
 #choices.on{opacity:1;transform:translateX(-50%);pointer-events:auto}
 #choices button{display:flex;gap:14px;align-items:center;text-align:left;font-size:19px;font-weight:600;padding:9px 20px 9px 10px;background:rgba(6,8,12,.66);border-left:2px solid var(--cyan);min-width:min(430px,80vw);transition:background .15s,border-color .15s,padding .15s}
-#choices button:hover,#choices button:focus-visible{background:rgba(127,227,230,.16);border-color:var(--safran);padding-left:16px}
+#choices button:focus-visible,#choices button:active{background:rgba(127,227,230,.16);border-color:var(--safran)}@media(hover:hover) and (pointer:fine){#choices button:hover{background:rgba(127,227,230,.16);border-color:var(--safran);padding-left:16px}}
 #choices kbd{font-family:var(--ui);font-weight:700;display:grid;place-items:center;width:26px;height:26px;border:1px solid var(--dim);color:var(--dim);font-size:14px}
 /* ---------- intérieur du casque de liaison ---------- */
 #visor{position:fixed;inset:0;z-index:9;display:grid;place-items:center;opacity:0;visibility:hidden;transition:opacity .7s,visibility .7s;text-transform:uppercase;
@@ -199,7 +206,7 @@ body.touch .keys{display:none}
 .facts dt{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#6b7480}
 .facts dd{margin:4px 0 0;font-size:18px;font-weight:700;line-height:1.25}
 #outro .cta{background:#0a0c10;color:#f1f2f4;text-decoration:none;display:inline-block}
-#outro .cta:hover{background:var(--coral);color:#fff}
+@media(hover:hover) and (pointer:fine){#outro .cta:hover{background:var(--coral);color:#fff}}
 #outro .lnk{color:#3a424c;border-color:#9aa1aa}
 @media(max-width:640px){.facts{grid-template-columns:1fr}.lnk{margin:16px 0 0;display:inline-block}}
 
@@ -307,10 +314,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
   <section class="sec"><div class="wrap">
     <span class="n" data-k="s2n">02 — Les œuvres</span><h2 data-k="s2h">Quatre recalibrations</h2>
     <div class="works">
-      <article class="work" data-w="0" style="--c:var(--amber)"><div class="im"><img src="assets/works/ouie.jpg" alt="Plume sur Rhodoïde, Louis Cane" loading="lazy"></div><div><b>01 · Kinesthésie</b><h3>Plume sur Rhodoïde</h3><p class="by">Louis Cane, 1998</p><p class="d">Percevoir un mouvement dans ton propre corps devant une image immobile : ton cerveau simule la chute des plumes.</p><p class="c">« Fixe une seule plume, dix secondes, sans bouger. »</p></div></article>
-      <article class="work" data-w="1" style="--c:var(--cyan)"><div class="im"><img src="assets/works/toucher.jpg" alt="Résine sur grillage, Louis Cane" loading="lazy"></div><div><b>02 · Toucher haptique virtuel</b><h3>Résine sur grillage</h3><p class="by">Louis Cane, 2018</p><p class="d">L'œil déclenche une sensation tactile sans contact : le cortex reconstitue le froid du fer et le lisse de la résine.</p><p class="c">« Approche-toi à trente centimètres. Ne touche pas. »</p></div></article>
-      <article class="work" data-w="2" style="--c:var(--lime)"><div class="im"><img src="assets/works/odorat.jpg" alt="Arpenter 2/3, Aurélie Pétrel" loading="lazy"></div><div><b>03 · Proprioception spatiale</b><h3>Arpenter ⅔</h3><p class="by">Aurélie Pétrel, 2025</p><p class="d">Le sens de ta taille et de ta place dans l'espace : les troncs te dominent, ton cerveau recalcule ton échelle.</p><p class="c">« Place tes pieds sur le repère, à soixante centimètres. »</p></div></article>
-      <article class="work" data-w="3" style="--c:var(--coral)"><div class="im"><img src="assets/works/gout.jpg" alt="n°60, Philippe Favier" loading="lazy"></div><div><b>04 · Intéroception &amp; chronoception</b><h3>n°60</h3><p class="by">Philippe Favier, 2025</p><p class="d">Sentir l'intérieur de ton corps et l'écoulement du temps : un souvenir d'enfance change le rythme de ton cœur.</p><p class="c">« Penche-toi à vingt centimètres. Ralentis. »</p></div></article>
+      <article class="work" data-w="0" style="--c:var(--amber)"><div class="im"><img src="assets/works/ouie.jpg" alt="Plume sur Rhodoïde, Louis Cane" loading="lazy"></div><div><b>01 · Kinesthésie</b><h3>Plume sur Rhodoïde</h3><p class="by">Louis Cane, 1998</p><p class="d">Percevoir un mouvement dans ton propre corps devant une image immobile : ton cerveau simule la chute des plumes.</p><p class="c">«&nbsp;Fixe une seule plume, dix secondes, sans bouger.&nbsp;»</p></div></article>
+      <article class="work" data-w="1" style="--c:var(--cyan)"><div class="im"><img src="assets/works/toucher.jpg" alt="Résine sur grillage, Louis Cane" loading="lazy"></div><div><b>02 · Toucher haptique virtuel</b><h3>Résine sur grillage</h3><p class="by">Louis Cane, 2018</p><p class="d">L'œil déclenche une sensation tactile sans contact : le cortex reconstitue le froid du fer et le lisse de la résine.</p><p class="c">«&nbsp;Approche-toi à trente centimètres. Ne touche pas.&nbsp;»</p></div></article>
+      <article class="work" data-w="2" style="--c:var(--lime)"><div class="im"><img src="assets/works/odorat.jpg" alt="Arpenter 2/3, Aurélie Pétrel" loading="lazy"></div><div><b>03 · Proprioception spatiale</b><h3>Arpenter ⅔</h3><p class="by">Aurélie Pétrel, 2025</p><p class="d">Le sens de ta taille et de ta place dans l'espace : les troncs te dominent, ton cerveau recalcule ton échelle.</p><p class="c">«&nbsp;Place tes pieds sur le repère, à soixante centimètres.&nbsp;»</p></div></article>
+      <article class="work" data-w="3" style="--c:var(--coral)"><div class="im"><img src="assets/works/gout.jpg" alt="n°60, Philippe Favier" loading="lazy"></div><div><b>04 · Intéroception &amp; chronoception</b><h3>n°60</h3><p class="by">Philippe Favier, 2025</p><p class="d">Sentir l'intérieur de ton corps et l'écoulement du temps : un souvenir d'enfance change le rythme de ton cœur.</p><p class="c">«&nbsp;Penche-toi à vingt centimètres. Ralentis.&nbsp;»</p></div></article>
     </div>
   </div></section>
 
