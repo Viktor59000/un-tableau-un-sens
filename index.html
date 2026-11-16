@@ -60,6 +60,9 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologu
 .keys kbd,#prompt kbd,.tools kbd{font-family:var(--ui);font-weight:700}
 .keys-t{display:none;margin-top:10px;font-size:13px;letter-spacing:.06em;color:var(--mute)}body.touch .keys-t{display:block}
 .keys kbd{border:1px solid var(--mute);padding:1px 7px;margin:0 3px;color:var(--dim)}
+.langs{position:absolute;top:max(18px,env(safe-area-inset-top));right:max(22px,env(safe-area-inset-right));display:flex;gap:6px;z-index:3}
+.langs button{min-width:44px;min-height:44px;font:700 12px var(--ui);letter-spacing:.18em;color:var(--dim);border:1px solid rgba(154,167,181,.35);background:rgba(6,8,12,.5);cursor:pointer;transition:color .2s,border-color .2s}
+.langs button:hover{color:var(--ink);border-color:var(--ink)}.langs button.on{color:#06080c;background:var(--safran);border-color:var(--safran)}
 
 /* ---------- HUD ---------- */
 #hud{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0;transition:opacity 1.2s;text-transform:uppercase}
@@ -119,7 +122,7 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologu
 #scC{margin:0;font-size:15px;font-weight:600;color:var(--sig,var(--cyan))}
 /* constantes + outils */
 #vit{position:absolute;left:28px;bottom:26px;display:flex;gap:18px;font-size:13px;letter-spacing:.18em;color:var(--dim);font-variant-numeric:tabular-nums}
-#vit b{color:var(--ink);font-weight:700}
+#vit b{color:var(--ink);font-weight:700}#vit i{font-style:normal}
 #vit span:first-child b{color:var(--coral)}
 .tools{position:absolute;right:28px;bottom:22px;display:flex;gap:8px;pointer-events:auto}
 .tools button,.tools a{font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;text-decoration:none;color:var(--dim);border:1px solid rgba(154,167,181,.35);padding:7px 11px;background:rgba(6,8,12,.5);transition:color .2s,border-color .2s}
@@ -238,90 +241,91 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 </style>
 </head>
 <body>
-<a class="skip" href="#dossier" data-dossier>Aller à la version texte</a>
+<a class="skip" href="#dossier" data-dossier data-k="skip">Aller à la version texte</a>
 <canvas id="gl" aria-hidden="true"></canvas>
 
 <section id="boot" aria-label="Démarrage">
+  <div class="langs" role="group" aria-label="Langue · Language · Idioma"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="es">ES</button></div>
   <div class="boot-in">
-    <div class="kick">SPES-07 · pont 12 · caisson R26-0417</div>
+    <div class="kick" data-k="bKick">SPES-07 · pont 12 · caisson R26-0417</div>
     <h1 class="wm"><span>Galerie Ceysson &amp; Bénétière</span>un tableau,<br><b data-t="un sens">un sens</b></h1>
-    <p class="lede">Tu es le sujet R26-0417. Tu dors depuis 474 ans à bord d'une arche en orbite. Une voix t'appelle : le protocole RÉSONANCE commence.</p>
+    <p class="lede" data-k="lede">Tu es le sujet R26-0417. Tu dors depuis 474 ans à bord d'une arche en orbite. Une voix t'appelle : le protocole RÉSONANCE commence.</p>
     <button id="start" class="cta" type="button" disabled>Chargement…</button>
-    <a class="lnk" href="#dossier" data-dossier>Version texte</a>
+    <a class="lnk" href="#dossier" data-dossier data-k="txt">Version texte</a>
     <p id="bootMsg">Initialisation des systèmes</p>
-    <p class="keys-t">Touche les boutons pour agir · glisse le doigt pour regarder</p>
-    <p class="keys"><kbd>F</kbd> agir · <kbd>1</kbd><kbd>2</kbd> répondre · <kbd>Espace</kbd> passer une réplique · souris pour regarder</p>
+    <p class="keys-t" data-k="keysT">Touche les boutons pour agir · glisse le doigt pour regarder</p>
+    <p class="keys" data-k="keys"><kbd>F</kbd> agir · <kbd>1</kbd><kbd>2</kbd> répondre · <kbd>Espace</kbd> passer une réplique · souris pour regarder</p>
   </div>
 </section>
 
-<div id="prologue"><div class="pro-in"><div class="kick" id="proH"></div><p id="proT"></p><span class="pro-skip">Espace ou clic pour passer</span></div></div>
-<div id="visor" aria-hidden="true"><div class="v-in"><div class="kick">Liaison N-7 · synchronisation neurale</div><div class="v-big"><span id="vPct">000</span><small>%</small></div><div class="v-bar"><span id="vBar"></span></div><ul id="vRows"></ul></div></div>
+<div id="prologue"><div class="pro-in"><div class="kick" id="proH"></div><p id="proT"></p><span class="pro-skip" data-k="proSkip">Espace ou clic pour passer</span></div></div>
+<div id="visor" aria-hidden="true"><div class="v-in"><div class="kick" data-k="vKick">Liaison N-7 · synchronisation neurale</div><div class="v-big"><span id="vPct">000</span><small>%</small></div><div class="v-bar"><span id="vBar"></span></div><ul id="vRows"></ul></div></div>
 
 <div id="hud">
-  <div id="call" data-s="off"><div class="pf"><canvas id="face" width="184" height="220"></canvas></div><div class="cm"><span id="callS">Appel entrant</span><b>Gladys</b><i>Unité de veille · SPES-07</i><span id="callT">00:00</span></div></div>
+  <div id="call" data-s="off"><div class="pf"><canvas id="face" width="184" height="220"></canvas></div><div class="cm"><span id="callS">Appel entrant</span><b>Gladys</b><i data-k="callI">Unité de veille · SPES-07</i><span id="callT">00:00</span></div></div>
   <div id="quest"><span id="qT">Réveil</span><div id="qO"></div>
-    <ul id="qL"><li data-i="0" style="--c:var(--amber)">Canal K · Kinesthésie</li><li data-i="1" style="--c:var(--cyan)">Canal H · Toucher virtuel</li><li data-i="2" style="--c:var(--lime)">Canal P · Proprioception</li><li data-i="3" style="--c:var(--coral)">Canal I · Intéroception</li></ul>
+    <ul id="qL"><li data-i="0" data-k="q0" style="--c:var(--amber)">Canal K · Kinesthésie</li><li data-i="1" data-k="q1" style="--c:var(--cyan)">Canal H · Toucher virtuel</li><li data-i="2" data-k="q2" style="--c:var(--lime)">Canal P · Proprioception</li><li data-i="3" data-k="q3" style="--c:var(--coral)">Canal I · Intéroception</li></ul>
   </div>
   <div id="card"><span id="cardN">01</span><h2 id="cardT">Réveil</h2></div>
   <button id="prompt" type="button"><kbd>F</kbd><span id="promptT">Répondre</span></button>
-  <aside id="scan"><div class="sn">Artefact // <span id="scN">CB-01</span></div><h3 id="scS"></h3><p id="scBy"></p><p id="scDef"></p><p id="scC"></p></aside>
+  <aside id="scan"><div class="sn"><span data-k="art">Artefact</span> // <span id="scN">CB-01</span></div><h3 id="scS"></h3><p id="scBy"></p><p id="scDef"></p><p id="scC"></p></aside>
   <div id="choices"></div>
   <div id="sub" aria-live="polite"><b>Gladys</b><span id="subT"></span></div>
-  <div id="vit"><span>Pouls <b id="bpm">8</b></span><span>Temp. <b id="tmp">4,0</b> °C</span><span id="loc">Pont 12 · caisson R26-0417</span></div>
-  <div class="tools"><button id="bSkip" type="button">Passer</button><button id="bVoice" type="button">Voix</button><button id="bSound" type="button">Son</button><a href="#dossier" data-dossier>Version texte</a></div>
+  <div id="vit"><span><i data-k="pulse">Pouls</i> <b id="bpm">8</b></span><span><i data-k="temp">Temp.</i> <b id="tmp">4,0</b> °C</span><span id="loc">Pont 12 · caisson R26-0417</span></div>
+  <div class="tools"><button id="bSkip" type="button" data-k="bSkip">Passer</button><button id="bVoice" type="button" data-k="bVoice">Voix</button><button id="bSound" type="button" data-k="bSound">Son</button><a href="#dossier" data-dossier data-k="txt">Version texte</a></div>
 </div>
 
 <section id="outro" aria-label="Fin de l'expérience">
   <div class="o-in">
-    <div class="kick">Protocole RÉSONANCE · 4/4 canaux rouverts</div>
-    <h2>Viens l'éprouver pour de vrai</h2>
-    <p>Les quatre œuvres que tu viens de traverser existent. Elles t'attendent pour la clôture de l'exposition Résonances.</p>
-    <dl class="facts"><div><dt>Dates</dt><dd>21 &amp; 22 novembre 2026<br>11h – 19h</dd></div><div><dt>Lieu</dt><dd>Galerie Ceysson &amp; Bénétière<br>10 rue des Aciéries, Saint-Étienne</dd></div><div><dt>Accès</dt><dd>Entrée libre<br>Audioguide offert</dd></div></dl>
-    <a class="cta" href="https://maps.google.com/?q=10+rue+des+Aci%C3%A9ries+Saint-%C3%89tienne">Voir l'itinéraire</a>
-    <a class="lnk" href="#dossier" data-dossier>Lire le dossier</a>
-    <button class="lnk" type="button" data-replay>Revivre le réveil</button>
+    <div class="kick" data-k="oKick">Protocole RÉSONANCE · 4/4 canaux rouverts</div>
+    <h2 data-k="oH">Viens l'éprouver pour de vrai</h2>
+    <p data-k="oP">Les quatre œuvres que tu viens de traverser existent. Elles t'attendent pour la clôture de l'exposition Résonances.</p>
+    <dl class="facts"><div><dt data-k="fDates">Dates</dt><dd data-k="fDatesV">21 &amp; 22 novembre 2026<br>11h – 19h</dd></div><div><dt data-k="fPlace">Lieu</dt><dd>Galerie Ceysson &amp; Bénétière<br>10 rue des Aciéries, Saint-Étienne</dd></div><div><dt data-k="fAccess">Accès</dt><dd data-k="fAccessV">Entrée libre<br>Audioguide offert</dd></div></dl>
+    <a class="cta" href="https://maps.google.com/?q=10+rue+des+Aci%C3%A9ries+Saint-%C3%89tienne" data-k="route">Voir l'itinéraire</a>
+    <a class="lnk" href="#dossier" data-dossier data-k="readD">Lire le dossier</a>
+    <button class="lnk" type="button" data-replay data-k="replay">Revivre le réveil</button>
   </div>
 </section>
 
 <main id="dossier">
   <header class="d-head"><div class="wrap">
-    <div class="kick">Dossier de bord · version texte</div>
+    <div class="kick" data-k="dKick">Dossier de bord · version texte</div>
     <h1>un tableau, un sens</h1>
-    <p>Un parcours sensoriel pour la clôture de l'exposition Résonances à la galerie Ceysson &amp; Bénétière. Quatre œuvres, quatre sens que personne ne t'a appris à l'école.</p>
+    <p data-k="dP">Un parcours sensoriel pour la clôture de l'exposition Résonances à la galerie Ceysson &amp; Bénétière. Quatre œuvres, quatre sens que personne ne t'a appris à l'école.</p>
   </div></header>
 
   <section class="sec"><div class="wrap">
-    <span class="n">01 — Le principe</span><h2>Cinq sens, c'est un mythe</h2>
-    <p>Les cinq sens d'Aristote décrivent seulement ton interface avec le dehors. Les neurosciences en comptent plus de vingt, et les plus puissants regardent vers l'intérieur. Le parcours s'en sert pour faire tomber la barrière de l'art contemporain.</p>
+    <span class="n" data-k="s1n">01 — Le principe</span><h2 data-k="s1h">Cinq sens, c'est un mythe</h2>
+    <p data-k="s1p">Les cinq sens d'Aristote décrivent seulement ton interface avec le dehors. Les neurosciences en comptent plus de vingt, et les plus puissants regardent vers l'intérieur. Le parcours s'en sert pour faire tomber la barrière de l'art contemporain.</p>
     <div class="cols">
-      <div><h3>Ce que tu connais</h3><p>Voir, entendre, toucher, sentir, goûter : des capteurs tournés vers l'extérieur. Utiles, mais incomplets.</p></div>
-      <div><h3>Ce que la galerie interdit</h3><p>Ne pas toucher, ne pas goûter, ne pas faire de bruit. Tes sens externes sont bridés : c'est le déclencheur.</p></div>
-      <div><h3>Ce qui se réveille</h3><p>Privé de contact, ton cerveau bascule sur la position du corps, le rythme du cœur, la perception du temps.</p></div>
+      <div><h3 data-k="c1h">Ce que tu connais</h3><p data-k="c1p">Voir, entendre, toucher, sentir, goûter : des capteurs tournés vers l'extérieur. Utiles, mais incomplets.</p></div>
+      <div><h3 data-k="c2h">Ce que la galerie interdit</h3><p data-k="c2p">Ne pas toucher, ne pas goûter, ne pas faire de bruit. Tes sens externes sont bridés : c'est le déclencheur.</p></div>
+      <div><h3 data-k="c3h">Ce qui se réveille</h3><p data-k="c3p">Privé de contact, ton cerveau bascule sur la position du corps, le rythme du cœur, la perception du temps.</p></div>
     </div>
   </div></section>
 
   <section class="sec"><div class="wrap">
-    <span class="n">02 — Les œuvres</span><h2>Quatre recalibrations</h2>
+    <span class="n" data-k="s2n">02 — Les œuvres</span><h2 data-k="s2h">Quatre recalibrations</h2>
     <div class="works">
-      <article class="work" style="--c:var(--amber)"><div class="im"><img src="assets/works/ouie.jpg" alt="Plume sur Rhodoïde, Louis Cane" loading="lazy"></div><div><b>01 · Kinesthésie</b><h3>Plume sur Rhodoïde</h3><p class="by">Louis Cane, 1998</p><p>Percevoir un mouvement dans ton propre corps devant une image immobile : ton cerveau simule la chute des plumes.</p><p class="c">« Fixe une seule plume, dix secondes, sans bouger. »</p></div></article>
-      <article class="work" style="--c:var(--cyan)"><div class="im"><img src="assets/works/toucher.jpg" alt="Résine sur grillage, Louis Cane" loading="lazy"></div><div><b>02 · Toucher haptique virtuel</b><h3>Résine sur grillage</h3><p class="by">Louis Cane, 2018</p><p>L'œil déclenche une sensation tactile sans contact : le cortex reconstitue le froid du fer et le lisse de la résine.</p><p class="c">« Approche-toi à trente centimètres. Ne touche pas. »</p></div></article>
-      <article class="work" style="--c:var(--lime)"><div class="im"><img src="assets/works/odorat.jpg" alt="Arpenter 2/3, Aurélie Pétrel" loading="lazy"></div><div><b>03 · Proprioception spatiale</b><h3>Arpenter ⅔</h3><p class="by">Aurélie Pétrel, 2025</p><p>Le sens de ta taille et de ta place dans l'espace : les troncs te dominent, ton cerveau recalcule ton échelle.</p><p class="c">« Place tes pieds sur le repère, à soixante centimètres. »</p></div></article>
-      <article class="work" style="--c:var(--coral)"><div class="im"><img src="assets/works/gout.jpg" alt="n°60, Philippe Favier" loading="lazy"></div><div><b>04 · Intéroception &amp; chronoception</b><h3>n°60</h3><p class="by">Philippe Favier, 2025</p><p>Sentir l'intérieur de ton corps et l'écoulement du temps : un souvenir d'enfance change le rythme de ton cœur.</p><p class="c">« Penche-toi à vingt centimètres. Ralentis. »</p></div></article>
+      <article class="work" data-w="0" style="--c:var(--amber)"><div class="im"><img src="assets/works/ouie.jpg" alt="Plume sur Rhodoïde, Louis Cane" loading="lazy"></div><div><b>01 · Kinesthésie</b><h3>Plume sur Rhodoïde</h3><p class="by">Louis Cane, 1998</p><p class="d">Percevoir un mouvement dans ton propre corps devant une image immobile : ton cerveau simule la chute des plumes.</p><p class="c">« Fixe une seule plume, dix secondes, sans bouger. »</p></div></article>
+      <article class="work" data-w="1" style="--c:var(--cyan)"><div class="im"><img src="assets/works/toucher.jpg" alt="Résine sur grillage, Louis Cane" loading="lazy"></div><div><b>02 · Toucher haptique virtuel</b><h3>Résine sur grillage</h3><p class="by">Louis Cane, 2018</p><p class="d">L'œil déclenche une sensation tactile sans contact : le cortex reconstitue le froid du fer et le lisse de la résine.</p><p class="c">« Approche-toi à trente centimètres. Ne touche pas. »</p></div></article>
+      <article class="work" data-w="2" style="--c:var(--lime)"><div class="im"><img src="assets/works/odorat.jpg" alt="Arpenter 2/3, Aurélie Pétrel" loading="lazy"></div><div><b>03 · Proprioception spatiale</b><h3>Arpenter ⅔</h3><p class="by">Aurélie Pétrel, 2025</p><p class="d">Le sens de ta taille et de ta place dans l'espace : les troncs te dominent, ton cerveau recalcule ton échelle.</p><p class="c">« Place tes pieds sur le repère, à soixante centimètres. »</p></div></article>
+      <article class="work" data-w="3" style="--c:var(--coral)"><div class="im"><img src="assets/works/gout.jpg" alt="n°60, Philippe Favier" loading="lazy"></div><div><b>04 · Intéroception &amp; chronoception</b><h3>n°60</h3><p class="by">Philippe Favier, 2025</p><p class="d">Sentir l'intérieur de ton corps et l'écoulement du temps : un souvenir d'enfance change le rythme de ton cœur.</p><p class="c">« Penche-toi à vingt centimètres. Ralentis. »</p></div></article>
     </div>
   </div></section>
 
   <section class="sec"><div class="wrap">
-    <span class="n">03 — Venir</span><h2>Infos pratiques</h2>
+    <span class="n" data-k="s3n">03 — Venir</span><h2 data-k="s3h">Infos pratiques</h2>
     <dl class="info">
-      <div><dt>Dates</dt><dd>21 &amp; 22 novembre 2026<span>Samedi et dimanche, 11h – 19h</span></dd></div>
-      <div><dt>Lieu</dt><dd>Ceysson &amp; Bénétière<span>10 rue des Aciéries, 42000 Saint-Étienne</span></dd></div>
-      <div><dt>Accès</dt><dd>Entrée libre<span>Sans réservation, audioguide offert</span></dd></div>
-      <div><dt>Durée</dt><dd>45 minutes<span>Quatre stations, à ton rythme</span></dd></div>
+      <div><dt data-k="fDates">Dates</dt><dd data-k="iDatesV">21 &amp; 22 novembre 2026<span>Samedi et dimanche, 11h – 19h</span></dd></div>
+      <div><dt data-k="fPlace">Lieu</dt><dd>Ceysson &amp; Bénétière<span>10 rue des Aciéries, 42000 Saint-Étienne</span></dd></div>
+      <div><dt data-k="fAccess">Accès</dt><dd data-k="iAccessV">Entrée libre<span>Sans réservation, audioguide offert</span></dd></div>
+      <div><dt data-k="iDur">Durée</dt><dd data-k="iDurV">45 minutes<span>Quatre stations, à ton rythme</span></dd></div>
     </dl>
-    <div class="d-end"><a class="cta" href="https://maps.google.com/?q=10+rue+des+Aci%C3%A9ries+Saint-%C3%89tienne">Voir l'itinéraire</a><button class="lnk" type="button" data-replay>Lancer l'expérience 3D</button></div>
+    <div class="d-end"><a class="cta" href="https://maps.google.com/?q=10+rue+des+Aci%C3%A9ries+Saint-%C3%89tienne" data-k="route">Voir l'itinéraire</a><button class="lnk" type="button" data-replay data-k="launch">Lancer l'expérience 3D</button></div>
   </div></section>
 
-  <footer><div class="wrap"><span>© 2026 — Design graphique avancé, Télécom Saint-Étienne B3 × galerie Ceysson &amp; Bénétière</span><span>Tête scannée : Lee Perry-Smith / Infinite-Realities (CC BY 3.0) · Matières : Poly Haven (CC0) · Terre : NASA (domaine public)</span></div></footer>
+  <footer><div class="wrap"><span data-k="foot1">© 2026 — Design graphique avancé, Télécom Saint-Étienne B3 × galerie Ceysson &amp; Bénétière</span><span data-k="foot2">Tête scannée : Lee Perry-Smith / Infinite-Realities (CC BY 3.0) · Corps : mannequin X Bot, Mixamo · Matières : Poly Haven (CC0) · Terre : NASA (domaine public) · Voix : synthèse vocale</span></div></footer>
 </main>
 
 <script type="module" src="app/main.js"></script>

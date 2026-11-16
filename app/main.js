@@ -5,40 +5,31 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { buildWorld, COL } from './world.js';
+import { LANG, T as UI, WTX, LOG, TX, SPEECH, DEC, QUO, localizeDom } from './i18n.js';
 
 const $ = (s) => document.querySelector(s);
 const Q = new URLSearchParams(location.search);
-// paramètres de test : ?act=2|3 ?st=0..3 ?auto ?quick ?lite ?hold=<point>
+// paramètres de test : ?act=2|3 ?st=0..3 ?auto ?quick ?lite ?hold=<point> ?lang=fr|en|es ?msaa=0 (voir REPRISE.md)
 const ACT = +Q.get('act') || 1, ST0 = +Q.get('st') || 0, AUTO = Q.has('auto'), QUICK = Q.has('quick'), LITE = Q.has('lite'), HOLD = Q.get('hold');
 const NOAO = Q.has('noao'), NOSH = Q.has('nosh');
 const dbg = (n) => (HOLD === n ? new Promise(() => {}) : Promise.resolve());
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, touch = matchMedia('(pointer:coarse)').matches || Q.has('touch');
 if (touch) document.body.classList.add('touch');
-const V3 = THREE.Vector3, PI = Math.PI;
+const V3 = THREE.Vector3, PI = Math.PI, sm = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
 
-// Les quatre artefacts du lot 42-SE, reconstitués à taille réelle (dimensions en mètres)
+// Les quatre artefacts du lot 42-SE, reconstitués à taille réelle (dimensions en mètres). Les textes traduits viennent de i18n.js.
+// ck/base : seuils de saturation de la matérialisation ; cell : taille d'un fragment ; cy : hauteur du centre ; dist : recul du visiteur.
 const WORKS = [
-  { key: 's1', col: COL.amber, css: '#fca311', img: 'assets/works/ouie.jpg', sense: 'Kinesthésie', canal: 'Canal K', verb: 'Fixer une plume',
-    title: 'Plume sur Rhodoïde', artist: 'Louis Cane, 1998', tech: 'plumes sur Rhodoïde · 97,5 × 97,5 cm', dw: '97,5 cm', dh: '97,5 cm', w: 0.975, h: 0.975, ar: 653 / 558, mode: 0, key: [0.09, 0.3], base: 0.1, cell: 0.03, cy: 1.5, dist: 1.9,
-    def: "Percevoir un mouvement dans son propre corps, même devant une image immobile.", cns: 'Fixe une seule plume, dix secondes, sans bouger.' },
-  { key: 's2', col: COL.cyan, css: '#7fe3e6', img: 'assets/works/toucher.jpg', sense: 'Toucher haptique virtuel', canal: 'Canal H', verb: 'Toucher du regard',
-    title: 'Résine sur grillage', artist: 'Louis Cane, 2018', tech: 'résine sur grillage de fer · 141 × 141 cm', dw: '141 cm', dh: '141 cm', w: 1.41, h: 1.41, ar: 587 / 552, mode: 0, relief: 1, key: [0.03, 0.2], base: 0.3, cell: 0.045, cy: 1.55, dist: 2.5,
-    def: "L'œil déclenche une sensation tactile, sans aucun contact avec la matière.", cns: 'Approche-toi à trente centimètres. Ne touche pas.' },
-  { key: 's3', col: COL.lime, css: '#a8e61d', img: 'assets/works/odorat.jpg', sense: 'Proprioception spatiale', canal: 'Canal P', verb: 'Lever les yeux',
-    title: 'Arpenter ⅔', artist: 'Aurélie Pétrel, 2025', tech: 'impression sur cuivre · 192 × 100 cm', dw: '100 cm', dh: '192 cm', w: 1.0, h: 1.92, ar: 300 / 764, mode: 1, cell: 0.042, cy: 1.3, dist: 2.9,
-    def: "Le sens de ta taille, de ton volume et de ta place dans l'espace, sans regarder ton corps.", cns: 'Place tes pieds sur le repère, à soixante centimètres.' },
-  { key: 's4', col: COL.coral, css: '#ff4f38', img: 'assets/works/gout.jpg', sense: 'Intéroception & chronoception', canal: 'Canal I', verb: "S'approcher",
-    title: 'n°60', artist: 'Philippe Favier, 2025', tech: 'pointe de gramophone sur verre peint · 35 × 44 cm', dw: '44 cm', dh: '35 cm', w: 0.44, h: 0.35, ar: 682 / 460, mode: 2, cell: 0.02, cy: 1.5, dist: 1.15,
-    def: "Sentir l'intérieur de son corps — le cœur, le souffle — et l'écoulement du temps.", cns: 'Penche-toi à vingt centimètres. Ralentis.' }
+  { id: 's1', col: COL.amber, css: '#fca311', img: 'assets/works/ouie.jpg', title: 'Plume sur Rhodoïde', artist: 'Louis Cane, 1998', w: 0.975, h: 0.975, ar: 653 / 558, mode: 0, ck: [0.09, 0.3], base: 0.1, cell: 0.012, cy: 1.5, dist: 1.9 },
+  { id: 's2', col: COL.cyan, css: '#7fe3e6', img: 'assets/works/toucher.jpg', title: 'Résine sur grillage', artist: 'Louis Cane, 2018', w: 1.41, h: 1.41, ar: 587 / 552, mode: 0, relief: 1, ck: [0.03, 0.2], base: 0.3, cell: 0.016, cy: 1.55, dist: 2.5 },
+  { id: 's3', col: COL.lime, css: '#a8e61d', img: 'assets/works/odorat.jpg', title: 'Arpenter ⅔', artist: 'Aurélie Pétrel, 2025', w: 1.0, h: 1.92, ar: 300 / 764, mode: 1, cell: 0.013, cy: 1.3, dist: 2.9 },
+  { id: 's4', col: COL.coral, css: '#ff4f38', img: 'assets/works/gout.jpg', title: 'n°60', artist: 'Philippe Favier, 2025', w: 0.44, h: 0.35, ar: 682 / 460, mode: 2, cell: 0.0055, cy: 1.5, dist: 1.15 }
 ];
-const LOG = [ // prologue : entrées du journal de bord
-  ['ARCHIVE 42-SE // 22.11.2026', "Saint-Étienne. La galerie Ceysson & Bénétière ferme l'exposition Résonances. Quatre de ses œuvres sont numérisées pour le programme HOPE."],
-  ['JOURNAL DE BORD // 14.12.2026', "La cohorte R-26 embarque sur l'arche SPES-07 : deux mille volontaires de 18 à 25 ans. Mise en stase, niveau 4."],
-  ['JOURNAL DE BORD // J+173 141', "An 2500. Indice de Voile terrestre : 9,7. Protocole RÉSONANCE déclenché. Premier sujet : R26-0417. C'est toi."]
-];
+WORKS.forEach((w, i) => Object.assign(w, WTX[i])); // sense, canal, verb, tech, dw, dh, def, cns dans la langue choisie
 
 /* ============================== SON ============================== */
 const A = { ctx: null, out: null, on: true };
@@ -70,12 +61,12 @@ const sfx = {
 };
 
 /* ============================== VOIX ============================== */
-// Répliques pré-enregistrées (assets/voice) ; à défaut, synthèse du navigateur ; à défaut, sous-titres minutés.
+// Répliques pré-enregistrées (assets/voice/<langue>) ; à défaut, synthèse du navigateur ; à défaut, sous-titres minutés.
 let LINES = {}; const VB = {}, VFAIL = {};
 const synth = window.speechSynthesis || null; let voice = null, voiceOn = true, talking = false, skipLine = null;
-function pickVoice() { if (!synth) return; const v = synth.getVoices() || []; voice = v.find((x) => /fr[-_]FR/i.test(x.lang) && /denise|eloise|hortense|julie|google|amelie|audrey/i.test(x.name)) || v.find((x) => /^fr/i.test(x.lang)) || null; }
+function pickVoice() { if (!synth) return; const v = synth.getVoices() || [], re = new RegExp('^' + LANG, 'i'); voice = v.find((x) => re.test(x.lang) && /natural|neural|google|denise|vivienne|sonia|elvira/i.test(x.name)) || v.find((x) => re.test(x.lang)) || null; }
 if (synth) { pickVoice(); synth.onvoiceschanged = pickVoice; }
-function loadVoices() { if (!A.ctx) return; for (const id of Object.keys(LINES)) fetch('assets/voice/' + id + '.mp3').then((r) => (r.ok ? r.arrayBuffer() : Promise.reject())).then((b) => A.ctx.decodeAudioData(b)).then((buf) => { VB[id] = buf; }).catch(() => { VFAIL[id] = 1; }); }
+function loadVoices() { if (!A.ctx) return; for (const id of Object.keys(LINES)) fetch('assets/voice/' + LANG + '/' + id + '.mp3').then((r) => (r.ok ? r.arrayBuffer() : Promise.reject())).then((b) => A.ctx.decodeAudioData(b)).then((buf) => { VB[id] = buf; }).catch(() => { VFAIL[id] = 1; }); }
 const subEl = $('#sub'), subT = $('#subT');
 async function say(id) {
   const L = LINES[id] || { t: id }, text = L.t; subT.textContent = text; subEl.classList.add('on'); talking = true;
@@ -84,7 +75,7 @@ async function say(id) {
     const t0 = performance.now(), est = QUICK ? 300 : (L.d ? L.d * 1000 + 250 : Math.max(1900, text.length * 66)); let done = false, to, src = null;
     const fin = () => { if (done) return; done = true; clearTimeout(to); if (src) { src.onended = null; try { src.stop(); } catch (e) { /* déjà arrêtée */ } } talking = false; skipLine = null; setTimeout(() => { if (!talking) subEl.classList.remove('on'); res(); }, QUICK ? 40 : 420); };
     if (!QUICK && voiceOn && A.ctx && VB[id]) { if (A.ctx.state === 'suspended') A.ctx.resume(); src = A.ctx.createBufferSource(); src.buffer = VB[id]; src.connect(A.vIn); src.onended = fin; src.start(); to = setTimeout(fin, est + 1500); }
-    else if (!QUICK && voiceOn && synth) { to = setTimeout(fin, est * 1.6 + 2500); try { if (synth.speaking || synth.pending) synth.cancel(); const u = new SpeechSynthesisUtterance(L.say || text); u.lang = 'fr-FR'; if (voice) u.voice = voice; u.rate = 1.02; u.pitch = 0.92; window.__utt = u;
+    else if (!QUICK && voiceOn && synth) { to = setTimeout(fin, est * 1.6 + 2500); try { if (synth.speaking || synth.pending) synth.cancel(); const u = new SpeechSynthesisUtterance(L.say || text); u.lang = SPEECH; if (voice) u.voice = voice; u.rate = 1.02; u.pitch = 0.92; window.__utt = u;
       u.onend = () => { const left = est * 0.4 - (performance.now() - t0); if (left > 0) { clearTimeout(to); to = setTimeout(fin, left); } else fin(); }; u.onerror = () => { clearTimeout(to); to = setTimeout(fin, Math.max(200, est - (performance.now() - t0))); }; setTimeout(() => synth.speak(u), 70); } catch (e) { /* minuterie de secours */ } }
     else to = setTimeout(fin, est);
     skipLine = () => { if (synth) synth.cancel(); fin(); };
@@ -99,11 +90,11 @@ function choose(opts) { return new Promise((res) => { choEl.innerHTML = ''; opts
   choEl.classList.add('on'); pick = (i) => { if (i >= opts.length) return; pick = null; choEl.classList.remove('on'); sfx.blip(); res(i); }; if (AUTO) setTimeout(() => pick && pick(+Q.get('c') || 0), QUICK ? 150 : 1200); }); }
 function quest(title, obj) { $('#qT').textContent = title; const o = $('#qO'); o.classList.remove('in'); void o.offsetWidth; o.textContent = obj; o.classList.add('in'); }
 function card(n, t) { $('#cardN').textContent = n; $('#cardT').textContent = t; const c = $('#card'); c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); }
-function callState(s) { callEl.dataset.s = s; callEl.classList.toggle('on', s !== 'off'); callS.textContent = s === 'ring' ? 'APPEL ENTRANT' : 'EN LIGNE'; if (s === 'live') callStart = performance.now(); }
-function scan(i) { const w = WORKS[i], el = $('#scan'); el.style.setProperty('--sig', w.css); $('#scN').textContent = 'CB-0' + (i + 1) + ' · LOT 42-SE'; $('#scS').textContent = w.sense; $('#scBy').textContent = w.title + ' — ' + w.artist; $('#scDef').textContent = w.def; $('#scC').textContent = '« ' + w.cns + ' »'; el.classList.add('on'); }
-function mark(i) { const li = document.querySelector('#qL li[data-i="' + i + '"]'); if (li) li.classList.add('done'); sfx.tone(523, 0.12, 0.1, 'triangle'); sfx.tone(784, 0.2, 0.1, 'triangle', 0.1); }
+function callState(s) { callEl.dataset.s = s; callEl.classList.toggle('on', s !== 'off'); callS.textContent = s === 'ring' ? UI.ring : UI.live; if (s === 'live') callStart = performance.now(); }
+function scan(i) { const w = WORKS[i], el = $('#scan'); el.style.setProperty('--sig', w.css); $('#scN').textContent = 'CB-0' + (i + 1) + ' · ' + UI.lot; $('#scS').textContent = w.sense; $('#scBy').textContent = w.title + ' — ' + w.artist; $('#scDef').textContent = w.def; $('#scC').textContent = QUO[0] + w.cns + QUO[1]; el.classList.add('on'); }
+function mark(i) { W.stations[i].done = true; const li = document.querySelector('#qL li[data-i="' + i + '"]'); if (li) li.classList.add('done'); sfx.tone(523, 0.12, 0.1, 'triangle'); sfx.tone(784, 0.2, 0.1, 'triangle', 0.1); }
 const vit = { bpm: 8, tmp: 4, loc: '' };
-function vitals() { $('#bpm').textContent = Math.round(vit.bpm); $('#tmp').textContent = vit.tmp.toFixed(1).replace('.', ','); $('#loc').textContent = vit.loc; }
+function vitals() { $('#bpm').textContent = Math.round(vit.bpm); $('#tmp').textContent = vit.tmp.toFixed(1).replace('.', DEC); $('#loc').textContent = vit.loc; }
 
 // portrait de Gladys : visage en lignes de contour (relevé holographique), bouche pilotée par le signal de la voix
 const fcv = $('#face'), fc = fcv.getContext('2d'); let mouth = 0;
@@ -150,12 +141,16 @@ const FX = { uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uGlitch
       c*=1.-dot(d,d)*.95; c+=(h(uv*vec2(1731.,977.)+uTime*61.)-.5)*.022;
       c=mix(c*uFade,vec3(2.2),uWhite); gl_FragColor=vec4(c,1.); }` };
 // qualité adaptative : si l'appareil peine, on baisse la résolution puis on coupe le bloom (les images d'un onglet en arrière-plan ne comptent pas)
-const QL = { dpr: 1, lvl: touch ? 1 : 0, n: 0, acc: 0, warm: 2 };
-function adapt(raw) { if (LITE || Q.has('noadapt') || QL.lvl > 4 || raw > 0.4 || document.hidden) return; QL.acc += raw; if (++QL.n < 50) return; const avg = QL.acc / QL.n; QL.n = 0; QL.acc = 0;
+const QL = { dpr: 1, lvl: touch ? 1 : 0, n: 0, acc: 0, warm: 2 }, MSAA = LITE || touch ? 0 : (Q.has('msaa') ? +Q.get('msaa') : 4); // anticrénelage : indispensable aux filets fins de la galerie
+function adapt(raw) { if (LITE || Q.has('noadapt') || QL.lvl > 5 || raw > 0.4 || document.hidden) return; QL.acc += raw; if (++QL.n < 50) return; const avg = QL.acc / QL.n; QL.n = 0; QL.acc = 0;
   if (QL.warm-- > 0 || avg < 0.0215) return; // on vise ~50 images/s ; les premières mesures (compilation des shaders) sont ignorées
-  QL.lvl++; // ordre des sacrifices : occlusion ambiante, résolution (deux crans), ombres, bloom
-  if (QL.lvl === 2 || QL.lvl === 3) { const d = Math.max(0.6, QL.dpr * (QL.lvl === 2 ? 0.85 : 0.7)); renderer.setPixelRatio(d); composer.setPixelRatio(d); }
-  if (QL.lvl === 4) for (const l of W.shadowLights) l.castShadow = false; if (QL.lvl === 5) bloom.enabled = false; }
+  QL.lvl++; // ordre des sacrifices : occlusion ambiante, résolution (deux crans), ombres, anticrénelage, bloom
+  if (QL.lvl === 5 && msRT) { msRT.dispose(); msRT = null; }
+  if (QL.lvl === 2 || QL.lvl === 3) { const d = Math.max(0.6, QL.dpr * (QL.lvl === 2 ? 0.85 : 0.7)); renderer.setPixelRatio(d); composer.setPixelRatio(d); msSize(); }
+  if (QL.lvl === 4) for (const l of W.shadowLights) l.castShadow = false; if (QL.lvl === 6) bloom.enabled = false; }
+// La scène est rendue dans une cible multi-échantillonnée, résolue UNE fois, puis recopiée dans la chaîne de post-traitement :
+// donner des échantillons aux tampons du composer coûtait une résolution par passe (≈ +17 ms par image sur carte intégrée).
+let msRT = null; const msSize = () => { if (msRT) { const r = renderer.getPixelRatio(); msRT.setSize(Math.floor(innerWidth * r), Math.floor(innerHeight * r)); } };
 function initGL() {
   renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: false, powerPreference: 'high-performance' });
   const dpr = LITE ? 0.5 : Math.min(window.devicePixelRatio || 1, touch ? 1.5 : 1.25); QL.dpr = dpr; renderer.setPixelRatio(dpr); renderer.setSize(innerWidth, innerHeight);
@@ -163,8 +158,11 @@ function initGL() {
   scene = new THREE.Scene(); scene.background = new THREE.Color(0x020306); scene.fog = new THREE.FogExp2(0x0a1016, 0.034);
   camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.05, 1600);
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
-  W = buildWorld(scene, new THREE.TextureLoader(), WORKS); window.__spes = { renderer, QL, scene, W, S };
-  composer = new EffectComposer(renderer); composer.setPixelRatio(dpr); composer.setSize(innerWidth, innerHeight); composer.addPass(new RenderPass(scene, camera));
+  W = buildWorld(scene, new THREE.TextureLoader(), WORKS, TX); window.__spes = { renderer, QL, scene, W, S };
+  composer = new EffectComposer(renderer); composer.setPixelRatio(dpr); composer.setSize(innerWidth, innerHeight); const rp = new RenderPass(scene, camera); composer.addPass(rp);
+  if (MSAA) { msRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: MSAA }); msSize(); const base = rp.render.bind(rp), quad = new FullScreenQuad(new THREE.ShaderMaterial({ uniforms: { tDiffuse: { value: null } }, depthTest: false, depthWrite: false, vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+      fragmentShader: 'uniform sampler2D tDiffuse;varying vec2 vUv;void main(){gl_FragColor=vec4(clamp(texture2D(tDiffuse,vUv).rgb,0.,24.),1.);}' })); // la recopie borne aussi les pics de reflet avant le bloom
+    rp.render = (r, wb, rb, d, mk) => { if (!msRT) return base(r, wb, rb, d, mk); base(r, wb, msRT, d, mk); quad.material.uniforms.tDiffuse.value = msRT.texture; r.setRenderTarget(rb); quad.render(r); }; }
   // occlusion ambiante (demi-résolution) : ancre les objets au sol ; les objets transparents/lumineux n'y participent pas
   gtao = new GTAOPass(scene, camera, 256, 256); const gs = gtao.setSize.bind(gtao); gtao.setSize = (w, h) => gs(Math.ceil(w * 0.5), Math.ceil(h * 0.5));
   gtao.updateGtaoMaterial({ radius: 0.42, distanceExponent: 1.4, thickness: 1.3, scale: 1.25, samples: 8 }); gtao.blendIntensity = 0.95;
@@ -172,7 +170,7 @@ function initGL() {
   gtao.enabled = !LITE; composer.addPass(gtao);
   bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.5, 0.5, 0.92); bloom.enabled = !LITE; composer.addPass(bloom);
   fx = new ShaderPass(FX); composer.addPass(fx); composer.addPass(new OutputPass()); Object.assign(window.__spes, { composer, bloom, gtao, camera });
-  addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
+  addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); msSize(); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
 }
 const tweens = [];
 const io = (k) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2), lin = (k) => k, out = (k) => 1 - Math.pow(1 - k, 3);
@@ -202,7 +200,6 @@ function frame() {
   // station 4 : le pouls
   if (heart) { heart.t -= dt; if (heart.t <= 0) { heart.gap = Math.min(1.35, heart.gap + 0.07); heart.t = heart.gap; sfx.thump(); W.stations[3].fx.pulse = 1; vit.bpm = 60 / heart.gap; vitals(); } }
   bloom.strength = 0.5 + W.stations[3].fx.pulse * 0.7;
-  if (W.ds.visible) W.dsLight.position.set(0, 3, S.pos.z + 2);
   // bouche du portrait : amplitude réelle de la voix quand elle joue, sinon mouvement générique
   let m = 0; if (talking) { if (A.vAna) { A.vAna.getByteTimeDomainData(A.vBuf); let s = 0; for (let i = 0; i < 512; i += 4) { const x = (A.vBuf[i] - 128) / 128; s += x * x; } m = Math.min(1, Math.sqrt(s / 128) * 5.5); }
     if (m < 0.02 && (!A.ctx || QUICK || !voiceOn)) m = Math.abs(Math.sin(T * 21) * Math.sin(T * 6.7)) * 0.8; }
@@ -214,7 +211,7 @@ function frame() {
 }
 
 /* ============================== RÉCIT ============================== */
-const DSY = -400, P1 = 'PROTOCOLE RÉSONANCE · 1/3', P2 = 'PROTOCOLE RÉSONANCE · 2/3', P3 = 'PROTOCOLE RÉSONANCE · 3/3';
+const DSY = -400, P1 = UI.proto + ' · 1/3', P2 = UI.proto + ' · 2/3', P3 = UI.proto + ' · 3/3';
 async function prologue() {
   if (QUICK) return; const el = $('#prologue'), h = $('#proH'), p = $('#proT'); el.classList.add('on');
   for (const [head, text] of LOG) {
@@ -225,76 +222,94 @@ async function prologue() {
   skipLine = null; el.classList.remove('on'); await new Promise((r) => setTimeout(r, 900));
 }
 async function act1() {
-  W.setScene('ship'); S.pos.set(-4.32, 0.94, 1.3); S.yaw = -PI / 2; S.pitch = 1.28; S.free = 0.22; S.fov = 66; vit.loc = 'PONT 12 · CAISSON R26-0417'; vitals();
-  quest(P1, 'Séquence de dégel en cours'); card('01', 'Réveil');
+  W.setScene('ship'); S.pos.set(-4.32, 0.94, 1.3); S.yaw = -PI / 2; S.pitch = 1.28; S.free = 0.22; S.fov = 66; vit.loc = UI.loc[0]; vitals();
+  quest(P1, UI.q.thaw); card('01', UI.card[0]);
   tween(3, (k) => { fx.uniforms.uFade.value = k; });
   tween(9, (k) => { W.frost.value = k * 0.5; vit.tmp = 4 + k * 22; vit.bpm = 8 + k * 60; vitals(); }, lin);
   await wait(4.2);
-  callState('ring'); const stop = sfx.ring(); quest(P1, 'Appel entrant — Gladys, unité de veille'); await ask('Répondre'); stop(); callState('live');
+  callState('ring'); const stop = sfx.ring(); quest(P1, UI.q.call); await ask(UI.a.answer); stop(); callState('live');
   await say('g01');
   tween(5, (k) => { W.frost.value = 0.5 + k * 0.5; vit.tmp = 26 + k * 10.8; vit.bpm = 68 + k * 24; vitals(); }, lin);
-  quest(P1, 'Interroger Gladys'); const c = await choose(['Où suis-je ?', "Combien de temps ai-je dormi ?"]); await say(c ? 'g02b' : 'g02a');
+  quest(P1, UI.q.askG); const c = await choose(UI.ch1); await say(c ? 'g02b' : 'g02a');
   await say('g03');
-  quest(P1, 'Sortir du caisson'); await ask('Sortir du caisson');
+  quest(P1, UI.q.exit); await ask(UI.a.exit);
   sfx.hiss(); W.wakeHold = false; W.guideMat.color.setHex(COL.safran).multiplyScalar(1.5);
   tween(8, (k) => { W.beacon.intensity = 26 * Math.abs(Math.sin(k * 14)) * (1 - k * k); }, lin);
-  await tween(2.6, (k) => { W.lidPivot.rotation.x = -k * 1.9; }, out); quest(P1, 'Se redresser');
+  await tween(2.6, (k) => { W.lidPivot.rotation.x = -k * 1.9; }, out); quest(P1, UI.q.sit);
   await camTo({ pos: new V3(-4.0, 1.3, 1.3), yaw: -PI / 2, pitch: -0.04, fov: 60 }, 3); S.free = 1; await dbg('sit');
-  quest(P1, 'Observer la baie'); const l1 = say('g04');
+  quest(P1, UI.q.look); const l1 = say('g04');
   await camTo({ pos: new V3(-2.9, 1.66, 2.3), look: new V3(-4.2, 0.95, 3.9) }, 3.2); await camTo({ pos: new V3(-3.72, 1.58, 2.86), look: new V3(-4.36, 0.86, 3.9), fov: 50 }, 3.4); await dbg('voisin'); await wait(2.2);
   await camTo({ pos: new V3(-1.3, 1.68, 1.9), yaw: -PI / 2 + 0.4, pitch: 0.04, fov: 60 }, 3); await l1; await dbg('stand');
-  quest(P1, "Rejoindre la baie d'observation"); await ask('Avancer'); vit.loc = 'PONT 12 · BAIE CRYO C'; vitals();
+  quest(P1, UI.q.obs); await ask(UI.a.walk); vit.loc = UI.loc[1]; vitals();
   S.walk = 1; await camTo({ pos: new V3(0, 1.68, 0.6), look: new V3(0, 2.2, -15) }, 2.6); await dbg('aisle');
   const l2 = say('g05');
   await camTo({ pos: new V3(0, 1.68, -10.6), look: new V3(-0.4, 2.3, -15) }, 10.5, lin); S.walk = 0; await l2;
 }
 async function visorBoot() {
-  const v = $('#visor'), rows = ['PORT CERVICAL C2 · VERROUILLÉ', 'CORTEX VISUEL · PRIS EN CHARGE', 'CORTEX SOMATOSENSORIEL · PRIS EN CHARGE', 'CHARGEMENT DS-04 « RÉSONANCES » · LOT 42-SE'], ul = $('#vRows'); ul.innerHTML = '';
+  const v = $('#visor'), rows = UI.visor, ul = $('#vRows'); ul.innerHTML = '';
   sfx.glitch(3.2);
   await tween(3.4, (k) => { $('#vPct').textContent = String(Math.round(k * 100)).padStart(3, '0'); $('#vBar').style.transform = 'scaleX(' + k + ')'; const n = Math.min(rows.length, Math.floor(k * (rows.length + 0.6)));
     while (ul.children.length < n) { const li = document.createElement('li'); li.textContent = rows[ul.children.length]; ul.appendChild(li); sfx.blip(); } fx.uniforms.uGlitch.value = k * k; v.style.setProperty('--g', k); }, lin);
 }
 async function act2() {
-  W.lidPivot.rotation.x = -1.9; W.frost.value = 1; W.wakeHold = false; vit.bpm = 92; vit.tmp = 36.8; vit.loc = "PONT 12 · BAIE D'OBSERVATION"; vitals(); callState('live');
-  card('02', 'Ce qui reste'); quest(P2, 'Observer la Terre');
+  W.lidPivot.rotation.x = -1.9; W.frost.value = 1; W.wakeHold = false; vit.bpm = 92; vit.tmp = 36.8; vit.loc = UI.loc[2]; vitals(); callState('live');
+  card('02', UI.card[1]); quest(P2, UI.q.earth);
   await dbg('window'); await camTo({ pos: new V3(0.2, 1.72, -12.3), look: new V3(-0.55, 2.05, -15), fov: 56 }, 3.4); await dbg('earth');
   await say('g06');
   const pan = camTo({ pos: new V3(0.3, 1.72, -12.5), look: new V3(1.4, 2.7, -15) }, 7); await say('g07'); await pan; await dbg('fleet');
-  quest(P2, 'Interroger Gladys'); const c = await choose(['Pourquoi des œuvres ?', 'Pourquoi me réveiller, moi ?']); await say(c ? 'g08b' : 'g08a');
+  quest(P2, UI.q.askG); const c = await choose(UI.ch2); await say(c ? 'g08b' : 'g08a');
   await say('g09');
-  quest(P2, "Rejoindre le poste de liaison N-7"); const l = say('g10'); S.walk = 1;
+  quest(P2, UI.q.link); const l = say('g10'); S.walk = 1;
   await camTo({ pos: W.seat.front.clone().setY(1.68), look: W.seat.chair, fov: 60 }, 3.8); S.walk = 0; await l; await dbg('link');
-  await ask("S'installer"); vit.loc = 'PONT 12 · LIAISON N-7'; vitals();
+  await ask(UI.a.seat); vit.loc = UI.loc[3]; vitals();
   await camTo({ pos: W.seat.eye, yaw: W.seat.yaw, pitch: 0.1 }, 3.4); S.free = 0.45; await dbg('seat');
-  quest(P2, 'Branchement du câble cervical'); const l2 = say('g10b'); sfx.servo(2.4);
+  quest(P2, UI.q.cable); const l2 = say('g10b'); sfx.servo(2.4);
   await tween(2.6, (k) => W.setCable(k * 0.52)); await dbg('plug'); await wait(0.9); await tween(0.6, (k) => W.setCable(0.52 + k * 0.48), out);
   sfx.clack(); tween(0.7, (k) => { S.roll = Math.sin(k * PI * 3) * 0.035 * (1 - k); fx.uniforms.uGlitch.value = 0.55 * (1 - k); }, lin); vit.bpm = 104; vitals(); await dbg('cable'); await wait(1.1);
-  quest(P2, 'Casque de liaison — synchronisation'); W.linkSpin = 7; sfx.servo(2.8); const v = $('#visor');
+  quest(P2, UI.q.visor); W.linkSpin = 7; sfx.servo(2.8); const v = $('#visor');
   await tween(1.6, (k) => W.setVisor(k * 0.55)); await dbg('visor0'); await tween(1.6, (k) => { W.setVisor(0.55 + k * 0.45); if (k > 0.55) v.classList.add('on'); }); await dbg('visor'); await l2;
   await visorBoot(); await tween(0.3, (k) => { fx.uniforms.uWhite.value = k; });
 }
+// --- acte 3 : la galerie Ceysson & Bénétière reconstituée. On y suit le parcours réel (W.legs), d'œuvre en œuvre. ---
+const trap = (k) => { const a = 0.16, b = 0.2, v = 1 / (1 - a / 2 - b / 2); return k < a ? v * k * k / (2 * a) : k > 1 - b ? 1 - v * (1 - k) * (1 - k) / (2 * b) : v * (k - a / 2); }; // vitesse constante, départ et arrivée doux
+const lerpA = (a, b, k) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k;
+function walk(leg, look, onK) { // marche le long d'un tronçon : le regard suit le chemin, puis se pose sur « look » à l'arrivée
+  const c = W.legs[leg], [s0, len] = W.legLen[leg], p = new V3(), tg = new V3(), y0 = S.yaw, q0 = S.pitch;
+  return tween(len / 2.2, (k) => { c.getPointAt(k, p); S.pos.set(p.x, p.y + 1.66 + DSY, p.z); c.getTangentAt(Math.min(1, k + 0.04), tg);
+    let yw = Math.atan2(-tg.x, -tg.z), pt = Math.atan2(tg.y, Math.hypot(tg.x, tg.z)) * 0.45;
+    if (look) { const a = aim(S.pos, look), b = sm(0.74, 1, k); yw = lerpA(yw, a.yaw, b); pt += (a.pitch - pt) * b; }
+    const i = sm(0, 0.14, k); S.yaw = lerpA(y0, yw, i); S.pitch = q0 + (pt - q0) * i; W.pathU.uHead.value = s0 + len * k; if (onK) onK(k); }, trap);
+}
 async function act3() {
-  W.setScene('ds'); scene.fog.color.setHex(0x04070a); scene.fog.density = 0.042; callState('live'); hud.classList.add('ds'); vit.loc = 'DS-04 · « RÉSONANCES »'; vit.bpm = 92; vit.tmp = 36.8; vitals();
-  S.pos.set(0, 1.66 + DSY, 6); S.yaw = 0; S.pitch = 0; S.roll = 0; S.fov = 60; S.free = 1; fx.uniforms.uFade.value = 1; fx.uniforms.uWhite.value = 1; fx.uniforms.uGlitch.value = 1; $('#visor').classList.remove('on');
+  W.setScene('ds'); scene.fog.color.setHex(0x04070a); scene.fog.density = 0.016; callState('live'); hud.classList.add('ds'); vit.bpm = 92; vit.tmp = 36.8;
+  const setLoc = (n) => { if (vit.loc !== UI.loc[n]) { vit.loc = UI.loc[n]; vitals(); } }; setLoc(ST0 > 1 ? 6 : ST0 ? 5 : 4); vitals();
+  W.pathU.uPx.value = renderer.getPixelRatio() * innerHeight / 760;
+  const p0 = W.legs[ST0].getPointAt(0), t0 = W.legs[ST0].getTangentAt(0.02);
+  S.pos.set(p0.x, p0.y + 1.66 + DSY, p0.z + (ST0 ? 0 : 3)); S.yaw = Math.atan2(-t0.x, -t0.z); S.pitch = 0.06; S.roll = 0; S.fov = 62; S.free = 1; fx.uniforms.uFade.value = 1; fx.uniforms.uWhite.value = 1; fx.uniforms.uGlitch.value = 1; $('#visor').classList.remove('on');
   tween(1.8, (k) => { fx.uniforms.uWhite.value = 1 - k; fx.uniforms.uGlitch.value = 1 - k; });
-  card('03', 'Danse sensorielle'); quest(P3, 'Traverser la danse sensorielle');
-  await wait(2); await dbg('ds'); if (!ST0) await say('g11');
+  card('03', UI.card[2]); quest(P3, UI.q.enter);
+  await wait(2); await dbg('ds');
+  if (!ST0) { const l = say('g11'); await camTo({ pos: new V3(p0.x, 1.66 + DSY, p0.z), pitch: 0.02, fov: 60 }, 7, out); await l; await ask(UI.a.enter); }
   for (let i = ST0; i < 4; i++) {
-    const st = W.stations[i], w = WORKS[i]; document.querySelectorAll('#qL li').forEach((li) => li.classList.toggle('cur', +li.dataset.i === i));
-    quest(P3, 'Artefact CB-0' + (i + 1) + ' — ' + w.sense); st.k = 1; S.walk = 1;
-    await camTo({ pos: st.stop.pos, look: st.stop.look }, 5); S.walk = 0; scan(i); await wait(1.2); await dbg('st' + i);
-    await say(w.key + 'a'); await ask(w.verb); st.fx.on = true; let back = null; const p = S.pos.clone();
+    const st = W.stations[i], w = WORKS[i], label = UI.art + ' CB-0' + (i + 1) + ' — ' + w.sense; document.querySelectorAll('#qL li').forEach((li) => li.classList.toggle('cur', +li.dataset.i === i));
+    quest(P3, i === 2 ? UI.q.up : label); S.walk = 1; let line = null;
+    await walk(i, st.stop.look, (k) => { if (k > (i === 2 ? 0.86 : 0.55)) st.k = 1; // l'œuvre se matérialise à l'approche
+      if (i === 0 && k > 0.5) setLoc(5); if (i === 2) { if (k > 0.58 && !line) line = say('g11b'); if (k > 0.8) setLoc(6); } });
+    S.walk = 0; st.k = 1; if (line) await line; if (i === 2) quest(P3, label); scan(i); await wait(1.2); await dbg('st' + i);
+    await say(w.id + 'a'); await ask(w.verb); st.fx.on = true; let back = null; const p = S.pos.clone();
     if (i === 0) tween(8, (k) => { S.sway = Math.sin(k * PI) * 0.05; }, lin);
-    if (i === 2) { back = () => camTo({ pos: p, look: st.stop.look, fov: 60 }, 2.4); camTo({ pos: p.clone().add(new V3(0, -0.55, 0)), pitch: 0.4, fov: 82 }, 3.6); }
-    if (i === 3) { back = () => camTo({ pos: p, look: st.stop.look, fov: 60 }, 2.6); camTo({ pos: new V3(st.ax, 0, st.z).addScaledVector(st.n, 0.5).setY(w.cy + 0.02 + DSY), look: st.stop.look, fov: 50 }, 5); heart = { t: 0.2, gap: 0.62 }; tween(4, (k) => { W.dsTime = 1 - k * 0.8; }); }
-    await wait(2.2); await dbg('fx' + i); await say(w.key + 'b'); mark(i); await wait(0.9);
+    if (i === 2) { back = () => camTo({ pos: p, look: st.stop.look, fov: 60 }, 2.4); camTo({ pos: p.clone().add(new V3(0, -0.55, 0)), pitch: 0.46, fov: 84 }, 3.6); }
+    if (i === 3) { back = () => camTo({ pos: p, look: st.stop.look, fov: 60 }, 2.6); const near = st.wallPos.clone().addScaledVector(st.n, 0.5); near.y += 0.02 + DSY; camTo({ pos: near, look: st.stop.look, fov: 50 }, 5); heart = { t: 0.2, gap: 0.62 }; tween(4, (k) => { W.dsTime = 1 - k * 0.8; }); }
+    await wait(2.2); await dbg('fx' + i); await say(w.id + 'b'); mark(i); await wait(0.9);
     S.sway = 0; if (i === 3) { heart = null; tween(2, (k) => { W.dsTime = 0.2 + k * 0.8; }); vit.bpm = 92; vitals(); } if (back) await back();
+    if (i === 2) st.fx.on = false; /* les troncs se rétractent avant de repartir */
     $('#scan').classList.remove('on');
   }
   document.querySelectorAll('#qL li').forEach((li) => li.classList.remove('cur'));
-  quest(P3, 'Rejoindre la sortie'); S.walk = 1;
-  const end = camTo({ pos: new V3(0, 1.66 + DSY, -85), look: new V3(0, 1.9 + DSY, -96) }, 15, lin);
-  await say('g12'); await end; S.walk = 0; await tween(1.6, (k) => { fx.uniforms.uWhite.value = k; });
+  // fin : depuis la rive du niveau 1, un dernier regard sur la nef et sur le chemin parcouru
+  quest(P3, UI.q.end); S.walk = 1; tween(5, (k) => { W.pathU.uAll.value = k; W.pathLine.opacity = 0.1 + k * 0.8; });
+  const lv = W.stations[3].lv, end = camTo({ pos: new V3(8.35, lv + 1.66 + DSY, -1.9), look: new V3(-7.5, 0.9 + DSY, -17.5), fov: 68 }, 9);
+  await say('g12'); await end; S.walk = 0; await dbg('end'); await wait(1); await tween(1.6, (k) => { fx.uniforms.uWhite.value = k; });
 }
 async function run() {
   hud.classList.add('on'); running = true; clock.getDelta(); frame();
@@ -329,11 +344,12 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden && ru
 const startBtn = $('#start'), bootMsg = $('#bootMsg');
 async function boot() {
   try { await Promise.race([document.fonts.load('600 20px Rajdhani').then(() => document.fonts.load('20px "Krona One"')), new Promise((r) => setTimeout(r, 2500))]); } catch (e) { /* polices de secours */ }
-  try { LINES = await (await fetch('app/lines.json')).json(); } catch (e) { LINES = {}; }
+  localizeDom(); startBtn.textContent = UI.loading;
+  try { const all = await (await fetch('app/lines.json')).json(); LINES = all[LANG] || all.fr || {}; } catch (e) { LINES = {}; }
   let ok = true; try { initGL(); } catch (e) { ok = false; console.error(e); }
-  if (!ok) { bootMsg.textContent = "La 3D n'est pas disponible sur cet appareil — version texte ci-dessous."; startBtn.disabled = true; toDossier(); return; }
-  bootMsg.textContent = reduce ? 'Animations réduites détectées : la version texte est recommandée.' : 'Systèmes prêts — casque audio conseillé.';
-  startBtn.disabled = false; startBtn.textContent = 'Lancer le dégel';
+  if (!ok) { bootMsg.textContent = UI.noGL; startBtn.disabled = true; toDossier(); return; }
+  bootMsg.textContent = reduce ? UI.reduced : UI.ready;
+  startBtn.disabled = false; startBtn.textContent = UI.start;
   startBtn.addEventListener('click', async () => { audioInit(); loadVoices(); $('#boot').classList.add('gone'); document.body.classList.add('play'); if (ACT <= 1) await prologue(); run(); }, { once: true });
   if (AUTO) { $('#boot').style.display = 'none'; startBtn.click(); }
 }

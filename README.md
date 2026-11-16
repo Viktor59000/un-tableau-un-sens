@@ -2,7 +2,7 @@
 
 Parcours sensoriel pour la clôture de l'exposition **Résonances** à la galerie **Ceysson & Bénétière** (Saint-Étienne). Projet pédagogique **Design graphique avancé**, Télécom Saint-Étienne B3 (2026).
 
-Ce dépôt contient le **Kit Média Online** : une page d'accueil réunissant la bannière web et la maquette explicative du parcours.
+Ce dépôt contient l'expérience web immersive qui annonce le parcours, et sa version texte accessible.
 
 ## Le concept
 On abandonne les 5 sens d'Aristote (extéroceptifs, incomplets) pour les **sens internes** des neurosciences. En galerie, l'interdit de toucher/goûter devient le **déclencheur** : privé de contact, le cerveau bascule sur ses sens internes, et le visiteur lit sa propre réaction. Cadre narratif : le vaisseau **SPES** et l'IA **Gladys** font passer 4 « recalibrations » sensorielles à travers 4 œuvres.
@@ -15,20 +15,21 @@ On abandonne les 5 sens d'Aristote (extéroceptifs, incomplets) pour les **sens 
 | 04 | n°60 (P. Favier) | Intéroception / chronoception |
 
 ## L'expérience (index.html)
-Récit 3D à la première personne. Tu es le **sujet R26-0417**, en stase depuis 474 ans à bord de l'arche **SPES-07** ; l'IA Gladys déclenche le **protocole RÉSONANCE**.
+Récit 3D à la première personne, en **français, anglais et espagnol** (voix et sous-titres). Tu es le **sujet R26-0417**, en stase depuis 474 ans à bord de l'arche **SPES-07** ; l'IA Gladys déclenche le **protocole RÉSONANCE**.
 0. **Prologue** — trois entrées du journal de bord (2026 → 2500).
 1. **Réveil** — vitre givrée du caisson, appel entrant de Gladys, choix de dialogue, sortie dans la baie cryo (dormeurs visibles sous les vitres, bras de maintenance sur rail, drones, robots au sol).
 2. **Ce qui reste** — la baie d'observation : la Terre sous la Grande Poussière, les débris, la flotte HOPE, un robot soudeur sur la coque. Puis le poste de liaison N-7 : on s'assoit, le câble cervical se branche, le casque descend.
-3. **Danse sensorielle** — les quatre œuvres (lot 42-SE, artefacts CB-01 à 04) reconstituées à taille réelle avec leurs cotes, chacune faisant éprouver un sens interne.
+3. **Danse sensorielle** — la **galerie Ceysson & Bénétière reconstituée** d'après le plan du parcours : narthex, librairie, nef, escalier, niveau 1. On suit le tracé réel d'œuvre en œuvre (lot 42-SE, artefacts CB-01 à 04) ; chacune s'imprime à taille réelle, avec ses cotes, et fait éprouver un sens interne.
 
-Technique : Three.js r160 en modules ES (importmap, aucun build), post-traitement (bloom, aberration, glitch), qualité adaptative, version texte accessible.
-- `app/main.js` : récit, HUD, son, voix. `app/world.js` : décors et shaders. `app/lines.json` : répliques de Gladys.
-- Voix : fichiers `assets/voice/*.mp3` générés par `tools/voix.ps1` (voix Windows Hortense + `lameenc`). À relancer après toute modification de `app/lines.json`. Sans fichier, repli sur la synthèse du navigateur puis sur les sous-titres seuls.
-- Paramètres de test : `?act=2|3`, `?st=0..3`, `?auto`, `?quick`, `?lite`, `?hold=<point>`.
+Technique : Three.js r160 en modules ES (importmap, aucun build), post-traitement (anticrénelage, occlusion ambiante, bloom, aberration, glitch), qualité adaptative, version texte accessible.
+- `app/main.js` : moteur, récit, HUD, son, voix. `app/world.js` : décors et shaders. `app/i18n.js` : langues. `app/lines.json` : répliques de Gladys.
+- Voix : `assets/voice/<langue>/<id>.mp3`, générées par `python tools/voix.py` (voix neuronale multilingue, paquet `edge-tts`). À relancer après toute modification de `app/lines.json`. Sans fichier : synthèse du navigateur, puis sous-titres seuls.
+- Corps des dormeurs et silhouettes de visiteurs : `python tools/corps.py` (à partir de `tools/sources/Xbot.glb`).
+- Paramètres de test : `?act=2|3`, `?st=0..3`, `?auto`, `?quick`, `?lite`, `?hold=<point>`, `?lang=fr|en|es`.
 
-Rendu : projecteur principal à ombres portées qui suit le visiteur, occlusion ambiante (GTAO, demi-résolution), bloom ; une qualité adaptative coupe dans l'ordre occlusion, résolution, ombres, bloom pour tenir ~50 images/s.
+**Pour reprendre le projet : lire [REPRISE.md](REPRISE.md)** (état, architecture, méthode de test, pièges, ce qui reste à faire).
 
-Ressources tierces : tête scannée « LeePerrySmith » (Lee Perry-Smith / Infinite-Realities, CC BY 3.0, via les exemples three.js) dans `assets/models/head` ; matières métal Poly Haven (CC0) dans `assets/tex/pbr` ; texture terrestre NASA.
+Ressources tierces : tête scannée « LeePerrySmith » (Lee Perry-Smith / Infinite-Realities, CC BY 3.0) ; mannequin X Bot (Mixamo) ; matières métal Poly Haven (CC0) ; texture terrestre NASA.
 
 Versions précédentes conservées : `galerie.html`, `scroll.html`, `voyage.html`, `pont.html`, `classic.html`.
 

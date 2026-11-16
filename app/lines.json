@@ -1,103 +1,326 @@
 {
- "g01": {
-  "t": "Sujet R26-0417, tu m'entends ? Ici Gladys, unité de veille du SPES. Ne bouge pas : ton cœur vient de repartir, après cent soixante-treize mille jours de stase.",
-  "say": "Sujet R vingt-six, zéro quatre cent dix-sept, tu m'entends ? Ici Gladys, unité de veille du Spèss. Ne bouge pas : ton cœur vient de repartir, après cent soixante-treize mille jours de stase.",
-  "d": 11.78
+ "fr": {
+  "g01": {
+   "t": "Sujet R26-0417, tu m'entends ? Ici Gladys, unité de veille du SPES. Ne bouge pas : ton cœur vient de repartir, après cent soixante-treize mille jours de stase.",
+   "say": "Sujet R vingt-six, zéro quatre cent dix-sept, tu m'entends ? Ici Gladys, unité de veille du Spèce. Ne bouge pas : ton cœur vient de repartir, après cent soixante-treize mille jours de stase.",
+   "d": 11.02
+  },
+  "g02a": {
+   "t": "Pont 12, baie cryo C, à bord du SPES : Station Pour l'Éveil des Sens. Une arche du programme HOPE, en orbite basse autour de ce qui reste de la Terre.",
+   "say": "Pont douze, baie cryo C, à bord du Spèce : Station Pour l'Éveil des Sens. Une arche du programme Hope, en orbite basse autour de ce qui reste de la Terre.",
+   "d": 9.03
+  },
+  "g02b": {
+   "t": "Quatre cent soixante-quatorze ans. Tu t'es endormi en 2026, avec la cohorte R-26. Nous sommes en 2500, et j'ai compté chaque jour.",
+   "say": "Quatre cent soixante-quatorze ans. Tu t'es endormi en 2026, avec la cohorte R vingt-six. Nous sommes en 2500, et j'ai compté chaque jour.",
+   "d": 8.24
+  },
+  "g03": {
+   "t": "La stase a conservé ton corps, mais elle a éteint tes sens profonds. Tu ne sens plus ton poids, ni ton souffle, ni le temps qui passe. Le protocole Résonance va les rallumer. Sors de ton caisson.",
+   "d": 10.58
+  },
+  "g04": {
+   "t": "Doucement. Deux mille sujets dorment autour de toi. Les Veilleurs, mes unités de maintenance, les gardent en vie depuis cinq siècles. Tu es le premier que je réveille.",
+   "d": 8.88
+  },
+  "g05": {
+   "t": "Suis les lignes au sol jusqu'à la baie d'observation. Il faut que tu voies pourquoi nous sommes partis.",
+   "d": 4.98
+  },
+  "g06": {
+   "t": "Voilà la Terre. Indice de Voile : 9,7. La Grande Poussière a recouvert les continents, et les océans se sont retirés. Elle ne peut plus nous porter.",
+   "say": "Voilà la Terre. Indice de Voile : neuf virgule sept. La Grande Poussière a recouvert les continents, et les océans se sont retirés. Elle ne peut plus nous porter.",
+   "d": 9.07
+  },
+  "g07": {
+   "t": "Deux cent douze arches attendent en orbite qu'elle guérisse. Dans nos soutes, il y a des graines, des livres, et le lot 42-SE : des œuvres d'art.",
+   "say": "Deux cent douze arches attendent en orbite qu'elle guérisse. Dans nos soutes, il y a des graines, des livres, et le lot quarante-deux, S E : des œuvres d'art.",
+   "d": 8.04
+  },
+  "g08a": {
+   "t": "Parce qu'une œuvre ne sert à rien d'autre qu'à faire réagir un corps. C'est exactement l'outil qu'il me faut pour rallumer le tien.",
+   "d": 6.01
+  },
+  "g08b": {
+   "t": "Parce que tu as entre dix-huit et vingt-cinq ans. À cet âge, un cerveau se recalibre encore. Et parce qu'il fallait bien commencer par quelqu'un.",
+   "d": 7.48
+  },
+  "g09": {
+   "t": "Tu crois avoir cinq sens. C'est une vieille erreur : tu en possèdes plus de vingt, et les plus puissants regardent vers l'intérieur. Ce sont eux que la stase a éteints.",
+   "d": 8.23
+  },
+  "g10": {
+   "t": "Le lot 42-SE, ce sont quatre œuvres d'une galerie de Saint-Étienne : Ceysson et Bénétière. Je les regarde depuis quatre siècles sans rien éprouver. Toi, tu peux. Installe-toi au poste de liaison.",
+   "say": "Le lot quarante-deux, S E, ce sont quatre œuvres d'une galerie de Saint-Étienne : Ceysson et Bénétière. Je les regarde depuis quatre siècles sans rien éprouver. Toi, tu peux. Installe-toi au poste de liaison.",
+   "d": 11.58
+  },
+  "g10b": {
+   "t": "Je branche le câble sur ton port cervical. Ne bouge pas. Maintenant le casque : tu vas perdre la vue pendant trois secondes.",
+   "d": 6.86
+  },
+  "g11": {
+   "t": "Tu es dans une danse sensorielle : un espace que je projette directement dans ton cortex. J'y ai reconstruit la galerie, mur pour mur. Les œuvres sont à leur place, à taille réelle. Entre.",
+   "d": 10.68
+  },
+  "g11b": {
+   "t": "Nous montons au niveau 1. Dans la vraie galerie, tu feras exactement ce chemin.",
+   "say": "Nous montons au niveau un. Dans la vraie galerie, tu feras exactement ce chemin.",
+   "d": 4.57
+  },
+  "s1a": {
+   "t": "Plume sur Rhodoïde, Louis Cane, 1998. Des plumes de couleur, figées dans une feuille transparente. Choisis-en une, et ne la quitte plus des yeux.",
+   "d": 9.62
+  },
+  "s1b": {
+   "t": "Tu la sens tomber ? Rien ne bouge, pourtant. C'est ta kinesthésie : ton cerveau simule le mouvement dans tes propres muscles.",
+   "d": 7.11
+  },
+  "s2a": {
+   "t": "Résine sur grillage, Louis Cane, 2018. De la résine colorée, coulée sur du fer. Dans la galerie, il est interdit de toucher. Alors touche avec les yeux.",
+   "d": 10.4
+  },
+  "s2b": {
+   "t": "Le froid du métal, le lisse de la résine : ton cortex du toucher s'allume sans aucun contact. C'est le toucher haptique virtuel.",
+   "d": 7.29
+  },
+  "s3a": {
+   "t": "Arpenter ⅔, Aurélie Pétrel, 2025. Un sous-bois imprimé sur cuivre, presque deux mètres de haut. Lève les yeux.",
+   "say": "Arpenter, deux tiers, Aurélie Pétrel, 2025. Un sous-bois imprimé sur cuivre, presque deux mètres de haut. Lève les yeux.",
+   "d": 8.6
+  },
+  "s3b": {
+   "t": "Les troncs te dominent, et tu te sens rétrécir. Ta proprioception recalcule ta taille et ta place dans l'espace.",
+   "d": 6.39
+  },
+  "s4a": {
+   "t": "n°60, Philippe Favier, 2025. Des bocaux de confiture, gravés à la pointe sur du verre peint. C'est tout petit. Approche. Ralentis.",
+   "say": "Numéro soixante, Philippe Favier, 2025. Des bocaux de confiture, gravés à la pointe sur du verre peint. C'est tout petit. Approche. Ralentis.",
+   "d": 10.34
+  },
+  "s4b": {
+   "t": "Un souvenir d'enfance remonte, et ton cœur change de rythme. C'est l'intéroception : sentir l'intérieur de ton corps. Voilà ce qui te sépare de moi.",
+   "d": 8.29
+  },
+  "g12": {
+   "t": "Protocole Résonance terminé : tes quatre canaux sont rouverts. Tu viens d'éprouver ce que je ne connaîtrai jamais. Ces œuvres existent vraiment. Va les voir tant qu'elles sont encore sur Terre : galerie Ceysson et Bénétière, à Saint-Étienne, les 21 et 22 novembre 2026.",
+   "say": "Protocole Résonance terminé : tes quatre canaux sont rouverts. Tu viens d'éprouver ce que je ne connaîtrai jamais. Ces œuvres existent vraiment. Va les voir tant qu'elles sont encore sur Terre : galerie Ceysson et Bénétière, à Saint-Étienne, les vingt et un et vingt-deux novembre 2026.",
+   "d": 14.59
+  }
  },
- "g02a": {
-  "t": "Pont 12, baie cryo C, à bord du SPES : Station Pour l'Éveil des Sens. Une arche du programme HOPE, en orbite basse autour de ce qui reste de la Terre.",
-  "say": "Pont douze, baie cryo C, à bord du Spèss : Station Pour l'Éveil des Sens. Une arche du programme Hôpe, en orbite basse autour de ce qui reste de la Terre.",
-  "d": 8.67
+ "en": {
+  "g01": {
+   "t": "Subject R26-0417, can you hear me? This is Gladys, watch unit of the SPES. Don't move: your heart has just restarted, after one hundred and seventy-three thousand days in stasis.",
+   "say": "Subject R twenty-six, zero four one seven, can you hear me? This is Gladys, watch unit of the Spess. Don't move: your heart has just restarted, after one hundred and seventy-three thousand days in stasis.",
+   "d": 12.73
+  },
+  "g02a": {
+   "t": "Deck 12, cryo bay C, aboard the SPES: the Station for Awakening the Senses. An ark of the HOPE programme, in low orbit around what is left of Earth.",
+   "say": "Deck twelve, cryo bay C, aboard the Spess: the Station for Awakening the Senses. An ark of the Hope programme, in low orbit around what is left of Earth.",
+   "d": 9.42
+  },
+  "g02b": {
+   "t": "Four hundred and seventy-four years. You fell asleep in 2026, with cohort R-26. It is now the year 2500, and I counted every single day.",
+   "say": "Four hundred and seventy-four years. You fell asleep in twenty twenty-six, with cohort R twenty-six. It is now the year twenty-five hundred, and I counted every single day.",
+   "d": 10.37
+  },
+  "g03": {
+   "t": "Stasis preserved your body, but it switched off your deeper senses. You can no longer feel your weight, your breath, or time passing. Protocol Resonance will switch them back on. Get out of your pod.",
+   "d": 11.19
+  },
+  "g04": {
+   "t": "Easy. Two thousand subjects are asleep around you. The Watchers, my maintenance units, have kept them alive for five centuries. You are the first one I have woken.",
+   "d": 9.43
+  },
+  "g05": {
+   "t": "Follow the lines on the floor to the observation bay. You need to see why we left.",
+   "d": 4.71
+  },
+  "g06": {
+   "t": "There is Earth. Veil index: 9.7. The Great Dust has covered the continents, and the oceans have drawn back. It can no longer carry us.",
+   "say": "There is Earth. Veil index: nine point seven. The Great Dust has covered the continents, and the oceans have drawn back. It can no longer carry us.",
+   "d": 9.36
+  },
+  "g07": {
+   "t": "Two hundred and twelve arks are waiting in orbit for it to heal. In our holds there are seeds, books, and batch 42-SE: works of art.",
+   "say": "Two hundred and twelve arks are waiting in orbit for it to heal. In our holds there are seeds, books, and batch forty-two, S E: works of art.",
+   "d": 8.95
+  },
+  "g08a": {
+   "t": "Because an artwork has no other purpose than to make a body react. That is exactly the tool I need to switch yours back on.",
+   "d": 6.25
+  },
+  "g08b": {
+   "t": "Because you are between eighteen and twenty-five. At that age, a brain can still recalibrate. And because I had to start with someone.",
+   "d": 7.67
+  },
+  "g09": {
+   "t": "You think you have five senses. That is an old mistake: you have more than twenty, and the most powerful ones look inward. Those are the ones stasis switched off.",
+   "d": 9.19
+  },
+  "g10": {
+   "t": "Batch 42-SE is four works from a gallery in Saint-Étienne: Ceysson & Bénétière. I have been looking at them for four centuries without feeling a thing. You can. Take a seat at the link station.",
+   "say": "Batch forty-two, S E, is four works from a gallery in Saint-Étienne: Ceysson and Bénétière. I have been looking at them for four centuries without feeling a thing. You can. Take a seat at the link station.",
+   "d": 12.77
+  },
+  "g10b": {
+   "t": "I am plugging the cable into your cervical port. Hold still. Now the headset: you will lose your sight for three seconds.",
+   "d": 7.33
+  },
+  "g11": {
+   "t": "You are in a sense dance: a space I project straight into your cortex. I have rebuilt the gallery here, wall for wall. The works hang where they really hang, at their real size. Come in.",
+   "d": 11.07
+  },
+  "g11b": {
+   "t": "We are going up to level 1. In the real gallery, you will walk exactly this path.",
+   "say": "We are going up to level one. In the real gallery, you will walk exactly this path.",
+   "d": 4.84
+  },
+  "s1a": {
+   "t": "Plume sur Rhodoïde, Louis Cane, 1998. Coloured feathers, frozen inside a transparent sheet. Pick one, and do not take your eyes off it.",
+   "d": 9.95
+  },
+  "s1b": {
+   "t": "Can you feel it falling? Yet nothing is moving. That is your kinesthesia: your brain simulating the movement in your own muscles.",
+   "d": 7.51
+  },
+  "s2a": {
+   "t": "Résine sur grillage, Louis Cane, 2018. Coloured resin poured over iron mesh. In the gallery, touching is forbidden. So touch with your eyes.",
+   "d": 9.97
+  },
+  "s2b": {
+   "t": "The cold of the metal, the smoothness of the resin: your touch cortex lights up with no contact at all. That is virtual haptic touch.",
+   "d": 7.85
+  },
+  "s3a": {
+   "t": "Arpenter ⅔, Aurélie Pétrel, 2025. An undergrowth printed on copper, almost two metres tall. Look up.",
+   "say": "Arpenter, two thirds, Aurélie Pétrel, 2025. An undergrowth printed on copper, almost two metres tall. Look up.",
+   "d": 8.65
+  },
+  "s3b": {
+   "t": "The trunks tower over you, and you feel yourself shrink. Your proprioception is recalculating your size and your place in space.",
+   "d": 7.74
+  },
+  "s4a": {
+   "t": "n°60, Philippe Favier, 2025. Jam jars, engraved with a needle on painted glass. It is tiny. Come closer. Slow down.",
+   "say": "Number sixty, Philippe Favier, 2025. Jam jars, engraved with a needle on painted glass. It is tiny. Come closer. Slow down.",
+   "d": 10.64
+  },
+  "s4b": {
+   "t": "A childhood memory surfaces, and your heart changes pace. That is interoception: sensing the inside of your body. That is what separates you from me.",
+   "d": 8.96
+  },
+  "g12": {
+   "t": "Protocol Resonance complete: your four channels are open again. You have just felt what I never will. These works really exist. Go and see them while they are still on Earth: Ceysson & Bénétière gallery, Saint-Étienne, 21 and 22 November 2026.",
+   "say": "Protocol Resonance complete: your four channels are open again. You have just felt what I never will. These works really exist. Go and see them while they are still on Earth: Ceysson and Bénétière gallery, Saint-Étienne, November twenty-first and twenty-second, twenty twenty-six.",
+   "d": 15.6
+  }
  },
- "g02b": {
-  "t": "Quatre cent soixante-quatorze ans. Tu t'es endormi en 2026, avec la cohorte R-26. Nous sommes en 2500, et j'ai compté chaque jour.",
-  "say": "Quatre cent soixante-quatorze ans. Tu t'es endormi en 2026, avec la cohorte R vingt-six. Nous sommes en 2500, et j'ai compté chaque jour.",
-  "d": 9.01
- },
- "g03": {
-  "t": "La stase a conservé ton corps, mais elle a éteint tes sens profonds. Tu ne sens plus ton poids, ni ton souffle, ni le temps qui passe. Le protocole Résonance va les rallumer. Sors de ton caisson.",
-  "d": 11.59
- },
- "g04": {
-  "t": "Doucement. Deux mille sujets dorment autour de toi. Les Veilleurs, mes unités de maintenance, les gardent en vie depuis cinq siècles. Tu es le premier que je réveille.",
-  "d": 10.07
- },
- "g05": {
-  "t": "Suis les lignes au sol jusqu'à la baie d'observation. Il faut que tu voies pourquoi nous sommes partis.",
-  "d": 5.1
- },
- "g06": {
-  "t": "Voilà la Terre. Indice de Voile : 9,7. La Grande Poussière a recouvert les continents, et les océans se sont retirés. Elle ne peut plus nous porter.",
-  "say": "Voilà la Terre. Indice de Voile : neuf virgule sept. La Grande Poussière a recouvert les continents, et les océans se sont retirés. Elle ne peut plus nous porter.",
-  "d": 9.81
- },
- "g07": {
-  "t": "Deux cent douze arches attendent en orbite qu'elle guérisse. Dans nos soutes, il y a des graines, des livres, et le lot 42-SE : des œuvres d'art.",
-  "say": "Deux cent douze arches attendent en orbite qu'elle guérisse. Dans nos soutes, il y a des graines, des livres, et le lot quarante-deux, S E : des œuvres d'art.",
-  "d": 7.79
- },
- "g08a": {
-  "t": "Parce qu'une œuvre ne sert à rien d'autre qu'à faire réagir un corps. C'est exactement l'outil qu'il me faut pour rallumer le tien.",
-  "d": 6.2
- },
- "g08b": {
-  "t": "Parce que tu as entre dix-huit et vingt-cinq ans. À cet âge, un cerveau se recalibre encore. Et parce qu'il fallait bien commencer par quelqu'un.",
-  "d": 8.0
- },
- "g09": {
-  "t": "Tu crois avoir cinq sens. C'est une vieille erreur : tu en possèdes plus de vingt, et les plus puissants regardent vers l'intérieur. Ce sont eux que la stase a éteints.",
-  "d": 8.77
- },
- "g10": {
-  "t": "Le lot 42-SE, ce sont quatre œuvres d'une galerie de Saint-Étienne : Ceysson et Bénétière. Je les regarde depuis quatre siècles sans rien éprouver. Toi, tu peux. Installe-toi au poste de liaison.",
-  "say": "Le lot quarante-deux, S E, ce sont quatre œuvres d'une galerie de Saint-Étienne : Ceysson et Bénétière. Je les regarde depuis quatre siècles sans rien éprouver. Toi, tu peux. Installe-toi au poste de liaison.",
-  "d": 12.45
- },
- "g10b": {
-  "t": "Je branche le câble sur ton port cervical. Ne bouge pas. Maintenant le casque : tu vas perdre la vue pendant trois secondes.",
-  "d": 7.6
- },
- "g11": {
-  "t": "Tu es dans une danse sensorielle : un espace que je projette directement dans ton cortex. Les quatre œuvres y sont reconstituées à taille réelle. Avance.",
-  "d": 8.71
- },
- "s1a": {
-  "t": "Plume sur Rhodoïde, Louis Cane, 1998. Des plumes de couleur, figées dans une feuille transparente. Choisis-en une, et ne la quitte plus des yeux.",
-  "d": 9.67
- },
- "s1b": {
-  "t": "Tu la sens tomber ? Rien ne bouge, pourtant. C'est ta kinesthésie : ton cerveau simule le mouvement dans tes propres muscles.",
-  "d": 7.53
- },
- "s2a": {
-  "t": "Résine sur grillage, Louis Cane, 2018. De la résine colorée, coulée sur du fer. Dans la galerie, il est interdit de toucher. Alors touche avec les yeux.",
-  "d": 10.55
- },
- "s2b": {
-  "t": "Le froid du métal, le lisse de la résine : ton cortex du toucher s'allume sans aucun contact. C'est le toucher haptique virtuel.",
-  "d": 7.42
- },
- "s3a": {
-  "t": "Arpenter ⅔, Aurélie Pétrel, 2025. Un sous-bois imprimé sur cuivre, presque deux mètres de haut. Lève les yeux.",
-  "say": "Arpenter, deux tiers, Aurélie Pétrel, 2025. Un sous-bois imprimé sur cuivre, presque deux mètres de haut. Lève les yeux.",
-  "d": 8.55
- },
- "s3b": {
-  "t": "Les troncs te dominent, et tu te sens rétrécir. Ta proprioception recalcule ta taille et ta place dans l'espace.",
-  "d": 6.34
- },
- "s4a": {
-  "t": "n°60, Philippe Favier, 2025. Des bocaux de confiture, gravés à la pointe sur du verre peint. C'est tout petit. Approche. Ralentis.",
-  "say": "Numéro soixante, Philippe Favier, 2025. Des bocaux de confiture, gravés à la pointe sur du verre peint. C'est tout petit. Approche. Ralentis.",
-  "d": 10.95
- },
- "s4b": {
-  "t": "Un souvenir d'enfance remonte, et ton cœur change de rythme. C'est l'intéroception : sentir l'intérieur de ton corps. Voilà ce qui te sépare de moi.",
-  "d": 8.74
- },
- "g12": {
-  "t": "Protocole Résonance terminé : tes quatre canaux sont rouverts. Tu viens d'éprouver ce que je ne connaîtrai jamais. Ces œuvres existent vraiment. Va les voir tant qu'elles sont encore sur Terre : galerie Ceysson et Bénétière, à Saint-Étienne, les 21 et 22 novembre 2026.",
-  "say": "Protocole Résonance terminé : tes quatre canaux sont rouverts. Tu viens d'éprouver ce que je ne connaîtrai jamais. Ces œuvres existent vraiment. Va les voir tant qu'elles sont encore sur Terre : galerie Ceysson et Bénétière, à Saint-Étienne, les vingt et un et vingt-deux novembre 2026.",
-  "d": 15.95
+ "es": {
+  "g01": {
+   "t": "Sujeto R26-0417, ¿me oyes? Soy Gladys, unidad de vigilia de la SPES. No te muevas: tu corazón acaba de volver a latir, después de ciento setenta y tres mil días de estasis.",
+   "say": "Sujeto R veintiséis, cero cuatro uno siete, ¿me oyes? Soy Gladys, unidad de vigilia de la Espes. No te muevas: tu corazón acaba de volver a latir, después de ciento setenta y tres mil días de estasis.",
+   "d": 13.62
+  },
+  "g02a": {
+   "t": "Cubierta 12, bahía crio C, a bordo de la SPES: Estación para el Despertar de los Sentidos. Un arca del programa HOPE, en órbita baja alrededor de lo que queda de la Tierra.",
+   "say": "Cubierta doce, bahía crio C, a bordo de la Espes: Estación para el Despertar de los Sentidos. Un arca del programa Hope, en órbita baja alrededor de lo que queda de la Tierra.",
+   "d": 10.99
+  },
+  "g02b": {
+   "t": "Cuatrocientos setenta y cuatro años. Te dormiste en 2026, con la cohorte R-26. Estamos en el año 2500, y he contado cada día.",
+   "say": "Cuatrocientos setenta y cuatro años. Te dormiste en dos mil veintiséis, con la cohorte R veintiséis. Estamos en el año dos mil quinientos, y he contado cada día.",
+   "d": 10.04
+  },
+  "g03": {
+   "t": "La estasis conservó tu cuerpo, pero apagó tus sentidos profundos. Ya no sientes tu peso, ni tu respiración, ni el paso del tiempo. El protocolo Resonancia va a encenderlos de nuevo. Sal de tu cápsula.",
+   "d": 12.57
+  },
+  "g04": {
+   "t": "Despacio. Dos mil sujetos duermen a tu alrededor. Los Vigilantes, mis unidades de mantenimiento, los mantienen con vida desde hace cinco siglos. Eres el primero al que despierto.",
+   "d": 11.36
+  },
+  "g05": {
+   "t": "Sigue las líneas del suelo hasta la bahía de observación. Tienes que ver por qué nos fuimos.",
+   "d": 5.23
+  },
+  "g06": {
+   "t": "Ahí está la Tierra. Índice de Velo: 9,7. El Gran Polvo cubrió los continentes, y los océanos se retiraron. Ya no puede sostenernos.",
+   "say": "Ahí está la Tierra. Índice de Velo: nueve coma siete. El Gran Polvo cubrió los continentes, y los océanos se retiraron. Ya no puede sostenernos.",
+   "d": 9.96
+  },
+  "g07": {
+   "t": "Doscientas doce arcas esperan en órbita a que se cure. En nuestras bodegas hay semillas, libros, y el lote 42-SE: obras de arte.",
+   "say": "Doscientas doce arcas esperan en órbita a que se cure. En nuestras bodegas hay semillas, libros, y el lote cuarenta y dos, S E: obras de arte.",
+   "d": 9.39
+  },
+  "g08a": {
+   "t": "Porque una obra no sirve para otra cosa que para hacer reaccionar a un cuerpo. Es exactamente la herramienta que necesito para volver a encender el tuyo.",
+   "d": 7.83
+  },
+  "g08b": {
+   "t": "Porque tienes entre dieciocho y veinticinco años. A esa edad, un cerebro todavía puede recalibrarse. Y porque había que empezar por alguien.",
+   "d": 8.39
+  },
+  "g09": {
+   "t": "Crees que tienes cinco sentidos. Es un viejo error: tienes más de veinte, y los más poderosos miran hacia dentro. Son esos los que apagó la estasis.",
+   "d": 9.43
+  },
+  "g10": {
+   "t": "El lote 42-SE son cuatro obras de una galería de Saint-Étienne: Ceysson & Bénétière. Las miro desde hace cuatro siglos sin sentir nada. Tú sí puedes. Siéntate en el puesto de enlace.",
+   "say": "El lote cuarenta y dos, S E, son cuatro obras de una galería de Saint-Étienne: Ceysson y Bénétière. Las miro desde hace cuatro siglos sin sentir nada. Tú sí puedes. Siéntate en el puesto de enlace.",
+   "d": 12.39
+  },
+  "g10b": {
+   "t": "Conecto el cable a tu puerto cervical. No te muevas. Ahora el casco: vas a perder la vista durante tres segundos.",
+   "d": 7.38
+  },
+  "g11": {
+   "t": "Estás en una danza sensorial: un espacio que proyecto directamente en tu córtex. He reconstruido aquí la galería, muro por muro. Las obras están en su sitio, a tamaño real. Entra.",
+   "d": 12.17
+  },
+  "g11b": {
+   "t": "Subimos al nivel 1. En la galería real harás exactamente este recorrido.",
+   "say": "Subimos al nivel uno. En la galería real harás exactamente este recorrido.",
+   "d": 4.94
+  },
+  "s1a": {
+   "t": "Plume sur Rhodoïde, Louis Cane, 1998. Plumas de colores, congeladas dentro de una lámina transparente. Elige una, y no le quites los ojos de encima.",
+   "d": 10.86
+  },
+  "s1b": {
+   "t": "¿La sientes caer? Y sin embargo, nada se mueve. Es tu cinestesia: tu cerebro simula el movimiento en tus propios músculos.",
+   "d": 8.2
+  },
+  "s2a": {
+   "t": "Résine sur grillage, Louis Cane, 2018. Resina de colores, vertida sobre una malla de hierro. En la galería está prohibido tocar. Así que toca con los ojos.",
+   "d": 11.01
+  },
+  "s2b": {
+   "t": "El frío del metal, la suavidad de la resina: tu corteza del tacto se enciende sin ningún contacto. Es el tacto háptico virtual.",
+   "d": 7.92
+  },
+  "s3a": {
+   "t": "Arpenter ⅔, Aurélie Pétrel, 2025. Un sotobosque impreso sobre cobre, de casi dos metros de alto. Levanta la vista.",
+   "say": "Arpenter, dos tercios, Aurélie Pétrel, 2025. Un sotobosque impreso sobre cobre, de casi dos metros de alto. Levanta la vista.",
+   "d": 9.76
+  },
+  "s3b": {
+   "t": "Los troncos te dominan, y te sientes encoger. Tu propiocepción recalcula tu tamaño y tu lugar en el espacio.",
+   "d": 6.78
+  },
+  "s4a": {
+   "t": "n°60, Philippe Favier, 2025. Tarros de mermelada, grabados con punta sobre vidrio pintado. Es muy pequeño. Acércate. Ve más despacio.",
+   "say": "Número sesenta, Philippe Favier, 2025. Tarros de mermelada, grabados con punta sobre vidrio pintado. Es muy pequeño. Acércate. Ve más despacio.",
+   "d": 11.45
+  },
+  "s4b": {
+   "t": "Vuelve un recuerdo de infancia, y tu corazón cambia de ritmo. Es la interocepción: sentir el interior de tu cuerpo. Eso es lo que te separa de mí.",
+   "d": 8.81
+  },
+  "g12": {
+   "t": "Protocolo Resonancia completado: tus cuatro canales vuelven a estar abiertos. Acabas de sentir lo que yo nunca conoceré. Estas obras existen de verdad. Ve a verlas mientras sigan en la Tierra: galería Ceysson & Bénétière, en Saint-Étienne, los días 21 y 22 de noviembre de 2026.",
+   "say": "Protocolo Resonancia completado: tus cuatro canales vuelven a estar abiertos. Acabas de sentir lo que yo nunca conoceré. Estas obras existen de verdad. Ve a verlas mientras sigan en la Tierra: galería Ceysson y Bénétière, en Saint-Étienne, los días veintiuno y veintidós de noviembre de dos mil veintiséis.",
+   "d": 17.96
+  }
  }
 }
