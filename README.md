@@ -14,8 +14,19 @@ On abandonne les 5 sens d'Aristote (extéroceptifs, incomplets) pour les **sens 
 | 03 | Arpenter ⅔ (A. Pétrel) | Proprioception spatiale |
 | 04 | n°60 (P. Favier) | Intéroception / chronoception |
 
-## Direction artistique (SPES)
-Sobre, futuriste, minimaliste. Fond spatial `#070B11`, bleu acier `#4c6783`, blanc `#EAF0F6`, accent ambre `#E3A24C`. Typo **Space Grotesk** + **Space Mono**. Logo : réticule-pulsation + « sens » signé. Détails dans [`branding/guide-de-marque.md`](branding/guide-de-marque.md).
+## L'expérience (index.html)
+Récit 3D à la première personne, en trois actes :
+1. **Réveil** — sortie du caisson cryogénique, appel entrant de l'IA Gladys (portrait holographique, voix + sous-titres).
+2. **Ce qui reste** — la baie d'observation : la Terre désertifiée, les débris, la flotte HOPE.
+3. **Danse sensorielle** — connexion à la liaison neurale, couloir où des fragments holographiques des 4 œuvres se rassemblent et font éprouver chaque sens interne.
+
+Technique : Three.js r160 en modules ES (importmap, aucun build), post-traitement (bloom, aberration, glitch), qualité adaptative, version texte accessible (`Version texte`). Code dans `app/main.js` (récit, HUD, son, voix) et `app/world.js` (décors, shaders).
+Paramètres de test : `?act=2|3`, `?st=0..3`, `?auto`, `?quick`, `?lite`, `?hold=<point>`.
+
+Versions précédentes conservées : `galerie.html`, `scroll.html`, `voyage.html`, `pont.html`, `classic.html`.
+
+## Direction artistique
+Issue du Canva du groupe (pages moodboard, couleurs, polices, effets) : titres en capitales larges (**Krona One**, équivalent web de la police « Wide »), interface en **Rajdhani**, palette bleu grisé `#4c6783`, azur `#7fe3e6`, corail `#ff4f38`, lime `#a8e61d`, safran `#f5c400`, ambre `#fca311`, ocre `#d59639`. Effets : glitch et tracés de circuit, utilisés avec parcimonie. Interface inspirée du HUD de Cyberpunk 2077 (appel, objectif, sous-titres, invite d'action).
 
 ## Infos
 - **Dates** : 21 & 22 novembre 2026, 11h – 19h
