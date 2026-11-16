@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#06080c" />
 <title>un tableau, un sens — SPES · Ceysson &amp; Bénétière</title>
 <meta name="description" content="Réveille-toi à bord du SPES : sors de ton caisson cryogénique, réponds à l'appel de Gladys et traverse une danse sensorielle où quatre œuvres de la galerie Ceysson & Bénétière recalibrent tes sens. 21 & 22 novembre 2026, Saint-Étienne. Entrée libre." />
@@ -24,7 +24,8 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-weight:500;font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased}
-body.play{overflow:hidden;height:100vh}
+body.play{overflow:hidden;height:100vh;height:100dvh;touch-action:none;overscroll-behavior:none}
+#hud,#boot,#prologue{-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 body.read{overflow:auto;height:auto}
 button{font:inherit;color:inherit;cursor:pointer;background:none;border:0;padding:0}
 a{color:inherit}
@@ -57,6 +58,7 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologu
 #bootMsg{margin-top:30px;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
 .keys{margin-top:10px;font-size:13px;letter-spacing:.08em;color:var(--mute)}
 .keys kbd,#prompt kbd,.tools kbd{font-family:var(--ui);font-weight:700}
+.keys-t{display:none;margin-top:10px;font-size:13px;letter-spacing:.06em;color:var(--mute)}body.touch .keys-t{display:block}
 .keys kbd{border:1px solid var(--mute);padding:1px 7px;margin:0 3px;color:var(--dim)}
 
 /* ---------- HUD ---------- */
@@ -124,14 +126,37 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologu
 .tools button:hover,.tools a:hover{color:var(--ink);border-color:var(--ink)}
 .tools .off{text-decoration:line-through;color:var(--mute)}
 .tools a{color:var(--safran);border-color:rgba(245,196,0,.45)}
+/* ---- téléphone (portrait) : HUD compact, actions dans la zone du pouce, marges de sécurité ---- */
 @media(max-width:720px){
-  #call{left:14px;top:14px}.pf{width:66px;height:80px}.cm b{font-size:18px}.cm i{display:none}
-  #quest{right:14px;top:14px}#qO{font-size:15px}
-  #vit{left:14px;bottom:14px;gap:12px;font-size:11px}#vit span:last-child{display:none}
-  .tools{right:14px;bottom:44px}.tools kbd{display:none}
-  #scan{left:14px;top:auto;bottom:92px}#sub{bottom:24vh}
+  #call{left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));gap:10px}
+  .pf{width:52px;height:64px}.cm{max-width:27vw;overflow:hidden}.cm b{font-size:16px}.cm i,#callT{display:none}#callS{font-size:9px;letter-spacing:.1em;white-space:nowrap}
+  #quest{right:max(12px,env(safe-area-inset-right));top:max(12px,env(safe-area-inset-top));width:48vw}
+  #qT{font-size:10px;letter-spacing:.16em;margin-bottom:6px}#qO{font-size:14px}
+  #hud.ds #qL{display:flex;justify-content:flex-end;gap:7px;margin-top:9px;font-size:0}#qL li::after{width:9px;height:9px}
+  #card{left:6vw;right:6vw}
+  #scan{left:12px;right:12px;top:calc(max(12px,env(safe-area-inset-top)) + 84px);width:auto;padding:10px 12px}
+  #scS{font-size:13px;margin:5px 0 2px}#scBy{margin:0;font-size:13px}#scDef,#scC{display:none}
+  #sub{bottom:calc(142px + env(safe-area-inset-bottom));width:92vw;font-size:16px;line-height:1.3}
+  #choices{bottom:calc(64px + env(safe-area-inset-bottom));width:92vw}
+  #choices button{min-width:0;width:100%;min-height:50px;font-size:16px}
+  #vit{left:max(12px,env(safe-area-inset-left));bottom:calc(14px + env(safe-area-inset-bottom));font-size:11px}#vit span:nth-child(n+2){display:none}
+  .tools{right:max(12px,env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));gap:6px}
+  .tools button,.tools a{min-height:44px;display:grid;place-items:center;padding:0 11px;font-size:10px;letter-spacing:.12em}
+  .lnk{margin:18px 0 0;display:inline-block}.boot-in .lnk{margin-left:0;display:block;width:max-content}
+  .keys{display:none}
 }
-
+/* écrans tactiles : l'invite devient un vrai bouton, en bas, sous le pouce */
+body.touch #prompt{top:auto;bottom:calc(64px + env(safe-area-inset-bottom));min-height:52px;padding:0 26px;background:var(--safran);color:#0b0900;text-shadow:none;clip-path:var(--cut);font-size:15px}
+body.touch #prompt kbd,body.touch #choices kbd{display:none}
+body.touch #choices button{padding-left:16px}
+body.touch #hud::before{display:none}
+body.touch .keys{display:none}
+/* téléphone en paysage : peu de hauteur */
+@media(max-height:480px){
+  #sub{bottom:62px;font-size:15px;width:70vw}#scan,#hud.ds #qL,#vit{display:none}
+  #cardT{font-size:26px}body.touch #prompt{bottom:8px;left:auto;right:calc(50% - 120px)}
+  #choices{bottom:8px}.tools{bottom:8px}
+}
 
 /* ---------- prologue (journal de bord) ---------- */
 #prologue{position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:#030407;opacity:0;visibility:hidden;transition:opacity .9s,visibility .9s;cursor:pointer}
@@ -224,6 +249,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <button id="start" class="cta" type="button" disabled>Chargement…</button>
     <a class="lnk" href="#dossier" data-dossier>Version texte</a>
     <p id="bootMsg">Initialisation des systèmes</p>
+    <p class="keys-t">Touche les boutons pour agir · glisse le doigt pour regarder</p>
     <p class="keys"><kbd>F</kbd> agir · <kbd>1</kbd><kbd>2</kbd> répondre · <kbd>Espace</kbd> passer une réplique · souris pour regarder</p>
   </div>
 </section>
@@ -232,7 +258,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 <div id="visor" aria-hidden="true"><div class="v-in"><div class="kick">Liaison N-7 · synchronisation neurale</div><div class="v-big"><span id="vPct">000</span><small>%</small></div><div class="v-bar"><span id="vBar"></span></div><ul id="vRows"></ul></div></div>
 
 <div id="hud">
-  <div id="call" data-s="off"><div class="pf"><canvas id="face" width="184" height="220"></canvas></div><div class="cm"><span id="callS">Appel entrant</span><b>Gladys</b><i>IA de bord · SPES</i><span id="callT">00:00</span></div></div>
+  <div id="call" data-s="off"><div class="pf"><canvas id="face" width="184" height="220"></canvas></div><div class="cm"><span id="callS">Appel entrant</span><b>Gladys</b><i>Unité de veille · SPES-07</i><span id="callT">00:00</span></div></div>
   <div id="quest"><span id="qT">Réveil</span><div id="qO"></div>
     <ul id="qL"><li data-i="0" style="--c:var(--amber)">Canal K · Kinesthésie</li><li data-i="1" style="--c:var(--cyan)">Canal H · Toucher virtuel</li><li data-i="2" style="--c:var(--lime)">Canal P · Proprioception</li><li data-i="3" style="--c:var(--coral)">Canal I · Intéroception</li></ul>
   </div>
@@ -295,7 +321,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <div class="d-end"><a class="cta" href="https://maps.google.com/?q=10+rue+des+Aci%C3%A9ries+Saint-%C3%89tienne">Voir l'itinéraire</a><button class="lnk" type="button" data-replay>Lancer l'expérience 3D</button></div>
   </div></section>
 
-  <footer><div class="wrap"><span>© 2026 — Design graphique avancé, Télécom Saint-Étienne B3 × galerie Ceysson &amp; Bénétière</span><span>Texture terrestre : NASA (domaine public)</span></div></footer>
+  <footer><div class="wrap"><span>© 2026 — Design graphique avancé, Télécom Saint-Étienne B3 × galerie Ceysson &amp; Bénétière</span><span>Tête scannée : Lee Perry-Smith / Infinite-Realities (CC BY 3.0) · Matières : Poly Haven (CC0) · Terre : NASA (domaine public)</span></div></footer>
 </main>
 
 <script type="module" src="app/main.js"></script>

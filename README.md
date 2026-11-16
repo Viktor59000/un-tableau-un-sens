@@ -26,6 +26,10 @@ Technique : Three.js r160 en modules ES (importmap, aucun build), post-traitemen
 - Voix : fichiers `assets/voice/*.mp3` générés par `tools/voix.ps1` (voix Windows Hortense + `lameenc`). À relancer après toute modification de `app/lines.json`. Sans fichier, repli sur la synthèse du navigateur puis sur les sous-titres seuls.
 - Paramètres de test : `?act=2|3`, `?st=0..3`, `?auto`, `?quick`, `?lite`, `?hold=<point>`.
 
+Rendu : projecteur principal à ombres portées qui suit le visiteur, occlusion ambiante (GTAO, demi-résolution), bloom ; une qualité adaptative coupe dans l'ordre occlusion, résolution, ombres, bloom pour tenir ~50 images/s.
+
+Ressources tierces : tête scannée « LeePerrySmith » (Lee Perry-Smith / Infinite-Realities, CC BY 3.0, via les exemples three.js) dans `assets/models/head` ; matières métal Poly Haven (CC0) dans `assets/tex/pbr` ; texture terrestre NASA.
+
 Versions précédentes conservées : `galerie.html`, `scroll.html`, `voyage.html`, `pont.html`, `classic.html`.
 
 ## Direction artistique

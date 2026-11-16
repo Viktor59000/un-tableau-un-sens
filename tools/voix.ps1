@@ -9,7 +9,7 @@ $fmt = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(22050, [System
 foreach ($p in $j.PSObject.Properties) {
   $txt = if ($p.Value.say) { $p.Value.say } else { $p.Value.t }   # « say » = graphie phonétique pour la synthèse
   $esc = [System.Security.SecurityElement]::Escape($txt)
-  $ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='fr-FR'><prosody rate='+16%' pitch='-4%'>$esc</prosody></speak>"
+  $ssml = "<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='fr-FR'><prosody rate='+22%' pitch='-4%'>$esc</prosody></speak>"
   $s.SetOutputToWaveFile((Join-Path $wav ($p.Name + ".wav")), $fmt); $s.SpeakSsml($ssml)
 }
 $s.SetOutputToNull(); $s.Dispose()
