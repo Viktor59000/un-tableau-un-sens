@@ -18,18 +18,19 @@ On abandonne les 5 sens d'Aristote (extéroceptifs, incomplets) pour les **sens 
 Récit 3D à la première personne, en **français, anglais et espagnol** (voix et sous-titres). Tu es le **sujet R26-0417**, en stase depuis 474 ans à bord de l'arche **SPES-07** ; l'IA Gladys déclenche le **protocole RÉSONANCE**.
 0. **Prologue** — trois entrées du journal de bord (2026 → 2500).
 1. **Réveil** — vitre givrée du caisson, appel entrant de Gladys, choix de dialogue, sortie dans la baie cryo (dormeurs visibles sous les vitres, bras de maintenance sur rail, drones, robots au sol).
-2. **Ce qui reste** — la baie d'observation : la Terre sous la Grande Poussière, les débris, la flotte HOPE, un robot soudeur sur la coque. Puis le poste de liaison N-7 : on s'assoit, le câble cervical se branche, le casque descend.
-3. **Danse sensorielle** — la **galerie Ceysson & Bénétière reconstituée** d'après le plan du parcours : narthex, librairie, nef, escalier, niveau 1. On suit le tracé réel d'œuvre en œuvre (lot 42-SE, artefacts CB-01 à 04) ; chacune s'imprime à taille réelle, avec ses cotes, et fait éprouver un sens interne.
+2. **Ce qui reste** — la baie d'observation : la Terre dans l'ombre, puis **le soleil qui se lève derrière elle** et révèle la Grande Poussière, le pont avant de l'arche, la flotte HOPE, une épave, **une arche géante qui nous dépasse**. Puis le poste de liaison N-7 : le fauteuil s'ouvre, on s'assoit, les accoudoirs et les bracelets se referment sur les avant-bras, le câble cervical se verrouille derrière la nuque, le casque se rabat. On voit son propre corps : ses mains qui tremblent au réveil, ses pieds aux premiers pas.
+3. **Danse sensorielle** — la **galerie Ceysson & Bénétière reconstituée, projetée en hologramme** (volumes de verre sombre aux arêtes lumineuses, sol miroir, cadres de LED, façade vitrée, accueil-librairie et son mobilier, Bistrot près de l'escalier, tables à l'étage, visiteurs) d'après le plan du parcours et les vues de l'exposition. On suit le tracé réel d'œuvre en œuvre (lot 42-SE, artefacts CB-01 à 04) ; chacune s'imprime à taille réelle, avec ses cotes, et fait **éprouver** un sens interne : on tombe avec les plumes, la résine répond au regard, la salle grandit et l'on rétrécit, le temps ralentit et l'on entend son cœur.
 
 Technique : Three.js r160 en modules ES (importmap, aucun build), post-traitement (anticrénelage, occlusion ambiante, bloom, aberration, glitch), qualité adaptative, version texte accessible.
-- `app/main.js` : moteur, récit, HUD, son, voix. `app/world.js` : décors et shaders. `app/i18n.js` : langues. `app/lines.json` : répliques de Gladys.
+- `app/main.js` : moteur, récit, HUD, son, voix. `app/world.js` : décors du vaisseau. `app/galerie.js` : la galerie et les quatre œuvres. `app/gladys.js` : le portrait 3D de Gladys. `app/i18n.js` : langues. `app/lines.json` : répliques de Gladys.
 - Voix : `assets/voice/<langue>/<id>.mp3`, générées par `python tools/voix.py` (voix neuronale multilingue, paquet `edge-tts`). À relancer après toute modification de `app/lines.json`. Sans fichier : synthèse du navigateur, puis sous-titres seuls.
-- Corps des dormeurs et silhouettes de visiteurs : `python tools/corps.py` (à partir de `tools/sources/Xbot.glb`).
-- Paramètres de test : `?act=2|3`, `?st=0..3`, `?auto`, `?quick`, `?lite`, `?hold=<point>`, `?lang=fr|en|es`.
+- Arches, pont avant, navette, fauteuil de liaison, baie cryogénique et caissons : `blender -b --python tools/arche_blender.py`, `tools/pont_blender.py`, `tools/fauteuil_blender.py`, `tools/baie_blender.py`.
+- Gladys, dormeurs et corps du visiteur : `blender -b --python tools/humains_blender.py`. Visiteurs animés : `blender -b --python tools/visiteur_blender.py`. Plumes de l'œuvre 1 : `python tools/plumes.py`.
+- Paramètres de test : `?act=2|3`, `?st=0..3`, `?auto`, `?quick`, `?lite`, `?hold=<point>`, `?lang=fr|en|es`, `?timer`.
 
 **Pour reprendre le projet : lire [REPRISE.md](REPRISE.md)** (état, architecture, méthode de test, pièges, ce qui reste à faire).
 
-Ressources tierces : tête scannée « LeePerrySmith » (Lee Perry-Smith / Infinite-Realities, CC BY 3.0) ; mannequin X Bot (Mixamo) ; matières métal Poly Haven (CC0) ; texture terrestre NASA.
+Ressources tierces : Human Base Meshes (Blender Foundation, CC0) ; mannequin X Bot (Mixamo) ; matières métal Poly Haven (CC0) ; texture terrestre NASA.
 
 Versions précédentes conservées : `galerie.html`, `scroll.html`, `voyage.html`, `pont.html`, `classic.html`.
 

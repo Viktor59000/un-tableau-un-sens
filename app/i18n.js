@@ -5,9 +5,11 @@ const STR = {
     speech: 'fr-FR', dec: ',', quo: ['«\u00a0', '\u00a0»'],
     ui: { loading: 'Chargement…', start: 'Lancer le dégel', ready: 'Systèmes prêts — casque audio conseillé.', reduced: 'Animations réduites détectées : la version texte est recommandée.',
       noGL: "La 3D n'est pas disponible sur cet appareil — version texte ci-dessous.", ring: 'APPEL ENTRANT', live: 'EN LIGNE', proto: 'PROTOCOLE RÉSONANCE', lot: 'LOT 42-SE', art: 'Artefact',
+      scanning: 'ANALYSE', identified: 'ARTEFACT IDENTIFIÉ',
+      sense: { l: ['PORT CERVICAL C2', 'CONTACT ÉTABLI', 'liaison N-7 · signal 100 %'], k: ['SIMULATION MOTRICE', 'déplacement réel : 0,00 m', 'chute perçue'], h: ['FER', 'froid · rugueux', 'RÉSINE', 'lisse · tiède', 'contact : aucun', 'signal tactile'], p: ['ÉCHELLE CORPORELLE', 'taille perçue'], i: ['HORLOGE INTERNE', 'pouls', '1 s perçue ='] },
       card: ['Réveil', 'Ce qui reste', 'Danse sensorielle'],
       loc: ['PONT 12 · CAISSON R26-0417', 'PONT 12 · BAIE CRYO C', "PONT 12 · BAIE D'OBSERVATION", 'PONT 12 · LIAISON N-7', 'DS-04 · GALERIE — NARTHEX', 'DS-04 · GALERIE — NEF, NIV. 0', 'DS-04 · GALERIE — NIV. 1'],
-      q: { thaw: 'Séquence de dégel en cours', call: 'Appel entrant — Gladys, unité de veille', askG: 'Interroger Gladys', exit: 'Sortir du caisson', sit: 'Se redresser', look: 'Observer la baie', obs: "Rejoindre la baie d'observation",
+      q: { thaw: 'Séquence de dégel en cours', call: 'Appel entrant — Gladys, unité de veille', askG: 'Interroger Gladys', exit: 'Sortir du caisson', sit: 'Se redresser', hands: 'Réveiller ses mains', look: 'Observer la baie', obs: "Rejoindre la baie d'observation",
         earth: 'Observer la Terre', link: 'Rejoindre le poste de liaison N-7', cable: 'Branchement du câble cervical', visor: 'Casque de liaison — synchronisation', enter: 'Entrer dans la galerie', up: 'Monter au niveau 1', end: 'Regarder la nef une dernière fois' },
       a: { answer: 'Répondre', exit: 'Sortir du caisson', walk: 'Avancer', seat: "S'installer", enter: 'Entrer' },
       ch1: ['Où suis-je ?', 'Combien de temps ai-je dormi ?'], ch2: ['Pourquoi des œuvres ?', 'Pourquoi me réveiller, moi ?'],
@@ -27,15 +29,17 @@ const STR = {
     tx: { bay: ['PONT 12 — BAIE CRYO C', 'cohorte R-26   ·   2 000 sujets en stase niv. 4', 'réveillés : 0001   ·   cycle J+173 141'],
       log: ['JOURNAL DE BORD — SPES-07', '2026 · embarquement de la cohorte R-26', '2140 · indice de Voile > 9 : la Grande Poussière', '2318 · dernier signal terrestre capté', '2500 · protocole RÉSONANCE — sujet R26-0417'],
       obs: '▲ OBSERVATION', stase: 'STASE NIV.4', earth: ['ORBITE BASSE — TERRE', 'indice de Voile : 9,7 / 10', 'surface habitable : 3 %'], fleet: ['FLOTTE HOPE', '212 arches en attente', 'SPES-07 · arche sensorielle'],
-      link: ['LIAISON N-7', 'danse sensorielle · lot 42-SE'], entree: 'ENTRÉE', narthex: 'NARTHEX · ACCUEIL', librairie: 'LIBRAIRIE', bistrot: 'LE BISTROT', nef: 'NEF · NIV. 0', niv1: 'NIV. 1' }
+      link: ['LIAISON N-7', 'danse sensorielle · lot 42-SE'], entree: 'ENTRÉE', narthex: 'NARTHEX · ACCUEIL', librairie: 'LIBRAIRIE', bistrot: 'LE BISTROT', nef: 'NEF · NIV. 0', niv1: 'NIV. 1', lot: 'LOT 42-SE', horsLot: 'HORS LOT', nonNum: 'non numérisé', accueil: 'ACCUEIL' }
   },
   en: {
     speech: 'en-GB', dec: '.', quo: ['“', '”'],
     ui: { loading: 'Loading…', start: 'Begin thawing', ready: 'Systems ready — headphones recommended.', reduced: 'Reduced motion detected: the text version is recommended.',
       noGL: '3D is not available on this device — text version below.', ring: 'INCOMING CALL', live: 'CONNECTED', proto: 'PROTOCOL RESONANCE', lot: 'BATCH 42-SE', art: 'Artefact',
+      scanning: 'SCANNING', identified: 'ARTEFACT IDENTIFIED',
+      sense: { l: ['CERVICAL PORT C2', 'CONTACT ESTABLISHED', 'link N-7 · signal 100 %'], k: ['MOTOR SIMULATION', 'actual movement: 0.00 m', 'perceived fall'], h: ['IRON', 'cold · rough', 'RESIN', 'smooth · warm', 'contact: none', 'tactile signal'], p: ['BODY SCALE', 'perceived height'], i: ['INTERNAL CLOCK', 'pulse', '1 s perceived ='] },
       card: ['Awakening', 'What remains', 'Sense dance'],
       loc: ['DECK 12 · POD R26-0417', 'DECK 12 · CRYO BAY C', 'DECK 12 · OBSERVATION BAY', 'DECK 12 · LINK N-7', 'DS-04 · GALLERY — NARTHEX', 'DS-04 · GALLERY — NAVE, LEVEL 0', 'DS-04 · GALLERY — LEVEL 1'],
-      q: { thaw: 'Thaw sequence in progress', call: 'Incoming call — Gladys, watch unit', askG: 'Question Gladys', exit: 'Leave the pod', sit: 'Sit up', look: 'Look around the bay', obs: 'Reach the observation bay',
+      q: { thaw: 'Thaw sequence in progress', call: 'Incoming call — Gladys, watch unit', askG: 'Question Gladys', exit: 'Leave the pod', sit: 'Sit up', hands: 'Wake your hands', look: 'Look around the bay', obs: 'Reach the observation bay',
         earth: 'Look at Earth', link: 'Reach link station N-7', cable: 'Connecting the cervical cable', visor: 'Link headset — synchronising', enter: 'Enter the gallery', up: 'Go up to level 1', end: 'One last look at the nave' },
       a: { answer: 'Answer', exit: 'Leave the pod', walk: 'Walk on', seat: 'Sit down', enter: 'Enter' },
       ch1: ['Where am I?', 'How long have I been asleep?'], ch2: ['Why works of art?', 'Why wake me?'],
@@ -59,7 +63,7 @@ const STR = {
     tx: { bay: ['DECK 12 — CRYO BAY C', 'cohort R-26   ·   2,000 subjects in stasis lvl 4', 'awake: 0001   ·   cycle D+173,141'],
       log: ["SHIP'S LOG — SPES-07", '2026 · cohort R-26 boards', '2140 · Veil index > 9: the Great Dust', '2318 · last signal received from Earth', '2500 · Protocol RESONANCE — subject R26-0417'],
       obs: '▲ OBSERVATION', stase: 'STASIS LVL 4', earth: ['LOW ORBIT — EARTH', 'Veil index: 9.7 / 10', 'habitable surface: 3 %'], fleet: ['HOPE FLEET', '212 arks standing by', 'SPES-07 · sensory ark'],
-      link: ['LINK N-7', 'sense dance · batch 42-SE'], entree: 'ENTRANCE', narthex: 'NARTHEX · RECEPTION', librairie: 'BOOKSHOP', bistrot: 'LE BISTROT', nef: 'NAVE · LEVEL 0', niv1: 'LEVEL 1' },
+      link: ['LINK N-7', 'sense dance · batch 42-SE'], entree: 'ENTRANCE', narthex: 'NARTHEX · RECEPTION', librairie: 'BOOKSHOP', bistrot: 'LE BISTROT', nef: 'NAVE · LEVEL 0', niv1: 'LEVEL 1', lot: 'BATCH 42-SE', horsLot: 'NOT IN BATCH', nonNum: 'not digitised', accueil: 'RECEPTION' },
     dom: { skip: 'Skip to the text version', bKick: 'SPES-07 · deck 12 · pod R26-0417',
       lede: 'You are subject R26-0417. You have been asleep for 474 years aboard an ark in orbit. A voice is calling you: Protocol RESONANCE begins.',
       txt: 'Text version', keysT: 'Tap the buttons to act · drag to look around', keys: '<kbd>F</kbd> act · <kbd>1</kbd><kbd>2</kbd> answer · <kbd>Space</kbd> skip a line · mouse to look',
@@ -79,15 +83,17 @@ const STR = {
       iDatesV: '21 &amp; 22 November 2026<span>Saturday and Sunday, 11 am – 7 pm</span>', iAccessV: 'Free entry<span>No booking, free audio guide</span>',
       iDur: 'Duration', iDurV: '45 minutes<span>Four stations, at your own pace</span>', launch: 'Launch the 3D experience',
       foot1: '© 2026 — Advanced graphic design, Télécom Saint-Étienne B3 × Ceysson &amp; Bénétière gallery',
-      foot2: 'Scanned head: Lee Perry-Smith / Infinite-Realities (CC BY 3.0) · Body: X Bot mannequin, Mixamo · Materials: Poly Haven (CC0) · Earth: NASA (public domain) · Voice: speech synthesis' }
+      foot2: 'Bodies: Human Base Meshes, Blender Foundation (CC0) · Visitors: X Bot mannequin, Mixamo · Materials: Poly Haven (CC0) · Earth: NASA (public domain) · Voice: speech synthesis' }
   },
   es: {
     speech: 'es-ES', dec: ',', quo: ['«', '»'],
     ui: { loading: 'Cargando…', start: 'Iniciar el deshielo', ready: 'Sistemas listos — se recomiendan auriculares.', reduced: 'Animaciones reducidas detectadas: se recomienda la versión de texto.',
       noGL: 'El 3D no está disponible en este dispositivo — versión de texto más abajo.', ring: 'LLAMADA ENTRANTE', live: 'EN LÍNEA', proto: 'PROTOCOLO RESONANCIA', lot: 'LOTE 42-SE', art: 'Artefacto',
+      scanning: 'ANALIZANDO', identified: 'ARTEFACTO IDENTIFICADO',
+      sense: { l: ['PUERTO CERVICAL C2', 'CONTACTO ESTABLECIDO', 'enlace N-7 · señal 100 %'], k: ['SIMULACIÓN MOTORA', 'movimiento real: 0,00 m', 'caída percibida'], h: ['HIERRO', 'frío · rugoso', 'RESINA', 'liso · tibio', 'contacto: ninguno', 'señal táctil'], p: ['ESCALA CORPORAL', 'estatura percibida'], i: ['RELOJ INTERNO', 'pulso', '1 s percibido ='] },
       card: ['Despertar', 'Lo que queda', 'Danza sensorial'],
       loc: ['CUBIERTA 12 · CÁPSULA R26-0417', 'CUBIERTA 12 · BAHÍA CRIO C', 'CUBIERTA 12 · BAHÍA DE OBSERVACIÓN', 'CUBIERTA 12 · ENLACE N-7', 'DS-04 · GALERÍA — NÁRTEX', 'DS-04 · GALERÍA — NAVE, NIVEL 0', 'DS-04 · GALERÍA — NIVEL 1'],
-      q: { thaw: 'Secuencia de deshielo en curso', call: 'Llamada entrante — Gladys, unidad de vigilia', askG: 'Preguntar a Gladys', exit: 'Salir de la cápsula', sit: 'Incorporarse', look: 'Observar la bahía', obs: 'Llegar a la bahía de observación',
+      q: { thaw: 'Secuencia de deshielo en curso', call: 'Llamada entrante — Gladys, unidad de vigilia', askG: 'Preguntar a Gladys', exit: 'Salir de la cápsula', sit: 'Incorporarse', hands: 'Despertar las manos', look: 'Observar la bahía', obs: 'Llegar a la bahía de observación',
         earth: 'Observar la Tierra', link: 'Llegar al puesto de enlace N-7', cable: 'Conexión del cable cervical', visor: 'Casco de enlace — sincronización', enter: 'Entrar en la galería', up: 'Subir al nivel 1', end: 'Mirar la nave por última vez' },
       a: { answer: 'Responder', exit: 'Salir de la cápsula', walk: 'Avanzar', seat: 'Sentarse', enter: 'Entrar' },
       ch1: ['¿Dónde estoy?', '¿Cuánto tiempo he dormido?'], ch2: ['¿Por qué obras de arte?', '¿Por qué despertarme a mí?'],
@@ -111,7 +117,7 @@ const STR = {
     tx: { bay: ['CUBIERTA 12 — BAHÍA CRIO C', 'cohorte R-26   ·   2 000 sujetos en estasis niv. 4', 'despiertos: 0001   ·   ciclo D+173 141'],
       log: ['DIARIO DE A BORDO — SPES-07', '2026 · embarque de la cohorte R-26', '2140 · índice de Velo > 9: el Gran Polvo', '2318 · última señal recibida de la Tierra', '2500 · protocolo RESONANCIA — sujeto R26-0417'],
       obs: '▲ OBSERVACIÓN', stase: 'ESTASIS NIV.4', earth: ['ÓRBITA BAJA — TIERRA', 'índice de Velo: 9,7 / 10', 'superficie habitable: 3 %'], fleet: ['FLOTA HOPE', '212 arcas en espera', 'SPES-07 · arca sensorial'],
-      link: ['ENLACE N-7', 'danza sensorial · lote 42-SE'], entree: 'ENTRADA', narthex: 'NÁRTEX · RECEPCIÓN', librairie: 'LIBRERÍA', bistrot: 'LE BISTROT', nef: 'NAVE · NIVEL 0', niv1: 'NIVEL 1' },
+      link: ['ENLACE N-7', 'danza sensorial · lote 42-SE'], entree: 'ENTRADA', narthex: 'NÁRTEX · RECEPCIÓN', librairie: 'LIBRERÍA', bistrot: 'LE BISTROT', nef: 'NAVE · NIVEL 0', niv1: 'NIVEL 1', lot: 'LOTE 42-SE', horsLot: 'FUERA DE LOTE', nonNum: 'no digitalizada', accueil: 'RECEPCIÓN' },
     dom: { skip: 'Ir a la versión de texto', bKick: 'SPES-07 · cubierta 12 · cápsula R26-0417',
       lede: 'Eres el sujeto R26-0417. Llevas 474 años dormido a bordo de un arca en órbita. Una voz te llama: comienza el protocolo RESONANCIA.',
       txt: 'Versión de texto', keysT: 'Toca los botones para actuar · desliza el dedo para mirar', keys: '<kbd>F</kbd> actuar · <kbd>1</kbd><kbd>2</kbd> responder · <kbd>Espacio</kbd> saltar una réplica · ratón para mirar',
@@ -131,7 +137,7 @@ const STR = {
       iDatesV: '21 y 22 de noviembre de 2026<span>Sábado y domingo, de 11 h a 19 h</span>', iAccessV: 'Entrada libre<span>Sin reserva, audioguía gratuita</span>',
       iDur: 'Duración', iDurV: '45 minutos<span>Cuatro estaciones, a tu ritmo</span>', launch: 'Lanzar la experiencia 3D',
       foot1: '© 2026 — Diseño gráfico avanzado, Télécom Saint-Étienne B3 × galería Ceysson &amp; Bénétière',
-      foot2: 'Cabeza escaneada: Lee Perry-Smith / Infinite-Realities (CC BY 3.0) · Cuerpo: maniquí X Bot, Mixamo · Materiales: Poly Haven (CC0) · Tierra: NASA (dominio público) · Voz: síntesis de voz' }
+      foot2: 'Cuerpos: Human Base Meshes, Blender Foundation (CC0) · Visitantes: maniquí X Bot, Mixamo · Materiales: Poly Haven (CC0) · Tierra: NASA (dominio público) · Voz: síntesis de voz' }
   }
 };
 

@@ -21,3 +21,7 @@ holo-*.jpeg
 reveil-*.jpeg
 exp*.jpeg
 fui*.jpeg
+
+# Modèles humains sources (Blender Foundation, CC0) : 50 Mo, à retélécharger au besoin
+tools/sources/human-base-meshes/
+__pycache__/
