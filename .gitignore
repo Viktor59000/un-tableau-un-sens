@@ -12,3 +12,8 @@ node_modules/
 # Skills / Claude Code tooling local
 .claude/skills/
 skills-lock.json
+
+# Artefacts de test (Playwright / captures)
+.playwright-mcp/
+shot-*.jpeg
+shot-*.png
