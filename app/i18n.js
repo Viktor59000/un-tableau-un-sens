@@ -4,7 +4,7 @@ const STR = {
   fr: {
     speech: 'fr-FR', dec: ',', quo: ['«\u00a0', '\u00a0»'],
     ui: { loading: 'Chargement…', start: 'Lancer le dégel', ready: 'Systèmes prêts — casque audio conseillé.', reduced: 'Animations réduites détectées : la version texte est recommandée.',
-      noGL: "La 3D n'est pas disponible sur cet appareil — version texte ci-dessous.", ring: 'APPEL ENTRANT', live: 'EN LIGNE', proto: 'PROTOCOLE RÉSONANCE', lot: 'LOT 42-SE', art: 'Artefact',
+      perf: ['Netteté', 'Fluidité'], noGL: "La 3D n'est pas disponible sur cet appareil — version texte ci-dessous.", ring: 'APPEL ENTRANT', live: 'EN LIGNE', proto: 'PROTOCOLE RÉSONANCE', lot: 'LOT 42-SE', art: 'Artefact',
       scanning: 'ANALYSE', identified: 'ARTEFACT IDENTIFIÉ',
       sense: { l: ['PORT CERVICAL C2', 'CONTACT ÉTABLI', 'liaison N-7 · signal 100 %'], k: ['SIMULATION MOTRICE', 'déplacement réel : 0,00 m', 'chute perçue'], h: ['FER', 'froid · rugueux', 'RÉSINE', 'lisse · tiède', 'contact : aucun', 'signal tactile'], p: ['ÉCHELLE CORPORELLE', 'taille perçue'], i: ['HORLOGE INTERNE', 'pouls', '1 s perçue ='] },
       card: ['Réveil', 'Ce qui reste', 'Danse sensorielle'],
@@ -34,7 +34,7 @@ const STR = {
   en: {
     speech: 'en-GB', dec: '.', quo: ['“', '”'],
     ui: { loading: 'Loading…', start: 'Begin thawing', ready: 'Systems ready — headphones recommended.', reduced: 'Reduced motion detected: the text version is recommended.',
-      noGL: '3D is not available on this device — text version below.', ring: 'INCOMING CALL', live: 'CONNECTED', proto: 'PROTOCOL RESONANCE', lot: 'BATCH 42-SE', art: 'Artefact',
+      perf: ['Sharp', 'Smooth'], noGL: '3D is not available on this device — text version below.', ring: 'INCOMING CALL', live: 'CONNECTED', proto: 'PROTOCOL RESONANCE', lot: 'BATCH 42-SE', art: 'Artefact',
       scanning: 'SCANNING', identified: 'ARTEFACT IDENTIFIED',
       sense: { l: ['CERVICAL PORT C2', 'CONTACT ESTABLISHED', 'link N-7 · signal 100 %'], k: ['MOTOR SIMULATION', 'actual movement: 0.00 m', 'perceived fall'], h: ['IRON', 'cold · rough', 'RESIN', 'smooth · warm', 'contact: none', 'tactile signal'], p: ['BODY SCALE', 'perceived height'], i: ['INTERNAL CLOCK', 'pulse', '1 s perceived ='] },
       card: ['Awakening', 'What remains', 'Sense dance'],
@@ -89,7 +89,7 @@ const STR = {
   es: {
     speech: 'es-ES', dec: ',', quo: ['«', '»'],
     ui: { loading: 'Cargando…', start: 'Iniciar el deshielo', ready: 'Sistemas listos — se recomiendan auriculares.', reduced: 'Animaciones reducidas detectadas: se recomienda la versión de texto.',
-      noGL: 'El 3D no está disponible en este dispositivo — versión de texto más abajo.', ring: 'LLAMADA ENTRANTE', live: 'EN LÍNEA', proto: 'PROTOCOLO RESONANCIA', lot: 'LOTE 42-SE', art: 'Artefacto',
+      perf: ['Nitidez', 'Fluidez'], noGL: 'El 3D no está disponible en este dispositivo — versión de texto más abajo.', ring: 'LLAMADA ENTRANTE', live: 'EN LÍNEA', proto: 'PROTOCOLO RESONANCIA', lot: 'LOTE 42-SE', art: 'Artefacto',
       scanning: 'ANALIZANDO', identified: 'ARTEFACTO IDENTIFICADO',
       sense: { l: ['PUERTO CERVICAL C2', 'CONTACTO ESTABLECIDO', 'enlace N-7 · señal 100 %'], k: ['SIMULACIÓN MOTORA', 'movimiento real: 0,00 m', 'caída percibida'], h: ['HIERRO', 'frío · rugoso', 'RESINA', 'liso · tibio', 'contacto: ninguno', 'señal táctil'], p: ['ESCALA CORPORAL', 'estatura percibida'], i: ['RELOJ INTERNO', 'pulso', '1 s percibido ='] },
       card: ['Despertar', 'Lo que queda', 'Danza sensorial'],

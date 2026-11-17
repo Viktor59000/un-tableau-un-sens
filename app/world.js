@@ -237,7 +237,24 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   // --- mur des hublots : modélisé dans Blender (tools/hublots_blender.py) — cloison percée, grand hublot à volet-iris, hublots
   // latéraux, pupitre, garde-corps. Seuls le verre et les relevés projetés au-dessus du pupitre restent dessinés ici.
   const WC = { x: 0, y: 2.55, r: 2.05 }, HOLES = [[WC.x, WC.y, WC.r], [-3.95, 2.7, 0.72], [3.95, 2.7, 0.72]]; /* à garder en accord avec le script */
-  for (const [x, y, r] of HOLES) add(bay, new THREE.CircleGeometry(r, 48), new THREE.MeshBasicMaterial({ color: 0x8fb4d8, transparent: true, opacity: 0.035, depthWrite: false }), x, y, Z0 - 0.3);
+  // Le verre du grand hublot. Ce n'est plus une teinte : il renvoie l'intérieur de la baie. Le reflet est une vraie vue de la scène, prise depuis le
+  // symétrique de l'œil par rapport au vitrage (W.reflect, appelée par le récit quand on s'arrête à la barre) ; chaque point du verre va y lire ce que
+  // l'œil verrait s'y réfléchir. Intensité selon l'angle (Fresnel), image fantôme de la seconde face du vitrage, poussière que la lumière accroche.
+  const glassU = { tR: { value: null }, uVP: { value: new THREE.Matrix4() }, uEye: { value: new V3() }, uK: { value: 0 }, uSun: { value: 0 }, uTime: W.timeU[0] };
+  const glassMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneMinusSrcAlphaFactor, uniforms: glassU,
+    vertexShader: 'varying vec3 vW;varying vec2 vP;void main(){vP=position.xy;vec4 w=modelMatrix*vec4(position,1.);vW=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
+    fragmentShader: `uniform sampler2D tR;uniform mat4 uVP;uniform vec3 uEye;uniform float uK,uSun;varying vec3 vW;varying vec2 vP;
+      float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+      float n(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h(i),h(i+vec2(1,0)),f.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),f.x),f.y);}
+      void main(){ vec4 c=uVP*vec4(vW,1.); vec2 uv=c.xy/c.w*.5+.5; float in_=step(0.,uv.x)*step(uv.x,1.)*step(0.,uv.y)*step(uv.y,1.);
+        vec3 V=normalize(uEye-vW); float F=.045+.955*pow(1.-clamp(abs(V.z),0.,1.),5.);                    /* le verre réfléchit peu de face, beaucoup en rasant */
+        vec3 r=texture2D(tR,uv).rgb+texture2D(tR,uv+vec2(.0045,.003)).rgb*.42;                            /* deux faces : une image, et son double décalé */
+        vec3 col=min(r,vec3(5.))*F*1.7*uK*in_;
+        float dust=smoothstep(.72,1.,n(vP*90.))*.6+smoothstep(.9,1.,n(vP*vec2(14.,260.)+7.))*.5+smoothstep(.93,1.,n(vP.yx*vec2(11.,300.)+3.))*.35;   /* grains et fines rayures */
+        float rim=smoothstep(1.2,2.05,length(vP));                                                        /* le pourtour, moins bien nettoyé */
+        col+=vec3(.62,.72,.85)*dust*(.006+.07*uSun)*(.5+rim)+vec3(.5,.62,.78)*rim*rim*(.004+.02*uSun);
+        gl_FragColor=vec4(col,.03+.03*rim); }` });
+  HOLES.forEach(([x, y, r], i) => add(bay, new THREE.CircleGeometry(r, i ? 48 : 72), i ? new THREE.MeshBasicMaterial({ color: 0x8fb4d8, transparent: true, opacity: 0.035, depthWrite: false }) : glassMat, x, y, Z0 - 0.3));
   const mt = new THREE.Matrix4();
   // Touches du pupitre : plastique sombre, légende rétroéclairée. La légende n'est pas une texture : la matière retrouve, à partir de la position sur
   // le plateau incliné, à quelle touche appartient le pixel, et y allume un caractère en matrice de points propre à cette touche (quelques-unes en ambre).
@@ -285,17 +302,22 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
     let n = 0; upd.push((t, dt, cam) => { if (!bay.visible || !cam || cam.z > -3) return; if (++n % 7 === 0) draws[(n / 7) % draws.length | 0](t); }); /* une page redessinée toutes les sept images, et seulement quand on est près du pupitre */ }
   new GLTFLoader().load('assets/models/hublots.glb', (res) => { const g = new THREE.Group(); g.position.z = Z0; bay.add(g); const wm = Object.assign({}, bayMats, { lueur: glow(COL.steel, 2.2), lueur_c: glow(COL.cyan, 1.6), ecran: ecranMat(false), touche: keyMat, rampe: new THREE.MeshStandardMaterial({ color: 0x6f767d, metalness: 0.6, roughness: 0.62, envMapIntensity: 0.5 }) });
     res.scene.traverse((o) => { if (!o.isMesh) return; const name = o.material.name; if (TILE[name]) boxUV(o.geometry, TILE[name]); const me = shade(new THREE.Mesh(o.geometry, wm[name] || mPanel)); if (/^cloison/.test(o.name)) me.castShadow = false; g.add(me); }); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
-  // Ton reflet dans le grand hublot. Tant que l'espace est noir derrière le verre, la vitre renvoie ta silhouette en combinaison de stase ; le soleil
-  // levé, elle s'efface. Un corps (modèle allégé des dormeurs, redressé, sans bandeau) placé en miroir de l'œil par rapport au verre, en lumière ajoutée.
-  { const refl = new THREE.Group(); refl.visible = false; bay.add(refl); const RC = { peau: [0.95, 0.74, 0.6], combinaison: [0.34, 0.42, 0.52], bonnet: [0.2, 0.25, 0.32] }, rm = [], GZ = Z0 - 0.3;
-    new GLTFLoader().load('assets/models/dormeur-lod.glb', (res) => { res.scene.updateMatrixWorld(true); const up = new THREE.Matrix4().makeBasis(new V3(0, -1, 0), new V3(0, 0, 1), new V3(-1, 0, 0)); /* allongé (tête vers -x, visage vers +y) -> debout, face à la baie */
-      res.scene.traverse((o) => { if (!o.isMesh || !RC[o.material.name]) return; const g = o.geometry.clone(); g.applyMatrix4(o.matrixWorld); g.applyMatrix4(up);
-        const m = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { uC: { value: new THREE.Color(...RC[o.material.name]) }, uOp: { value: 0 } },
-          vertexShader: 'varying vec3 vN;varying vec3 vV;varying float vY;void main(){vY=position.y;vec4 mv=modelViewMatrix*vec4(position,1.);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
-          fragmentShader: 'uniform vec3 uC;uniform float uOp;varying vec3 vN;varying vec3 vV;varying float vY;void main(){vec3 n=normalize(vN);float l=.28+.72*max(dot(n,normalize(vec3(.2,.5,.85))),0.);float rim=pow(1.-clamp(abs(dot(n,normalize(vV))),0.,1.),2.5);gl_FragColor=vec4(uC*(l*.8+rim*.3)*uOp*smoothstep(-.95,-.25,vY),1.);}' });
-        rm.push(m); const me = new THREE.Mesh(g, m); me.frustumCulled = false; refl.add(me); }); });
-    upd.push((t, dt, cam) => { if (!cam || !bay.visible || !rm.length) return; const d = cam.z - GZ, dark = 1 - Math.min(1, (W.sunIn || 0) * 1.5 + (W.sunK || 0) * 0.7), k = sm(4.2, 2.2, d) * (0.14 + 0.86 * dark);
-      refl.visible = k > 0.01; if (!refl.visible) return; refl.position.set(cam.x, cam.y - 0.17 + Math.sin(t * 0.9) * 0.004, 2 * GZ - cam.z); for (const m of rm) m.uniforms.uOp.value = k * 0.12; }); }
+  // Le reflet. Le corps du visiteur n'a pas de tête (on est dedans) : pour la vue réfléchie, on lui en pose une — celle du modèle allégé des dormeurs,
+  // coupée au cou, calée sur l'œil — le temps de la prise de vue seulement.
+  { const GZ = Z0 - 0.3, head = new THREE.Group(); head.visible = false; scene.add(head); const off = new V3();
+    const rcam = new THREE.PerspectiveCamera(120, 1.3, 0.5, 70), rRT = new THREE.WebGLRenderTarget(1024, 788, { type: THREE.HalfFloatType }); glassU.tR.value = rRT.texture; const at = new V3(1e9, 0, 0);
+    new GLTFLoader().load('assets/models/dormeur-lod.glb', (res) => { res.scene.updateMatrixWorld(true); const up = new THREE.Matrix4().makeBasis(new V3(0, -1, 0), new V3(0, 0, 1), new V3(-1, 0, 0)), parts = []; let top = -1e9; /* allongé -> debout, face à la baie */
+      res.scene.traverse((o) => { if (!o.isMesh || !/peau|bonnet|combinaison/.test(o.material.name)) return; const g = o.geometry.clone(); g.applyMatrix4(o.matrixWorld); g.applyMatrix4(up); g.computeBoundingBox(); top = Math.max(top, g.boundingBox.max.y); parts.push([g, o.material.name]); });
+      const neck = top - 0.3, bb = new THREE.Box3(), mats = { peau: new THREE.MeshStandardMaterial({ color: 0x8a6551, roughness: 0.6 }), bonnet: new THREE.MeshStandardMaterial({ color: 0x1b2026, roughness: 0.7 }), combinaison: new THREE.MeshStandardMaterial({ color: 0x3b434d, roughness: 0.8 }) };
+      for (const [g, name] of parts) { const p = g.attributes.position, ix = g.index ? g.index.array : null, n = ix ? ix.length : p.count, keep = []; for (let i = 0; i < n; i += 3) { const a = ix ? ix[i] : i, b = ix ? ix[i + 1] : i + 1, c = ix ? ix[i + 2] : i + 2; if (p.getY(a) > neck && p.getY(b) > neck && p.getY(c) > neck) keep.push(a, b, c); }
+        if (!keep.length) continue; g.setIndex(keep); const m = new THREE.Mesh(g, mats[name]); m.frustumCulled = false; head.add(m); for (let i = 0; i < keep.length; i++) bb.expandByPoint(new V3(p.getX(keep[i]), p.getY(keep[i]), p.getZ(keep[i]))); }
+      off.set((bb.min.x + bb.max.x) / 2, top - 0.125, (bb.min.z + bb.max.z) / 2 - 0.085); }); /* l'œil du modèle : à 12 cm sous le sommet du crâne, à l'avant de la tête */
+    // eye : position de l'œil. Tout ce qui est derrière le vitrage (l'espace) est coupé par le plan proche de la caméra de reflet, posé exactement sur le verre.
+    W.reflect = (renderer, eye) => { if (opts.lite) return; const d = eye.z - GZ; if (d < 0.6 || d > 6) return; rcam.position.set(eye.x, eye.y, GZ - d); rcam.near = d; rcam.lookAt(eye.x, eye.y, GZ + 10); rcam.updateProjectionMatrix(); rcam.updateMatrixWorld();
+      head.position.set(eye.x - off.x, eye.y - off.y, eye.z - off.z); head.visible = true; const rt = renderer.getRenderTarget(), sa = renderer.shadowMap.autoUpdate; renderer.shadowMap.autoUpdate = false;
+      glassMat.visible = false; renderer.setRenderTarget(rRT); renderer.clear(); renderer.render(scene, rcam); renderer.setRenderTarget(rt); renderer.shadowMap.autoUpdate = sa; head.visible = false; glassMat.visible = true; /* le verre ne se reflète pas lui-même */
+      glassU.uVP.value.multiplyMatrices(rcam.projectionMatrix, rcam.matrixWorldInverse); at.copy(eye); };
+    upd.push((t, dt, cam) => { if (!cam) return; glassU.uEye.value.copy(cam); glassU.uSun.value = W.sunIn || 0; glassU.uK.value = sm(0.9, 0.25, cam.distanceTo(at)) * (1 - 0.55 * Math.min(1, (W.sunIn || 0) * 1.4)); }); } /* le reflet n'est juste que depuis l'endroit de la prise : il s'efface dès qu'on s'en éloigne */
   const scr1 = textPlane(TX.earth, { color: '#ff4f38', w: 560, size: 44, sub: 28, scale: 1.45 }); scr1.position.set(-1.25, 1.17, Z0 + 0.52); scr1.rotation.x = -0.5; bay.add(scr1);
   const scr2 = textPlane(TX.fleet, { color: '#7fe3e6', w: 560, size: 44, sub: 28, scale: 1.45 }); scr2.position.set(1.25, 1.17, Z0 + 0.52); scr2.rotation.x = -0.5; bay.add(scr2);
 
@@ -312,7 +334,8 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   new GLTFLoader().load('assets/models/fauteuil.glb', (res) => {
     const dress = (n) => { n.traverse((m) => { if (m.isMesh) { m.material = seatMats[m.material.name] || mBot; m.castShadow = !!m.material.isMeshStandardMaterial; m.receiveShadow = true; } }); return n; };
     const take = (name, to) => { const n = dress(res.scene.getObjectByName(name)); n.position.set(0, 0, 0); to.add(n); };
-    link.add(dress(res.scene.getObjectByName('fauteuil'))); take('accoudoir_g', armG[0]); take('accoudoir_d', armG[1]); take('casque', visArm); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
+    link.add(dress(res.scene.getObjectByName('fauteuil'))); take('accoudoir_g', armG[0]); take('accoudoir_d', armG[1]); take('casque', visArm); { const dark = new THREE.MeshStandardMaterial({ color: 0x090b0e, roughness: 0.92, metalness: 0, envMapIntensity: 0.08 }), sw = (m) => (m === seatMats.ecran ? visScr : m === mBot || m === mBotD || m === mSteel ? dark : m); /* vu de l'intérieur, un casque est sombre et mat */
+      visArm.traverse((o) => { if (o.isMesh) o.material = Array.isArray(o.material) ? o.material.map(sw) : sw(o.material); }); } for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
   // halo de liaison derrière la tête : couronne, anneaux qui tournent, enseigne
   gear.then((sc) => { const n = sc.getObjectByName('portique'); n.traverse((m) => { if (m.isMesh) { m.material = seatMats[m.material.name] || mBotD; m.castShadow = !!m.material.isMeshStandardMaterial; m.receiveShadow = true; } }); n.position.set(0, 0, 0); link.add(n); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
   W.linkGlow = glow(COL.cyan, 2.2); add(link, new THREE.TorusGeometry(0.7, 0.016, 8, 64), W.linkGlow, 0, 1.5, 0.88);
@@ -330,7 +353,11 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   W.setArms = (k) => { for (const g of armG) g.rotation.y = -g.userData.s * 0.62 * (1 - k); }; W.setArms(0); // au repos, les accoudoirs sont écartés : le fauteuil s'ouvre ; assis, ils se referment
   W.seatWake = (k) => { seatGlow.color.setHex(COL.cyan).multiplyScalar(0.3 + 1.5 * k); }; W.seatWake(0); // les filets du fauteuil s'allument à l'approche
   // casque : il attend relevé au-dessus de la tête et se rabat sur les yeux
-  W.setVisor = (k) => { const e = k * k * (3 - 2 * k); visArm.rotation.x = 2.0 * (1 - e); }; W.setVisor(0);
+  // L'écran intérieur du casque a sa propre matière, éteinte tant que le casque n'est pas en place (W.visorOn) : pendant la descente, c'est une coque sombre.
+  const visScr = U(new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 }, uOn: { value: 0 } }, vertexShader: seatMats.ecran.vertexShader,
+    fragmentShader: seatMats.ecran.fragmentShader.replace('uniform float uTime;', 'uniform float uTime,uOn;').replace('*(.05+bar*.85)', '*(.004+bar*.4)*uOn') }));
+  W.visorOn = (k) => { visScr.uniforms.uOn.value = k; }; W.visArm = visArm;
+  W.setVisor = (k) => { visArm.rotation.x = 2.0 * (1 - k); }; W.setVisor(0); /* k linéaire (le récit donne la courbe) ; un peu plus de 1 = mousses en appui */
   // câble cervical : la fiche se présente devant toi, ouvre ses trois griffes, puis va se verrouiller derrière la nuque
   const cabA = new V3(0.3, 1.6, 0.68), cabPath = new THREE.CatmullRomCurve3([new V3(0.46, 1.2, 0.56), new V3(0.42, 1.3, -0.1), new V3(0.11, 1.4, -0.4), new V3(0.17, 1.37, -0.05), new V3(0.08, 1.34, 0.34)]);
   const plug = new THREE.Group(); link.add(plug); add(plug, new THREE.CylinderGeometry(0.017, 0.02, 0.09, 16), mBotD); add(plug, new THREE.CylinderGeometry(0.0215, 0.0215, 0.012, 16), glow(COL.cyan, 3), 0, 0.02, 0); add(plug, new THREE.CylinderGeometry(0.008, 0.004, 0.03, 8), glow(COL.safran, 3), 0, 0.06, 0);

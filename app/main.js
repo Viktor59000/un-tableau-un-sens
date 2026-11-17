@@ -15,10 +15,10 @@ import { LANG, T as UI, WTX, LOG, TX, SPEECH, DEC, QUO, localizeDom } from './i1
 const $ = (s) => document.querySelector(s);
 const Q = new URLSearchParams(location.search);
 // paramètres de test : ?act=2|3 ?st=0..3 ?auto ?quick ?lite ?hold=<point> ?lang=fr|en|es ?msaa=0 ?timer (voir REPRISE.md)
-const ACT = +Q.get('act') || 1, ST0 = +Q.get('st') || 0, AUTO = Q.has('auto'), QUICK = Q.has('quick'), LITE = Q.has('lite'), HOLD = Q.get('hold');
+const ACT = +Q.get('act') || 1, ST0 = +Q.get('st') || 0, AUTO = Q.has('auto'), LITE = Q.has('lite'), HOLD = Q.get('hold'), UNTIL = Q.get('until'); let QUICK = Q.has('quick'); // ?quick&until=<point> : en accéléré jusqu'à ce point, puis à vitesse réelle (pour juger un mouvement)
 const NOAO = Q.has('noao'), NOSH = Q.has('nosh');
 const nextFrame = Q.has('timer') ? (f) => setTimeout(f, 16) : (f) => requestAnimationFrame(f); // ?timer : la boucle tourne même dans un onglet masqué (tests automatisés)
-const dbg = (n) => (HOLD === n ? new Promise(() => {}) : Promise.resolve());
+const dbg = (n) => { if (UNTIL === n) QUICK = false; return HOLD === n ? new Promise(() => {}) : Promise.resolve(); };
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches, touch = matchMedia('(pointer:coarse)').matches || Q.has('touch');
 if (touch) document.body.classList.add('touch');
 const V3 = THREE.Vector3, PI = Math.PI, sm = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
@@ -207,14 +207,15 @@ const FX = { uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uGlitch
 // Fluidité : on vise 60 images/s. Comme dans les jeux, c'est d'abord la définition interne du rendu 3D qui s'ajuste (par pas de 5 %,
 // compensée par une accentuation dans la passe finale ; l'interface, elle, reste nette), et seulement en dernier recours les effets.
 // Les images d'un onglet en arrière-plan ne comptent pas ; ?noadapt fige tout, ?timer aussi (la boucle de test ne suit pas l'écran).
-const QL = { dpr: 1, scale: 1, min: 0.7, lvl: touch ? 1 : 0, n: 0, acc: 0, warm: 2, ok: 0, up: false, block: 0 }, MSAA = LITE || touch ? 0 : (Q.has('msaa') ? +Q.get('msaa') : 4); // anticrénelage : indispensable aux filets fins de la galerie
+const QL = { dpr: 1, scale: 1, min: 0.85, smooth: false, lvl: touch ? 1 : 0, n: 0, acc: 0, warm: 2, ok: 0, up: false, block: 0 }, MSAA = LITE || touch ? 0 : (Q.has('msaa') ? +Q.get('msaa') : 4); // anticrénelage : indispensable aux filets fins de la galerie
 function setScale(k) { QL.scale = k; const d = QL.dpr * k; renderer.setPixelRatio(d); composer.setPixelRatio(d); msSize(); fx.uniforms.uSharp.value = Math.min(0.8, (1 - k) * 2.4); fx.uniforms.uTexel.value.set(1 / (innerWidth * d), 1 / (innerHeight * d)); if (W.pathU) W.pathU.uPx.value = d * innerHeight / 760; if (W.dustU) W.dustU.uPx.value = d * innerHeight / 734; }
 function adapt(raw) { if (LITE || Q.has('noadapt') || Q.has('timer') || raw > 0.4 || document.hidden) return; QL.acc += raw; if (++QL.n < 30) return; const avg = QL.acc / QL.n * 1000; QL.n = 0; QL.acc = 0;
   if (QL.warm-- > 0) return; // les premières mesures (compilation des shaders) sont ignorées
   if (avg > 18.4) { QL.ok = 0; if (QL.up) QL.block = T + 40; QL.up = false; // sous ~54 images/s : on allège (et si c'était un essai de remontée, on n'en retente pas avant 40 s)
-    if (QL.scale > QL.min + 0.001) setScale(Math.max(QL.min, QL.scale - (avg > 24 ? 0.1 : 0.05)));
-    else if (QL.lvl < 5) { QL.lvl++; // ordre des sacrifices une fois la définition au plancher : occlusion ambiante, plancher plus bas, ombres, anticrénelage, bloom
-      if (QL.lvl === 2) QL.min = 0.55; if (QL.lvl === 3) for (const l of W.shadowLights) l.castShadow = false;
+    if (QL.scale > QL.min + 0.001) setScale(Math.max(QL.min, QL.scale - 0.05));
+    else if (QL.lvl < 5 && (QL.smooth || avg > 31)) { QL.lvl++; // Netteté (par défaut) : on garde l'image et ses effets tant qu'on tient ~30 images/s. Fluidité (touche G) : on vise 60 quoi qu'il en coûte.
+      // ordre des sacrifices une fois la définition au plancher : occlusion ambiante, plancher plus bas, ombres, anticrénelage, bloom
+      if (QL.lvl === 2) QL.min = QL.smooth ? 0.55 : 0.75; if (QL.lvl === 3) for (const l of W.shadowLights) l.castShadow = false;
       if (QL.lvl === 4 && msRT) { msRT.dispose(); msRT = null; } if (QL.lvl === 5) bloom.enabled = false; } }
   else if (avg < 17.4) { if (QL.scale < 1 && T > QL.block && ++QL.ok >= 6) { QL.ok = 0; QL.up = true; setScale(Math.min(1, QL.scale + 0.05)); } else if (QL.up && QL.ok >= 2) QL.up = false; } // trois secondes à 60 images/s : on tente de remonter d'un cran
   else QL.ok = 0; }
@@ -247,7 +248,7 @@ function initGL() {
       msQuad.material.uniforms.tDiffuse.value = msRT.texture; r.setRenderTarget(wb); msQuad.render(r);
       this.blendMaterial.uniforms.intensity.value = this.blendIntensity; this.blendMaterial.uniforms.tDiffuse.value = this.pdRenderTarget.texture; this.renderPass(r, this.blendMaterial, wb); }; }
   gtao.enabled = !LITE; composer.addPass(gtao);
-  bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.5, 0.5, 0.92); bloom.enabled = !LITE; bloom.blendMaterial.visible = false; composer.addPass(bloom); /* son résultat est ajouté par la passe finale (tBloom) : une passe plein écran en moins */
+  bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.5, 0.5, 0.92); { const bs = bloom.setSize.bind(bloom); bloom.setSize = (w, h) => bs(w * 0.5, h * 0.5); bloom.radius = 0.32; } /* halo à mi-définition : flou par nature, quatre fois moins de pixels */ bloom.enabled = !LITE; bloom.blendMaterial.visible = false; composer.addPass(bloom); /* son résultat est ajouté par la passe finale (tBloom) : une passe plein écran en moins */
   fx = new ShaderPass(FX); fx.uniforms.tBloom.value = bloom.renderTargetsHorizontal[0].texture; composer.addPass(fx); Object.assign(window.__spes, { composer, bloom, gtao, camera, setScale }); setScale(1);
   addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); setScale(QL.scale); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
 }
@@ -256,12 +257,25 @@ const io = (k) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2), lin =
 function tween(dur, fn, ease = io) { if (QUICK) dur *= 0.12; const tw = { t: 0, dur: Math.max(0.001, dur), fn, ease }, p = new Promise((res) => { tw.res = res; tweens.push(tw); }); p.stop = () => { const i = tweens.indexOf(tw); if (i >= 0) { tweens.splice(i, 1); tw.res(); } }; return p; } // .stop() interrompt une animation tenue
 const wait = (s) => tween(s, () => {}, lin);
 function aim(from, to) { const d = new V3().subVectors(to, from); return { yaw: Math.atan2(-d.x, -d.z), pitch: Math.atan2(d.y, Math.hypot(d.x, d.z)) }; }
+// Le regard n'est pas une caméra de cinéma : la tête part avant le corps, vite, et se pose (« lead » : part de la durée où le regard a fini de tourner),
+// et la focale ne change pas (personne ne zoome avec les yeux ; « fov » reste possible pour les effets de la danse sensorielle).
 function camTo(o, dur = 2, ease = io) {
   const p0 = S.pos.clone(), p1 = o.pos || p0.clone(); let y1 = S.yaw, q1 = S.pitch; if (o.look) { const a = aim(p1, o.look); y1 = a.yaw; q1 = a.pitch; }
   if (o.yaw != null) y1 = o.yaw; if (o.pitch != null) q1 = o.pitch;
-  const y0 = S.yaw, dy = Math.atan2(Math.sin(y1 - y0), Math.cos(y1 - y0)), q0 = S.pitch, f0 = S.fov, f1 = o.fov || f0;
-  return tween(dur, (k) => { S.pos.lerpVectors(p0, p1, k); S.yaw = y0 + dy * k; S.pitch = q0 + (q1 - q0) * k; S.fov = f0 + (f1 - f0) * k; }, ease);
+  const y0 = S.yaw, dy = Math.atan2(Math.sin(y1 - y0), Math.cos(y1 - y0)), q0 = S.pitch, f0 = S.fov, f1 = o.fov || f0, lead = o.lead || 0;
+  return tween(dur, (k) => { const e = ease(k), r = lead ? out(Math.min(1, k / lead)) : e; S.pos.lerpVectors(p0, p1, e); S.yaw = y0 + dy * r; S.pitch = q0 + (q1 - q0) * r; S.fov = f0 + (f1 - f0) * e; }, lin);
 }
+const look = (o, dur = 0.8) => camTo(o, dur, out); // coup d'œil : départ vif, arrivée posée
+// Mouvement du buste par points de passage (courbe lisse) : se redresser, pivoter, se lever décrivent des arcs, jamais des lignes droites enchaînées.
+function camPath(keys, dur, ease = io) {
+  const P = [{ t: 0, pos: S.pos.clone(), yaw: S.yaw, pitch: S.pitch }]; for (const k of keys) { const l = P[P.length - 1]; P.push({ t: k.t, pos: k.pos || l.pos, yaw: k.yaw != null ? l.yaw + Math.atan2(Math.sin(k.yaw - l.yaw), Math.cos(k.yaw - l.yaw)) : l.yaw, pitch: k.pitch != null ? k.pitch : l.pitch }); }
+  const cr = (a, b, c, d, u) => 0.5 * (2 * b + (c - a) * u + (2 * a - 5 * b + 4 * c - d) * u * u + (3 * b - a - 3 * c + d) * u * u * u), n = P.length - 1;
+  return tween(dur, (k) => { let i = 1; while (i < n && k > P[i].t) i++; const a = P[Math.max(0, i - 2)], b = P[i - 1], c = P[i], d = P[Math.min(n, i + 1)], u = Math.min(1, Math.max(0, (k - b.t) / Math.max(1e-6, c.t - b.t)));
+    S.pos.set(cr(a.pos.x, b.pos.x, c.pos.x, d.pos.x, u), cr(a.pos.y, b.pos.y, c.pos.y, d.pos.y, u), cr(a.pos.z, b.pos.z, c.pos.z, d.pos.z, u)); S.yaw = cr(a.yaw, b.yaw, c.yaw, d.yaw, u); S.pitch = cr(a.pitch, b.pitch, c.pitch, d.pitch, u); }, ease);
+}
+const effort = (k) => io(Math.min(1, k / 0.52)) * 0.58 + io(Math.max(0, (k - 0.6) / 0.4)) * 0.42; // un geste en deux temps : on pousse, on marque un arrêt, on finit
+// Démarche : la foulée naît du déplacement réel (0,74 m par pas), pas d'une horloge. À l'arrêt la tête s'immobilise ; le corps reçoit la même phase.
+const G = { x: 0, z: 0, v: 0, a: 0, ph: 0, hd: null };
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), hitL = new V3(), hit2 = new THREE.Vector2();
 let heart = null, bloomBase = 0.5, stepT = 0, BODY = null; // BODY : le corps du visiteur (app/corps.js)
 function frame() {
@@ -270,8 +284,15 @@ function frame() {
   for (let i = tweens.length - 1; i >= 0; i--) { const tw = tweens[i]; tw.t += tdt; const k = Math.min(1, tw.t / tw.dur); tw.fn(tw.ease(k)); if (k >= 1) { tweens.splice(i, 1); tw.res(); } }
   if (MENU) { S.yaw = MENU.yaw + Math.sin(T * 0.13) * MENU.amp; S.pitch = MENU.pitch + Math.sin(T * 0.09) * 0.012; } /* accueil et fin : la caméra dérive à peine */
   if (touch && !drag) { S.mx *= 0.97; S.my *= 0.97; } S.lx += (S.mx - S.lx) * 0.06; S.ly += (S.my - S.ly) * 0.06;
-  camera.position.copy(S.pos); camera.position.y += (S.walk ? Math.sin(T * 7.4) * 0.034 * S.walk : 0) + Math.sin(T * 0.9) * 0.006;
-  camera.rotation.set(S.pitch - S.ly * 0.24 * S.free, S.yaw - S.lx * 0.42 * S.free, S.roll + Math.sin(T * 0.7) * S.sway + (S.walk ? Math.sin(T * 3.7) * 0.006 : 0), 'YXZ');
+  { const dx = S.pos.x - G.x, dz = S.pos.z - G.z, d = Math.hypot(dx, dz), mv = d < 0.6 && dt > 0 ? d : 0; G.x = S.pos.x; G.z = S.pos.z; G.v += (mv / Math.max(dt, 1e-3) - G.v) * (1 - Math.exp(-dt * 8));
+    G.a += ((S.walk ? sm(0.1, 0.55, G.v) : 0) - G.a) * (1 - Math.exp(-dt * 6)); G.hd = S.walk && G.v > 0.25 && mv > 1e-5 ? Math.atan2(-dx, -dz) : null;
+    if (S.walk) { const p0 = G.ph; G.ph += mv / 0.74 * PI; if (Math.floor(G.ph / PI) !== Math.floor(p0 / PI) && G.a > 0.35 && W.ds.visible) sfx.step(); } S.gph = G.ph; S.gamp = G.a; S.ghd = G.hd; }
+  const gs = Math.sin(G.ph), ga = G.a, lat = gs * 0.02 * ga, life = MENU ? 0 : 1; // le talon touche le sol quand cos(ph) vaut ±1 : la tête est alors au plus bas
+  camera.position.set(S.pos.x + Math.cos(S.yaw) * lat, S.pos.y + (0.02 - Math.pow(Math.abs(Math.cos(G.ph)), 1.5) * 0.044) * ga + Math.sin(T * 0.9) * 0.006, S.pos.z - Math.sin(S.yaw) * lat);
+  camera.rotation.set(S.pitch - S.ly * 0.24 * S.free + Math.sin(2 * G.ph + 0.5) * 0.007 * ga + life * (Math.sin(T * 0.53 + 2) * 0.004 + Math.sin(T * 1.31) * 0.002 + ga * Math.sin(T * 0.61 + 1) * 0.022),
+    S.yaw - S.lx * 0.42 * S.free + gs * 0.006 * ga + life * (Math.sin(T * 0.37) * 0.005 + Math.sin(T * 0.91 + 1) * 0.003 + ga * (Math.sin(T * 0.47) * 0.07 + Math.sin(T * 1.13 + 2) * 0.03)),
+    S.roll + Math.sin(T * 0.7) * S.sway + gs * 0.009 * ga, 'YXZ'); /* micro-mouvements d'une tête vivante ; en marchant, le regard se promène */
+  { const c3 = window.__spes.cam3; if (c3) { camera.position.fromArray(c3.p); camera.lookAt(c3.l[0], c3.l[1], c3.l[2]); } } /* __spes.cam3 = { p, l } : vue extérieure, pour contrôler le corps */
   const asp = camera.aspect, vf = asp >= 1.15 ? S.fov : Math.min(104, 2 * Math.atan(Math.tan(S.fov * 0.95 * PI / 360) / Math.max(0.4, asp * 0.98)) * 180 / PI);
   if (Math.abs(camera.fov - vf) > 0.01) { camera.fov = vf; camera.updateProjectionMatrix(); }
   // station 2 : la matière se soulève là où porte le regard
@@ -279,7 +300,6 @@ function frame() {
   // station 4 : le pouls
   if (heart) { heart.t -= dt; if (heart.t <= 0) { heart.gap = Math.min(1.35, heart.gap + 0.07); heart.t = heart.gap; sfx.thump(); W.stations[3].fx.pulse = 1; vit.bpm = 60 / heart.gap; vitals(); } }
   bloom.strength = bloomBase + W.stations[3].fx.pulse * 0.5; fx.uniforms.uPulse.value = W.stations[3].fx.pulse;
-  if (S.walk > 0.5 && W.ds.visible) { stepT -= dt; if (stepT <= 0) { stepT = 0.56; sfx.step(); } } // tes pas sur la résine du sol
   // bouche du portrait : amplitude réelle de la voix quand elle joue, sinon mouvement générique
   let m = 0; if (talking) { if (A.vAna) { A.vAna.getByteTimeDomainData(A.vBuf); let s = 0; for (let i = 0; i < 512; i += 4) { const x = (A.vBuf[i] - 128) / 128; s += x * x; } m = Math.min(1, Math.sqrt(s / 128) * 5.5); }
     if (m < 0.02 && (!A.ctx || QUICK || !voiceOn)) m = Math.abs(Math.sin(T * 21) * Math.sin(T * 6.7)) * 0.8; }
@@ -302,6 +322,7 @@ async function prologue() {
   }
   skipLine = null; el.classList.remove('on'); await new Promise((r) => setTimeout(r, 900));
 }
+const POD = [-4.0, 1.71, 1.3, -PI / 2], RIM = [-3.95, 1.5, 1.72, -PI]; // appuis du corps dans le caisson : assis sur le matelas, puis sur le rebord
 async function act1() {
   W.setScene('ship'); S.pos.set(-4.32, 0.94, 1.3); S.yaw = -PI / 2; S.pitch = 1.28; S.free = 0.22; S.fov = 66; vit.loc = UI.loc[0]; vitals();
   quest(P1, UI.q.thaw); card('01', UI.card[0]);
@@ -313,25 +334,28 @@ async function act1() {
   tween(5, (k) => { W.frost.value = 0.5 + k * 0.5; vit.tmp = 26 + k * 10.8; vit.bpm = 68 + k * 24; vitals(); }, lin);
   quest(P1, UI.q.askG); const c = await choose(UI.ch1); await say(c ? 'g02b' : 'g02a');
   await say('g03');
-  quest(P1, UI.q.exit); await ask(UI.a.exit);
+  quest(P1, UI.q.exit); await ask(UI.a.exit); await dbg('wake');
   sfx.hiss(); W.wakeHold = false; tween(3, (k) => { W.frost.value = 1 + k * 0.4; }); W.guideMat.color.setHex(COL.safran).multiplyScalar(1.5);
   tween(8, (k) => { W.beacon.intensity = 26 * Math.abs(Math.sin(k * 14)) * (1 - k * k); }, lin);
-  await tween(2.6, (k) => { W.lidPivot.rotation.x = -k * 1.9; }, out); quest(P1, UI.q.sit); BODY.set({ pose: 'sit', vis: true, rust: 1 });
-  await camTo({ pos: new V3(-4.0, 1.58, 1.3), yaw: -PI / 2, pitch: -0.04, fov: 60 }, 3); S.free = 1; await dbg('sit');
+  await tween(2.6, (k) => { W.lidPivot.rotation.x = -k * 1.9; }, out); quest(P1, UI.q.sit); BODY.set({ pose: 'sit', seat: POD, vis: true, rust: 1 });
+  // se redresser : le menton rentre, la tête décrit un arc autour des hanches, on marque un temps à mi-course, puis on finit de s'asseoir
+  await camPath([{ t: 0.3, pos: new V3(-4.3, 1.18, 1.3), pitch: 0.82 }, { t: 0.62, pos: new V3(-4.15, 1.53, 1.3), pitch: 0.08 }, { t: 1, pos: new V3(-4.0, 1.71, 1.3), yaw: -PI / 2, pitch: -0.2 }], 3.6, effort); /* 1,71 : assis sur le matelas, pas dedans */ S.free = 1; await look({ pitch: -0.04 }, 0.9); await dbg('sit');
   // ce corps n'a pas bougé depuis 474 ans : on baisse les yeux, on lève ses mains qui tremblent, on les regarde
-  quest(P1, UI.q.hands); const l1 = say('g04'); BODY.set({ pose: 'hands' }); await camTo({ pitch: -0.62, fov: 56 }, 1.8); await dbg('hands'); await wait(2.4); BODY.set({ pose: 'sit' }); await camTo({ pitch: -0.1, fov: 60 }, 1.3);
-  // sortir du caisson : les mains agrippent les bords, on pivote, les jambes passent par-dessus le rebord, les pieds touchent le sol, on se redresse
-  quest(P1, UI.q.exit); BODY.set({ pose: 'grip' }); W.vent(); await camTo({ yaw: -PI / 2 - 0.3, pitch: -0.95, fov: 66 }, 1.4); await wait(0.4);
-  sfx.servo(0.9); BODY.set({ pose: 'edge' }); await camTo({ pos: new V3(-3.95, 1.5, 1.72), yaw: -PI, pitch: -1.08, fov: 70 }, 2.3); await dbg('edge'); await wait(0.7);
-  quest(P1, UI.q.look); BODY.set({ pose: 'stand' }); tween(3, (k) => { S.sway = Math.sin(k * PI) * 0.03; }, lin); // on tient debout, mais ça tangue
-  await camTo({ pos: new V3(-3.9, 1.66, 2.28), pitch: -1.3 }, 1.5, out); sfx.thump(); await dbg('debout'); await wait(0.5); await camTo({ pitch: -0.05, fov: 60 }, 1.3);
-  await camTo({ pos: new V3(-2.9, 1.66, 2.3), look: new V3(-4.2, 0.95, 3.9) }, 2.6); await camTo({ pos: new V3(-3.72, 1.58, 2.86), look: new V3(-4.36, 0.86, 3.9), fov: 50 }, 3.4); await dbg('voisin'); await wait(2.2);
-  await camTo({ pos: new V3(-1.3, 1.68, 1.9), yaw: -PI / 2 + 0.4, pitch: 0.04, fov: 60 }, 3); await l1; await dbg('stand');
+  quest(P1, UI.q.hands); const l1 = say('g04'); BODY.set({ pose: 'hands', seat: POD }); await look({ pitch: -0.68 }, 0.9); await dbg('hands'); await wait(3); BODY.set({ pose: 'sit', seat: POD }); await look({ pitch: -0.12 }, 0.8);
+  // sortir du caisson : on cherche le bord des yeux, les mains s'y posent ; on pivote sur le bassin, les jambes passent par-dessus le rebord
+  quest(P1, UI.q.exit); await look({ yaw: -PI / 2 - 0.5, pitch: -0.8 }, 0.7); BODY.set({ pose: 'grip', seat: POD }); W.vent(); await wait(1);
+  sfx.servo(0.9); BODY.set({ pose: 'edge', seat: RIM, rate: 1.6 }); await camPath([{ t: 0.5, pos: new V3(-4.0, 1.63, 1.5), yaw: -PI / 2 - 1.0, pitch: -0.7 }, { t: 1, pos: new V3(-3.95, 1.5, 1.72), yaw: -PI, pitch: -0.95 }], 2.3); await look({ pitch: -1.1 }, 0.5); await dbg('edge'); await wait(0.7);
+  // se lever : on se penche, les pieds prennent le sol, on pousse sur les bras ; la tête passe devant, monte, dépasse d'un rien et retombe
+  quest(P1, UI.q.look); await camPath([{ t: 1, pos: new V3(-3.94, 1.43, 1.96), pitch: -1.2 }], 0.7); sfx.thump(); BODY.set({ pose: 'stand', rate: 4.5 }); tween(3.6, (k) => { S.sway = Math.sin(k * PI) * 0.03; }, lin); // on tient debout, mais ça tangue
+  await camPath([{ t: 0.7, pos: new V3(-3.9, 1.69, 2.26), pitch: -1.26 }, { t: 1, pos: new V3(-3.9, 1.66, 2.28), pitch: -1.3 }], 1.5, out); await dbg('debout'); await wait(0.8); await look({ pitch: -0.05 }, 0.9);
+  // deux pas vers le caisson voisin, on se penche sur le dormeur — on s'approche, on ne zoome pas
+  S.walk = 1; await camTo({ pos: new V3(-3.3, 1.66, 2.5), look: new V3(-4.2, 0.95, 3.9), lead: 0.5 }, 1.7, trap); BODY.set({ lean: 0.5 }); await camTo({ pos: new V3(-3.76, 1.48, 3.02), look: new V3(-4.36, 0.86, 3.9), lead: 0.6 }, 2.1, trap); S.walk = 0; await dbg('voisin'); await wait(2.4); BODY.set({ lean: 0 }); /* buste penché sur le dormeur, pieds au sol */
+  S.walk = 1; await camTo({ pos: new V3(-1.3, 1.68, 1.9), yaw: -PI / 2 + 0.4, pitch: 0.04, lead: 0.4 }, 2.8, trap); S.walk = 0; await l1; await dbg('stand');
   quest(P1, UI.q.obs); GOAL = [0, -11.6]; await ask(UI.a.walk); vit.loc = UI.loc[1]; vitals();
-  S.walk = 1; await camTo({ pos: new V3(0, 1.68, 0.6), yaw: -0.5, pitch: -1.0, fov: 64 }, 3.4); await dbg('aisle'); // premiers pas : on regarde ses pieds avancer
+  S.walk = 1; await camTo({ pos: new V3(0, 1.68, 0.6), yaw: -0.5, pitch: -1.0, lead: 0.45 }, 3.4, trap); await dbg('aisle'); // premiers pas : on regarde ses pieds avancer
   tween(9, (k) => BODY.set({ rust: 1 - k })); // le corps se dérouille en marchant
   const l2 = say('g05');
-  await camTo({ pos: new V3(0, 1.68, -10.6), look: new V3(-0.4, 2.3, -15) }, 10.5, lin); S.walk = 0; await l2;
+  await camTo({ pos: new V3(0, 1.68, -10.6), look: new V3(-0.4, 2.3, -15), lead: 0.22 }, 9.6, trap); S.walk = 0; await l2;
 }
 async function visorBoot() {
   const v = $('#visor'), rows = UI.visor, ul = $('#vRows'); ul.innerHTML = '';
@@ -340,47 +364,56 @@ async function visorBoot() {
     while (ul.children.length < n) { const li = document.createElement('li'); li.textContent = rows[ul.children.length]; ul.appendChild(li); sfx.blip(); } fx.uniforms.uGlitch.value = k * k; v.style.setProperty('--g', k); }, lin);
 }
 async function act2() {
-  BODY.set({ pose: 'stand', vis: true, rust: 0 }); W.lidPivot.rotation.x = -1.9; W.frost.value = 1.4; W.wakeHold = false; vit.bpm = 92; vit.tmp = 36.8; vit.loc = UI.loc[2]; vitals(); callState('live');
+  BODY.set({ pose: 'stand', vis: true, rust: 0 }); S.fov = 66; W.lidPivot.rotation.x = -1.9; W.frost.value = 1.4; W.wakeHold = false; vit.bpm = 92; vit.tmp = 36.8; vit.loc = UI.loc[2]; vitals(); callState('live');
   card('02', UI.card[1]); quest(P2, UI.q.earth); GOAL = null;
   // on s'avance jusqu'au garde-corps, on y pose les mains ; en relevant les yeux, on croise son propre reflet dans le verre, puis la Terre
-  await dbg('window'); S.walk = 1; await camTo({ pos: new V3(0.12, 1.72, -13.2), yaw: 0.03, pitch: -0.3, fov: 60 }, 2.6); S.walk = 0; BODY.set({ pose: 'rail' });
-  await camTo({ pitch: -0.62 }, 0.9); sfx.thump(); await dbg('rail'); await wait(0.7);
-  await camTo({ look: new V3(0.12, 1.69, -15.3), fov: 54 }, 1.8); await dbg('reflet'); await wait(1.6);
-  await camTo({ look: new V3(-0.55, 2.05, -15), fov: 56 }, 2.4); await dbg('earth');
+  await dbg('window'); S.walk = 1; await camTo({ pos: new V3(0.12, 1.72, -13.04), yaw: 0.03, pitch: -0.55, lead: 0.6 }, 2.6, trap); S.walk = 0;
+  // les mains se posent sur la barre et s'y referment ; on s'y appuie, le buste avance d'un rien. Le corps reste ancré là : seule la tête bouge ensuite.
+  BODY.set({ pose: 'rail', lock: [0.12, -13.2, 0.03] }); await look({ pitch: -0.92 }, 0.6); await camPath([{ t: 1, pos: new V3(0.12, 1.7, -13.2) }], 0.9, out); sfx.thump(); W.reflect(renderer, S.pos); await dbg('rail'); await wait(1);
+  await look({ look: new V3(0.12, 1.69, -15.3) }, 0.9); await dbg('reflet'); await wait(2.2);
+  await look({ look: new V3(-0.55, 2.05, -15) }, 1.1); await dbg('earth');
   // le soleil se lève derrière la Terre : un fil de lumière au limbe, puis il perce, la baie s'éclaire, la flotte sort de l'ombre
   sfx.dawn(); tween(8, (k) => W.setSun(0.1 * k), out).then(() => tween(17, (k) => W.setSun(0.1 + 0.9 * k)));
-  await say('g06'); await dbg('sun');
+  await say('g06'); W.reflect(renderer, S.pos); await dbg('sun'); /* la baie s'est éclairée : le reflet aussi */
   // une arche nous dépasse, tout près, au-dessus de la baie : la coque en tremble, puis elle rejoint la flotte
   sfx.rumble(10); tween(17, (k) => { W.flyby(k); const e = Math.exp(-(((k - 0.3) / 0.17) ** 2)); S.roll = Math.sin(k * 610) * 0.005 * e; }, lin);
-  const pan = camTo({ pos: new V3(0.2, 1.72, -13.2), look: new V3(-0.25, 3.25, -15) }, 7); await say('g07'); await pan; await dbg('fleet');
+  const pan = camTo({ look: new V3(-0.25, 3.25, -15) }, 7); await say('g07'); await pan; await dbg('fleet'); /* poursuite lente : on suit l'arche des yeux */
   quest(P2, UI.q.askG); const c = await choose(UI.ch2); await say(c ? 'g08b' : 'g08a');
   await say('g09');
-  quest(P2, UI.q.link); GOAL = [W.seat.chair.x, W.seat.chair.z]; const l = say('g10'); BODY.set({ pose: 'stand' }); S.walk = 1; sfx.servo(1.6); tween(2.6, (k) => W.seatWake(k)); // le poste s'éveille à l'approche
-  await camTo({ pos: W.seat.front.clone().setY(1.68), look: W.seat.chair, fov: 60 }, 3.8); S.walk = 0; await l; await dbg('link');
+  quest(P2, UI.q.link); GOAL = [W.seat.chair.x, W.seat.chair.z]; const l = say('g10'); await look({ pitch: -0.5 }, 0.5); BODY.set({ pose: 'stand' }); await wait(0.5); S.walk = 1; sfx.servo(1.6); tween(2.6, (k) => W.seatWake(k)); // le poste s'éveille à l'approche
+  await look({ yaw: aim(S.pos, W.seat.chair).yaw, pitch: -0.1 }, 0.8); await camTo({ pos: W.seat.front.clone().setY(1.68), look: W.seat.chair, lead: 0.5 }, 3.6, trap); S.walk = 0; await l; await dbg('link');
   await ask(UI.a.seat); GOAL = null; vit.loc = UI.loc[3]; vitals();
-  await camTo({ pos: W.seat.front.clone().setY(1.68), yaw: W.seat.yaw, pitch: -0.08 }, 1.7); // demi-tour : dos au fauteuil
-  BODY.set({ pose: 'seat' }); sfx.servo(1.4); await camTo({ pos: W.seat.eye, yaw: W.seat.yaw, pitch: -0.98, fov: 66 }, 2.3, out); sfx.thump(); // on se laisse tomber dans l'assise, les yeux sur ses genoux et ses mains
-  await wait(0.4); sfx.servo(1); await tween(1.0, (k) => W.setArms(k)); sfx.thump(); // les accoudoirs se referment sous les avant-bras
-  await wait(0.25); sfx.clack(); await tween(0.45, (k) => W.setClamp(k), out); await dbg('clamp'); await wait(0.9); // puis les bracelets, sur les poignets
-  await camTo({ pitch: 0.08, fov: 60 }, 1.5); S.free = 0.45; await dbg('seat');
+  await camTo({ yaw: W.seat.yaw, pitch: -0.2 }, 1.5); // demi-tour : dos au fauteuil
+  // s'asseoir : le bassin recule, la tête part d'abord en avant pour faire contrepoids, puis descend ; mains sur les cuisses tant que les accoudoirs sont ouverts
+  { const f = W.seat.front, e = W.seat.eye; BODY.set({ pose: 'lap', seat: [e.x, e.y, e.z, W.seat.yaw], rate: 2.2 }); sfx.servo(1.4);
+    await camPath([{ t: 0.45, pos: new V3(f.x + (e.x - f.x) * 0.3, 1.68 - (1.68 - e.y) * 0.5, f.z + (e.z - f.z) * 0.3), pitch: -0.8 }, { t: 1, pos: e.clone(), yaw: W.seat.yaw, pitch: -0.98 }], 2.1, out); sfx.thump(); }
+  await wait(0.5); sfx.servo(1); await tween(1.1, (k) => W.setArms(k)); sfx.thump(); // les accoudoirs se referment…
+  BODY.set({ pose: 'seat', seat: [W.seat.eye.x, W.seat.eye.y, W.seat.eye.z, W.seat.yaw] }); await wait(1.1); // …puis les avant-bras viennent s'y poser, les mains sur les manches
+  sfx.clack(); await tween(0.45, (k) => W.setClamp(k), out); await dbg('clamp'); await wait(0.9); // les bracelets, sur les poignets
+  await look({ pitch: 0.06 }, 0.9); S.free = 0.45; await dbg('seat');
   // lien neural : la fiche du câble cervical se présente devant toi, ouvre ses griffes, puis va se verrouiller derrière la nuque
   quest(P2, UI.q.cable); const l2 = say('g10b'); sfx.servo(2.4);
   await tween(2.6, (k) => W.setCable(k * 0.52)); await dbg('plug'); await wait(0.9); await tween(0.6, (k) => W.setCable(0.52 + k * 0.48), out);
-  sfx.clack(); sfx.glitch(1.2); W.cableOn(1); tween(2.4, (k) => W.seatWake(1 + 2.2 * (1 - k)), out); vit.bpm = 118; vitals(); sense(UI.sense.l[0], UI.sense.l[1], UI.sense.l[2], '#7fe3e6');
-  tween(1.7, (k) => { const e = (1 - k) * (1 - k); S.roll = Math.sin(k * PI * 4) * 0.04 * (1 - k); fx.uniforms.uGlitch.value = 0.6 * (1 - k); fx.uniforms.uSurge.value = e; S.fov = 60 + 7 * e; }, lin); // décharge : l'image saute, des filaments de lumière fusent des bords
+  sfx.clack(); sfx.glitch(0.5); W.cableOn(1); tween(2.4, (k) => W.seatWake(1 + 1.2 * (1 - k)), out); vit.bpm = 118; vitals(); sense(UI.sense.l[0], UI.sense.l[1], UI.sense.l[2], '#7fe3e6');
+  { const q0 = S.pitch; tween(2.4, (k) => { const e = Math.exp(-k * 5), b = Math.exp(-Math.pow((k - 0.07) / 0.06, 2)); S.pitch = q0 - 0.05 * Math.sin(k * 22) * e; S.roll = 0.012 * Math.sin(k * 17) * e; fx.uniforms.uFade.value = 1 - 0.6 * b - 0.18 * e; fx.uniforms.uGlitch.value = 0.16 * e; fx.uniforms.uTunnel.value = 0.4 * e; }, lin).then(() => { fx.uniforms.uFade.value = 1; fx.uniforms.uTunnel.value = 0; fx.uniforms.uGlitch.value = 0; S.roll = 0; }); } // la nuque encaisse, la vue se voile une fraction de seconde, puis tout se recale
   await dbg('cable'); await wait(1.9); sense(null); tween(3, (k) => { vit.bpm = 118 - 14 * k; });
-  quest(P2, UI.q.visor); W.linkSpin = 7; sfx.servo(2.8); const v = $('#visor');
-  await tween(2.2, (k) => W.setVisor(k * 0.8)); await dbg('visor0'); await tween(1.0, (k) => { W.setVisor(0.8 + k * 0.2); if (k > 0.3) v.classList.add('on'); }); await dbg('visor'); await l2; // le casque se rabat depuis le dessus de la tête
-  await visorBoot(); await tween(0.3, (k) => { fx.uniforms.uWhite.value = k; });
+  // Le casque : un objet, pas un effet. Le verrou lâche (à-coup), la coque sombre bascule devant les yeux et ferme la lumière de la baie, les mousses
+  // prennent appui sur le visage (elle dépasse d'un rien et revient, la nuque encaisse), une seconde de noir — et seulement alors l'écran intérieur s'allume.
+  quest(P2, UI.q.visor); W.linkSpin = 7; const v = $('#visor'), u = fx.uniforms; W.visorOn(0);
+  sfx.clack(); await tween(0.22, (k) => W.setVisor(0.05 * k), out); await wait(0.35); sfx.servo(1.9);
+  await tween(1.9, (k) => { W.setVisor(0.05 + 0.87 * k); u.uFade.value = 1 - 0.62 * sm(0.5, 1, k); u.uTunnel.value = 0.5 * sm(0.45, 1, k); }, io); await dbg('visor0');
+  { const q0 = S.pitch; sfx.thump(); await tween(0.55, (k) => { W.setVisor(0.92 + 0.08 * (k < 0.5 ? k / 0.5 * 1.3 : 1.3 - (k - 0.5) / 0.5 * 0.3)); S.pitch = q0 - 0.016 * Math.sin(k * PI); u.uFade.value = 0.38 - 0.34 * k; }, lin); S.pitch = q0; }
+  await wait(0.9); v.classList.add('on'); tween(1.4, (k) => W.visorOn(k)); await dbg('visor'); await l2;
+  await visorBoot(); fx.uniforms.uTunnel.value = 0; await tween(0.3, (k) => { fx.uniforms.uWhite.value = k; });
 }
 // --- acte 3 : la galerie Ceysson & Bénétière reconstituée. On y suit le parcours réel (W.legs), d'œuvre en œuvre. ---
 const trap = (k) => { const a = 0.16, b = 0.2, v = 1 / (1 - a / 2 - b / 2); return k < a ? v * k * k / (2 * a) : k > 1 - b ? 1 - v * (1 - k) * (1 - k) / (2 * b) : v * (k - a / 2); }; // vitesse constante, départ et arrivée doux
 const lerpA = (a, b, k) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k;
 function walk(leg, look, onK) { // marche le long d'un tronçon : le regard suit le chemin, puis se pose sur « look » à l'arrivée
   const c = W.legs[leg], [s0, len] = W.legLen[leg], p = new V3(), tg = new V3(), y0 = S.yaw, q0 = S.pitch;
-  return tween(len / 2.2, (k) => { c.getPointAt(k, p); S.pos.set(p.x, p.y + 1.66 + DSY, p.z); c.getTangentAt(Math.min(1, k + 0.04), tg);
+  return tween(len / 1.45 + 0.6, (k) => { c.getPointAt(k, p); S.pos.set(p.x, p.y + 1.66 + DSY, p.z); c.getTangentAt(Math.min(1, k + 0.04), tg);
     let yw = Math.atan2(-tg.x, -tg.z), pt = Math.atan2(tg.y, Math.hypot(tg.x, tg.z)) * 0.45;
-    if (look) { const a = aim(S.pos, look), b = sm(0.74, 1, k); yw = lerpA(yw, a.yaw, b); pt += (a.pitch - pt) * b; }
+    if (look) { const a = aim(S.pos, look), dy = Math.atan2(Math.sin(a.yaw - yw), Math.cos(a.yaw - yw)), seen = Math.abs(dy) < 1.25 ? 1 : 0, b = Math.max(sm(0.8, 1, k), seen * sm(0.45, 0.7, k)); yw = lerpA(yw, a.yaw, b); pt += (a.pitch - pt) * b; } /* dès que l'œuvre entre dans le champ, le regard s'y pose ; le corps, lui, continue sur le chemin */
     const i = sm(0, 0.14, k); S.yaw = lerpA(y0, yw, i); S.pitch = q0 + (pt - q0) * i; W.pathU.uHead.value = s0 + len * k; if (onK) onK(k); }, trap);
 }
 // mesure affichée pendant qu'un sens s'éveille : elle met un chiffre sur ce que le corps éprouve
@@ -410,7 +443,7 @@ async function act3() {
   tween(1.8, (k) => { fx.uniforms.uWhite.value = 1 - k; fx.uniforms.uGlitch.value = 1 - k; });
   card('03', UI.card[2]); quest(P3, UI.q.enter);
   await wait(2); await dbg('ds');
-  if (!ST0) { const l = say('g11'); await camTo({ pos: new V3(p0.x, 1.66 + DSY, p0.z), pitch: 0.02, fov: 60 }, 7, out); await l; await ask(UI.a.enter); }
+  if (!ST0) { const l = say('g11'); S.walk = 1; await camTo({ pos: new V3(p0.x, 1.66 + DSY, p0.z), pitch: 0.02, fov: 60 }, 3.4, trap); S.walk = 0; await l; await ask(UI.a.enter); }
   const SN = UI.sense, num = (v, n = 2) => v.toFixed(n).replace('.', DEC), u = fx.uniforms;
   for (let i = ST0; i < 4; i++) {
     const st = W.stations[i], w = WORKS[i], label = UI.art + ' CB-0' + (i + 1) + ' — ' + w.sense; document.querySelectorAll('#qL li').forEach((li) => li.classList.toggle('cur', +li.dataset.i === i));
@@ -418,17 +451,17 @@ async function act3() {
     await walk(i, st.stop.look, (k) => { if (k > (i === 2 ? 0.86 : 0.55)) st.k = 1; // l'œuvre s'imprime à l'approche
       if (i === 0 && k > 0.5) setLoc(5); if (i === 2) { if (k > 0.58 && !line) line = say('g11b'); if (k > 0.8) setLoc(6); } });
     S.walk = 0; st.k = 1; if (line) await line; if (i === 2) quest(P3, label); await scanArt(i); await dbg('st' + i);
-    await say(w.id + 'a'); await ask(w.verb); const p = S.pos.clone(); st.fx.on = true; st.near = true; let live = null, back = () => camTo({ pos: p, look: st.stop.look, fov: 60 }, 2.6);
+    await say(w.id + 'a'); await ask(w.verb); const p = S.pos.clone(); st.fx.on = true; st.near = true; let live = null, back = async () => { S.walk = 1; await camTo({ pos: p, look: st.stop.look, fov: 60, lead: 0.5 }, 2.2, trap); S.walk = 0; }; const step = (pos, dur) => { S.walk = 1; camTo({ pos, look: st.stop.look, lead: 0.4 }, dur, trap).then(() => { S.walk = 0; }); }; /* on s'approche en marchant, sans zoomer */
     if (i === 0) { // kinesthésie : le regard s'accroche à une plume qui tombe, et le corps tombe avec elle (roulis, glissement, affaissement)
       live = tween(900, () => { const f = st.fx, a = aim(S.pos, f.hero), k = Math.min(1, f.t / 2.2) * 0.07; S.yaw = lerpA(S.yaw, a.yaw, k); S.pitch += (a.pitch - S.pitch) * k; S.roll += (-f.sway * 0.3 - S.roll) * 0.06; S.pos.z = p.z + f.sway * 0.5; S.pos.y = p.y - f.drop * 0.2; S.fov += (44 - S.fov) * 0.012;
         sfx.air(0.3 + Math.abs(f.sway) * 2, 380 + Math.abs(f.sway) * 900); sense(SN.k[0], SN.k[2] + ' ' + num(f.drop) + ' m', SN.k[1], w.css); }, lin); }
-    if (i === 1) { const near = st.wallPos.clone().addScaledVector(st.n, 0.66); near.y += DSY - 0.04; camTo({ pos: near, look: st.stop.look, fov: 54 }, 4.4); } // toucher : à trente centimètres, la suite se joue dans touchFx()
+    if (i === 1) { const near = st.wallPos.clone().addScaledVector(st.n, 0.66); near.y += DSY - 0.04; step(near, 3.2); } // toucher : à trente centimètres, la suite se joue dans touchFx()
     if (i === 2) { // proprioception : la galerie grandit autour de toi, les troncs sortent du cuivre, la brume rose de la photographie envahit la salle
       const fy = DSY + st.lv; camTo({ pos: p, pitch: 0.52, fov: 82 }, 4.5); sfx.servo(4);
       tween(5, (k) => { const s = 1 + 1.45 * k; W.setScale(s, p.x, fy, p.z); scene.fog.color.lerpColors(LK.fog, LK.forest, k); scene.fog.density = LK.density + k * 0.085; W.dsDim(k); sense(SN.p[0], SN.p[1] + ' ' + num(1.72 / s) + ' m', Math.round(100 / s) + ' %', w.css); });
       back = async () => { await Promise.all([camTo({ pos: p, look: st.stop.look, fov: 60 }, 3), tween(3, (k) => { const s = 2.45 - 1.45 * k; W.setScale(s, p.x, fy, p.z); scene.fog.color.lerpColors(LK.forest, LK.fog, k); scene.fog.density = LK.density + (1 - k) * 0.085; W.dsDim(1 - k); })]); W.setScale(1); W.dsDim(0); }; }
     if (i === 3) { // intéroception : on se penche, le monde s'éteint autour du cadre, le temps ralentit, on entend son cœur
-      const near = st.wallPos.clone().addScaledVector(st.n, 0.46); near.y += DSY + 0.02; camTo({ pos: near, look: st.stop.look, fov: 50 }, 5); heart = { t: 0.2, gap: 0.62 };
+      const near = st.wallPos.clone().addScaledVector(st.n, 0.46); near.y += DSY + 0.02; step(near, 3.6); heart = { t: 0.2, gap: 0.62 };
       tween(5, (k) => { W.dsTime = 1 - k * 0.82; u.uTunnel.value = k; });
       live = tween(900, () => { sense(SN.i[0], SN.i[1] + ' ' + Math.round(vit.bpm) + ' bpm', SN.i[2] + ' ' + num(1 / Math.max(0.18, W.dsTime), 1) + ' s', w.css); if (Math.random() < 0.02) sfx.bubble(); }, lin); }
     await wait(2.6); await dbg('fx' + i); await say(w.id + 'b'); mark(i); await wait(1.2);
@@ -440,7 +473,7 @@ async function act3() {
   document.querySelectorAll('#qL li').forEach((li) => li.classList.remove('cur'));
   // fin : depuis la rive du niveau 1, un dernier regard sur la nef et sur le chemin parcouru
   quest(P3, UI.q.end); GOAL = [8.35, -1.9]; S.walk = 1; tween(5, (k) => { W.pathU.uAll.value = k; W.pathLine.opacity = 0.1 + k * 0.8; });
-  const lv = W.stations[3].lv, end = camTo({ pos: new V3(8.35, lv + 1.66 + DSY, -1.9), look: new V3(-7.5, 0.9 + DSY, -17.5), fov: 68 }, 9);
+  const lv = W.stations[3].lv, end = camTo({ pos: new V3(8.35, lv + 1.66 + DSY, -1.9), look: new V3(-7.5, 0.9 + DSY, -17.5), lead: 0.5 }, 9, trap);
   await say('g12'); await end; S.walk = 0; await dbg('end'); await wait(1); await tween(1.6, (k) => { fx.uniforms.uWhite.value = k; });
 }
 async function run() {
@@ -463,11 +496,13 @@ addEventListener('keydown', (e) => {
   if (!running) return;
   if (e.code === 'KeyF' || e.code === 'KeyE' || e.code === 'Enter') { if (pending) { e.preventDefault(); pending(); } }
   else if (/^(Digit|Numpad)[1-9]$/.test(e.code) && pick) pick(+e.code.slice(-1) - 1);
-  else if (e.code === 'KeyV') $('#bVoice').click(); else if (e.code === 'KeyM') $('#bSound').click();
+  else if (e.code === 'KeyV') $('#bVoice').click(); else if (e.code === 'KeyM') $('#bSound').click(); else if (e.code === 'KeyG') $('#bPerf').click();
 });
 promptEl.addEventListener('click', () => pending && pending());
 $('#prologue').addEventListener('click', () => skipLine && skipLine());
 $('#bSkip').addEventListener('click', () => skipLine && skipLine());
+// Netteté ou fluidité : sur une carte graphique modeste on ne peut pas avoir les deux. Par défaut l'image reste nette ; ce bouton donne la priorité aux 60 images/s (définition interne plus basse).
+$('#bPerf').addEventListener('click', (e) => { QL.smooth = !QL.smooth; QL.min = QL.smooth ? 0.6 : 0.85; QL.ok = 0; QL.block = 0; if (!QL.smooth) { setScale(Math.max(QL.scale, 0.85)); } e.currentTarget.querySelector('span').textContent = UI.perf[QL.smooth ? 1 : 0]; });
 $('#bVoice').addEventListener('click', (e) => { voiceOn = !voiceOn; if (!voiceOn && synth) synth.cancel(); if (A.vOut) A.vOut.gain.setTargetAtTime(voiceOn ? 1 : 0.0001, A.ctx.currentTime, 0.1); e.currentTarget.classList.toggle('off', !voiceOn); });
 $('#bSound').addEventListener('click', (e) => { A.on = !A.on; if (A.out) A.out.gain.setTargetAtTime(A.on ? 0.5 : 0.0001, A.ctx.currentTime, 0.2); e.currentTarget.classList.toggle('off', !A.on); });
 function toDossier() { running = false; if (synth) synth.cancel(); if (A.ctx) { A.out.gain.setTargetAtTime(0.0001, A.ctx.currentTime, 0.3); A.vOut.gain.setTargetAtTime(0.0001, A.ctx.currentTime, 0.1); } document.body.classList.add('read'); theme('#06080c'); $('#dossier').scrollIntoView(); }
@@ -485,7 +520,7 @@ function menu() { if (MENU || started || running || LITE || reduce || AUTO || !W
 const startBtn = $('#start'), bootMsg = $('#bootMsg'), theme = (c) => { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = c; };
 async function boot() {
   try { await Promise.race([document.fonts.load('600 20px Rajdhani').then(() => document.fonts.load('20px "Krona One"')), new Promise((r) => setTimeout(r, 2500))]); } catch (e) { /* polices de secours */ }
-  localizeDom(); startBtn.textContent = UI.loading;
+  localizeDom(); startBtn.textContent = UI.loading; $('#bPerf span').textContent = UI.perf[0];
   try { const all = await (await fetch('app/lines.json')).json(); LINES = all[LANG] || all.fr || {}; } catch (e) { LINES = {}; }
   let ok = true; try { initGL(); } catch (e) { ok = false; console.error(e); }
   if (!ok) { bootMsg.textContent = UI.noGL; startBtn.disabled = true; toDossier(); return; }
