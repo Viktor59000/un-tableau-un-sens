@@ -42,13 +42,29 @@ a{color:inherit}
 #gl{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0}
 body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologue,body.read #visor{display:none}
 
-/* ---------- écran de démarrage ---------- */
-#boot{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:#030407;transition:opacity 1.4s ease,visibility 1.4s}
+/* ---------- terminaux de bord ----------
+   L'accueil, le journal, l'écran de fin et le dossier sont des terminaux du SPES : mêmes cartouches à pan coupé, mêmes libellés à losange, même trame
+   de balayage que l'interface de l'immersion. Derrière l'accueil et la fin, c'est la scène 3D elle-même qui tourne (app/main.js, menu). */
+.term{--scan:repeating-linear-gradient(0deg,rgba(127,227,230,.04) 0 1px,transparent 1px 4px);--l:linear-gradient(var(--cyan),var(--cyan))}
+.term::before{content:"";position:absolute;z-index:2;pointer-events:none;opacity:.5;inset:max(14px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(14px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));
+  background:var(--l) 0 0/22px 1px,var(--l) 0 0/1px 22px,var(--l) 100% 0/22px 1px,var(--l) 100% 0/1px 22px,var(--l) 0 100%/22px 1px,var(--l) 0 100%/1px 22px,var(--l) 100% 100%/22px 1px,var(--l) 100% 100%/1px 22px;background-repeat:no-repeat}
+.t-id{display:flex;gap:8px;align-items:center;font-size:11px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan)}
+.t-id::before{content:"";flex:none;width:7px;height:7px;border:1px solid currentColor;transform:rotate(45deg)}
+.t-id::after{content:"";flex:none;width:44px;height:1px;background:currentColor;opacity:.55}
+.t-clk{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-variant-numeric:tabular-nums}
+#boot>.t-id,#outro>.t-id{position:absolute;z-index:3;left:max(30px,env(safe-area-inset-left));top:max(30px,env(safe-area-inset-top))}
+#boot>.t-clk,#outro>.t-clk{position:absolute;z-index:3;right:max(30px,env(safe-area-inset-right));bottom:max(28px,env(safe-area-inset-bottom))}
+.t-body{position:absolute;inset:0;overflow-y:auto;display:grid;align-items:center;justify-items:center;scrollbar-width:thin;scrollbar-color:rgba(127,227,230,.3) transparent}
+
+/* ---------- écran de démarrage : le terminal de ton caisson ---------- */
+#boot{position:fixed;inset:0;z-index:50;transition:opacity 1.4s ease,visibility 1.4s;
+  background:var(--scan),linear-gradient(90deg,rgba(3,4,7,.96) 0,rgba(3,4,7,.86) 34%,rgba(3,4,7,.34) 66%,rgba(3,4,7,.56) 100%)}
 #boot.gone{opacity:0;visibility:hidden;pointer-events:none}
-.boot-in{width:min(680px,88vw)}
+.boot-g{width:min(1180px,88vw);display:grid;grid-template-columns:minmax(0,640px) minmax(0,330px);justify-content:space-between;align-items:center;gap:40px;padding:84px 0 70px}
+.boot-in{min-width:0}
 .kick{font-size:13px;letter-spacing:.32em;text-transform:uppercase;color:var(--coral);display:flex;gap:14px;align-items:center}
 .kick::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,rgba(255,79,56,.6),transparent)}
-.wm{font-family:var(--disp);font-weight:400;text-transform:uppercase;line-height:1.02;margin:26px 0 22px;font-size:clamp(30px,6.4vw,64px);letter-spacing:-.01em;position:relative}
+.wm{font-family:var(--disp);font-weight:400;text-transform:uppercase;line-height:1.02;margin:26px 0 22px;font-size:clamp(30px,6.4vw,64px);letter-spacing:-.01em;position:relative;text-shadow:0 2px 30px rgba(0,0,0,.8)}
 .wm span{display:block;color:var(--dim);font-size:.42em;letter-spacing:.08em;margin-bottom:.5em}
 .wm b{font-weight:400;position:relative;display:inline-block}
 .wm b::before,.wm b::after{content:attr(data-t);position:absolute;left:0;top:0;opacity:0;pointer-events:none}
@@ -62,14 +78,35 @@ body.read #gl,body.read #hud,body.read #boot,body.read #outro,body.read #prologu
 .cta:disabled{background:#2a2f36;color:var(--mute);cursor:default}
 .lnk{margin-left:22px;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);border-bottom:1px solid var(--mute);padding-bottom:3px}
 @media(hover:hover) and (pointer:fine){.lnk:hover{color:var(--ink);border-color:var(--ink)}}
-#bootMsg{margin-top:30px;font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--mute)}
+#bootMsg{display:flex;gap:10px;align-items:center;margin:30px 0 0;font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--cyan)}
+#bootMsg::before{content:"";flex:none;width:7px;height:7px;background:currentColor;transform:rotate(45deg);animation:kb2 1.4s steps(1) infinite}
 .keys{margin-top:10px;font-size:13px;letter-spacing:.08em;color:var(--mute)}
 .keys kbd,#prompt kbd,.tools kbd{font-family:var(--ui);font-weight:700}
 .keys-t{display:none;margin-top:10px;font-size:13px;letter-spacing:.06em;color:var(--mute)}body.touch .keys-t{display:block}
 .keys kbd{border:1px solid var(--mute);padding:1px 7px;margin:0 3px;color:var(--dim)}
-.langs{position:absolute;top:max(18px,env(safe-area-inset-top));right:max(22px,env(safe-area-inset-right));display:flex;gap:6px;z-index:3}
+.langs{position:absolute;top:max(26px,env(safe-area-inset-top));right:max(30px,env(safe-area-inset-right));display:flex;gap:6px;z-index:3}
 .langs button{min-width:44px;min-height:44px;font:700 12px var(--ui);letter-spacing:.18em;color:var(--dim);border:1px solid rgba(154,167,181,.35);background:rgba(6,8,12,.5);cursor:pointer;transition:color .2s,border-color .2s}
 @media(hover:hover) and (pointer:fine){.langs button:hover{color:var(--ink);border-color:var(--ink)}}.langs button.on{color:#06080c;background:var(--safran);border-color:var(--safran)}
+/* cartouche du caisson : les constantes du dormeur, dans le même dessin que le biomoniteur de l'immersion */
+.pod{position:relative;padding:1px;background:rgba(127,227,230,.55);clip-path:var(--cut);text-transform:uppercase;font-variant-numeric:tabular-nums}
+.pod>div{clip-path:var(--cut);background:rgba(5,9,13,.84);padding:15px 17px 17px}
+.p-top{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--coral)}
+.p-top b{font-weight:700;color:var(--cyan)}
+.p-ecg{display:block;width:100%;height:58px;margin:10px 0 8px;overflow:visible}
+.p-ecg path{fill:none;stroke:var(--coral);stroke-width:1.5;vector-effect:non-scaling-stroke;opacity:.28}
+.p-ecg .run{opacity:1;stroke-width:2;stroke-dasharray:24 76;animation:ecg 7.5s linear infinite;filter:drop-shadow(0 0 5px var(--coral))}
+@keyframes ecg{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+.p-num{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0;padding:10px 0 12px;border-top:1px solid rgba(127,227,230,.22);border-bottom:1px solid rgba(127,227,230,.22)}
+.p-num dt{font-size:10px;font-weight:700;letter-spacing:.2em;color:var(--dim)}
+.p-num dd{margin:2px 0 0;font-size:26px;font-weight:700;line-height:1;color:var(--ink)}
+.p-num div:first-child dd{color:var(--coral)}
+.p-num u{text-decoration:none;font-size:10px;letter-spacing:.2em;color:var(--dim);margin-left:5px}
+.p-rows{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:6px;font-size:12px;letter-spacing:.16em;color:var(--dim)}
+.p-rows li::before{content:"▸ ";color:var(--cyan)}
+.p-rows .go,.p-rows .go::before{color:var(--safran)}
+@media(max-width:900px){#boot{background:var(--scan),linear-gradient(180deg,rgba(3,4,7,.9),rgba(3,4,7,.8))}.boot-g{grid-template-columns:minmax(0,1fr);gap:26px;padding:88px 0 64px}.p-rows{display:none}.pod{max-width:420px}#boot>.t-clk{display:none}}
+@media(max-width:900px) and (max-height:760px){.pod{display:none}}
+@media(max-width:560px){#boot>.t-id,#outro>.t-id{display:none}.o-in{padding-top:48px}}
 
 /* ---------- HUD ---------- */
 #hud{position:fixed;inset:0;z-index:10;pointer-events:none;opacity:0;transition:opacity 1.2s;text-transform:uppercase}
@@ -219,9 +256,9 @@ body.touch .keys{display:none}
 }
 
 /* ---------- prologue (journal de bord) ---------- */
-#prologue{position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:#030407;opacity:0;visibility:hidden;transition:opacity .9s,visibility .9s;cursor:pointer}
+#prologue{position:fixed;inset:0;z-index:45;display:grid;place-items:center;background:var(--scan),radial-gradient(ellipse 60% 60% at 30% 50%,rgba(76,103,131,.16),transparent 70%),#030407;opacity:0;visibility:hidden;transition:opacity .9s,visibility .9s;cursor:pointer}
 #prologue.on{opacity:1;visibility:visible}
-.pro-in{width:min(760px,86vw);min-height:230px}
+.pro-in{width:min(760px,86vw);min-height:230px;border-left:2px solid var(--cyan);padding:4px 0 4px 26px}
 #proT{font-size:clamp(20px,2.6vw,30px);font-weight:500;line-height:1.35;margin:22px 0 0;min-height:4.1em}
 #proT::after{content:"";display:inline-block;width:.55em;height:1em;background:var(--cyan);vertical-align:-.12em;margin-left:4px;animation:kb2 .9s steps(1) infinite}
 @keyframes kb2{50%{opacity:0}}
@@ -244,58 +281,85 @@ body.touch .keys{display:none}
 #vRows{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:6px;font-size:14px;letter-spacing:.16em;color:var(--dim);min-height:104px}
 #vRows li::before{content:"▸ ";color:var(--cyan)}
 #vRows li{animation:qin .35s ease}
-/* ---------- fin ---------- */
-#outro{position:fixed;inset:0;z-index:40;display:grid;place-items:center;background:#f1f2f4;color:#0a0c10;opacity:0;visibility:hidden;transition:opacity 1.6s,visibility 1.6s}
+/* ---------- fin : un terminal posé devant la nef, qui continue de vivre derrière ---------- */
+#outro{position:fixed;inset:0;z-index:40;color:var(--ink);opacity:0;visibility:hidden;transition:opacity 1.6s,visibility 1.6s;
+  background:var(--scan),linear-gradient(90deg,rgba(3,5,8,.96) 0,rgba(3,5,8,.9) 42%,rgba(3,5,8,.5) 100%)}
 #outro.on{opacity:1;visibility:visible}
-.o-in{width:min(760px,88vw)}
-#outro .kick{color:var(--coral)}
-#outro h2{font-family:var(--disp);font-weight:400;text-transform:uppercase;font-size:clamp(26px,5vw,52px);line-height:1.05;margin:22px 0 18px}
-#outro p{font-size:19px;max-width:50ch;margin:0 0 8px;color:#3a424c}
-.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:26px 0 30px;border-top:1px solid #0a0c10}
-.facts div{padding:14px 14px 0 0}
-.facts dt{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:#6b7480}
-.facts dd{margin:4px 0 0;font-size:18px;font-weight:700;line-height:1.25}
-#outro .cta{background:#0a0c10;color:#f1f2f4;text-decoration:none;display:inline-block}
-@media(hover:hover) and (pointer:fine){#outro .cta:hover{background:var(--coral);color:#fff}}
-#outro .lnk{color:#3a424c;border-color:#9aa1aa}
-.partners{display:flex;gap:22px;align-items:center;margin-top:34px;padding-top:16px;border-top:1px solid #c9cdd2;font-size:12px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:#6b7480}
-.partners img{height:20px;width:auto;filter:invert(1) brightness(.2)}
-@media(max-width:640px){.facts{grid-template-columns:1fr}.lnk{margin:16px 0 0;display:inline-block}}
+#outro .t-body{justify-items:start}
+.o-in{width:min(760px,88vw);margin-left:max(6vw,calc((100vw - 1180px)/2));padding:70px 0 46px}
+#outro h2{font-family:var(--disp);font-weight:400;text-transform:uppercase;font-size:clamp(26px,4.6vw,50px);line-height:1.05;margin:22px 0 18px;text-shadow:0 2px 30px rgba(0,0,0,.8)}
+#outro p{font-size:19px;max-width:50ch;margin:0 0 8px;color:var(--dim)}
+.o-ch{list-style:none;display:flex;flex-wrap:wrap;gap:6px 22px;margin:20px 0 0;padding:0;font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)}
+.o-ch li{display:flex;gap:9px;align-items:center}
+.o-ch li::before{content:"";flex:none;width:8px;height:8px;background:var(--c);box-shadow:0 0 10px var(--c);transform:rotate(45deg)}
+/* relevé pratique : des lignes libellé / valeur, comme sur les écrans du pupitre — pas de cartes */
+.facts,.info{margin:24px 0 28px;max-width:640px}
+.facts div,.info div{display:grid;grid-template-columns:7.5em minmax(0,1fr);gap:16px;padding:12px 0;border-top:1px solid rgba(127,227,230,.2)}
+.facts div:last-child,.info div:last-child{border-bottom:1px solid rgba(127,227,230,.2)}
+.facts dt,.info dt{font-size:16px;font-weight:600;color:var(--cyan)}
+.facts dd,.info dd{margin:0;font-size:19px;font-weight:700;line-height:1.3}
+#outro .cta,.d-end .cta{text-decoration:none;display:inline-block}
+.partners{display:flex;gap:30px;align-items:center;flex-wrap:wrap;margin-top:26px;padding-top:16px;border-top:1px solid rgba(127,227,230,.25)}
+.partners img{display:block;height:30px;width:auto;filter:invert(1)}.partners img.tse{height:42px;filter:none}.partners img:first-child{margin-left:-13px}
+@media(max-width:900px){#outro{background:var(--scan),linear-gradient(180deg,rgba(3,5,8,.92),rgba(3,5,8,.84))}#outro>.t-clk{display:none}}
+@media(max-width:640px){.lnk{margin:16px 0 0;display:inline-block}.o-in{margin-left:6vw}.facts div,.info div{grid-template-columns:5.5em minmax(0,1fr);gap:12px}}
 
-/* ---------- dossier (version texte, accessible) ---------- */
-#dossier{display:none;position:relative;z-index:5;background:var(--bg)}
+/* ---------- dossier (version texte, accessible) ----------
+   Un document à lire, pas un tableau de bord : pas de cartouches en série. Ce qui structure la page vient du contenu — les sens rangés en deux colonnes
+   (ceux qu'on connaît, ceux que le parcours réveille), un enchaînement en trois temps, les œuvres en vraies couleurs avec leur cartel et, pour chacune,
+   la distance (ou la durée) de regard demandée, portée sur une règle graduée à l'échelle d'un mètre. */
+#dossier{display:none;position:relative;z-index:5;background:radial-gradient(ellipse 70% 520px at 82% 0,rgba(76,103,131,.22),transparent 70%),var(--bg)}
 body.read #dossier{display:block}
-.wrap{width:min(1080px,90vw);margin:0 auto}
-.d-head{padding:clamp(48px,9vw,110px) 0 clamp(30px,5vw,56px);border-bottom:1px solid #1c232b}
-.d-head h1{font-family:var(--disp);font-weight:400;text-transform:uppercase;font-size:clamp(28px,5.6vw,60px);line-height:1.04;margin:22px 0 18px}
-.d-head p{color:var(--dim);font-size:19px;max-width:58ch;margin:0}
-.sec{padding:clamp(40px,7vw,84px) 0;border-bottom:1px solid #1c232b}
-.sec h2{font-family:var(--disp);font-weight:400;text-transform:uppercase;font-size:clamp(18px,2.6vw,26px);margin:0 0 8px}
-.sec .n{font-size:12px;font-weight:700;letter-spacing:.3em;color:var(--coral);text-transform:uppercase;display:block;margin-bottom:14px}
-.sec>.wrap>p{color:var(--dim);max-width:62ch;font-size:18px}
-.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:30px}
-.cols h3{font-size:17px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin:0 0 6px;color:var(--cyan)}
-.cols p{margin:0;color:var(--dim)}
-.works{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:30px;background:#1c232b}
-.work{background:var(--bg);padding:24px 24px 26px 0;display:grid;grid-template-columns:120px 1fr;gap:20px;align-items:start}
-.work:nth-child(even){padding-left:24px}
-.work .im{position:relative;background:#04060a;border-top:2px solid var(--c)}
-.work img{display:block;width:100%;aspect-ratio:1;object-fit:cover;filter:grayscale(1) contrast(1.2);mix-blend-mode:screen;opacity:.9}
-.work .im::after{content:"";position:absolute;inset:0;background:var(--c);mix-blend-mode:multiply}
-.work b{font-size:12px;letter-spacing:.26em;color:var(--c);text-transform:uppercase}
-.work h3{font-family:var(--disp);font-weight:400;font-size:15px;text-transform:uppercase;margin:6px 0 2px;line-height:1.25}
-.work .by{font-size:14px;color:var(--mute);margin:0 0 8px}
-.work p{margin:0 0 6px;color:var(--dim);font-size:16px}
-.work .c{color:var(--ink);font-weight:600}
-.info{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:28px;border-top:1px solid var(--ink)}
-.info div{padding:14px 16px 0 0}
-.info dt{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--mute)}
-.info dd{margin:4px 0 0;font-size:18px;font-weight:700;line-height:1.25}
-.info dd span{display:block;font-weight:500;font-size:15px;color:var(--dim)}
-.d-end{padding:clamp(40px,7vw,80px) 0;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
-footer{padding:26px 0 40px;color:var(--mute);font-size:13px;letter-spacing:.06em}
-footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
-@media(max-width:820px){.cols,.works{grid-template-columns:1fr}.work:nth-child(even){padding-left:0}.info{grid-template-columns:1fr 1fr}}
+.wrap{width:min(1080px,88vw);margin:0 auto}
+.d-head{padding:clamp(48px,8vw,92px) 0 clamp(40px,6vw,72px)}
+.d-head h1{font-family:var(--disp);font-weight:400;text-transform:uppercase;font-size:clamp(30px,6.2vw,70px);line-height:1.02;margin:30px 0 0}
+.d-top{display:grid;grid-template-columns:minmax(0,1fr) max-content;gap:44px;align-items:end;margin-top:28px}
+.d-top>p{color:var(--dim);font-size:20px;line-height:1.4;max-width:50ch;margin:0}
+.d-when{border-left:1px solid var(--cyan);padding-left:18px}
+.d-when p{margin:0;font-size:17px;line-height:1.4;color:var(--dim);white-space:nowrap}
+.d-when p:first-child{margin-bottom:8px}
+.d-when p:first-child::first-line{font-family:var(--disp);font-size:16px;color:var(--ink)}
+.sec{padding:clamp(44px,7vw,88px) 0;border-top:1px solid rgba(127,227,230,.16)}
+.sec h2{font-family:var(--disp);font-weight:400;text-transform:uppercase;font-size:clamp(20px,2.8vw,30px);line-height:1.15;margin:0 0 14px}
+.sec>.wrap>p{color:var(--dim);max-width:62ch;font-size:19px;margin:0}
+/* les sens : cinq tournés vers le dehors, éteints ; quatre tournés vers le dedans, chacun dans la couleur de son canal */
+.senses{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:0 48px;margin-top:44px}
+.senses h3{font-size:16px;font-weight:600;color:var(--dim);margin:0 0 10px}
+.senses ul{list-style:none;margin:0;padding:0;font-family:var(--disp);font-size:clamp(16px,2.1vw,25px);line-height:1.55;text-transform:uppercase}
+.s-out li{color:var(--mute)}
+.s-in li{color:var(--c)}
+.senses small{display:block;margin-top:10px;font-size:16px;color:var(--dim)}
+/* l'enchaînement : ce que tu connais, ce que la galerie interdit, ce qui se réveille */
+.chain{display:grid;grid-template-columns:repeat(3,1fr);gap:0 40px;margin-top:60px;position:relative}
+.chain::before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:linear-gradient(90deg,var(--mute),var(--cyan))}
+.chain div{position:relative;padding-top:28px}
+.chain div::before{content:"";position:absolute;left:0;top:0;width:8px;height:8px;border:1px solid var(--dim);background:var(--bg);transform:rotate(45deg)}
+.chain div:last-child::before{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+.chain h3{font-size:20px;font-weight:700;line-height:1.2;margin:0 0 6px}
+.chain p{margin:0;color:var(--dim)}
+/* les œuvres */
+.works{margin-top:48px}
+.work{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:clamp(22px,4.5vw,60px);align-items:start;padding:40px 0;border-top:1px solid rgba(127,227,230,.16)}
+.work:first-child{border-top:0;padding-top:0}.work:last-child{padding-bottom:0}
+.work img{display:block;width:100%;height:auto;max-height:400px;object-fit:contain;object-position:left top}
+.work b{display:block;font-size:20px;font-weight:700;line-height:1.2;color:var(--c)}
+.work h3{font-family:var(--disp);font-weight:400;font-size:clamp(18px,2.4vw,27px);text-transform:uppercase;margin:8px 0 4px;line-height:1.15}
+.work .by{font-size:16px;color:var(--dim);margin:0 0 16px}
+.work .d{margin:0 0 26px;color:#cfd6dd;font-size:18px;max-width:52ch}
+.work .c{margin:14px 0 0;font-weight:600;font-size:18px}
+.rule{position:relative;height:34px;max-width:440px;--t:rgba(154,167,181,.55);background:linear-gradient(var(--t),var(--t)) 0 100%/100% 1px no-repeat,repeating-linear-gradient(90deg,var(--t) 0 1px,transparent 1px 10%) 0 100%/100% 7px no-repeat}
+.rule i{position:absolute;left:0;bottom:0;height:3px;width:calc(var(--d)*100%);background:var(--c)}
+.rule i::after{content:"";position:absolute;right:-5px;bottom:-3px;width:9px;height:9px;background:var(--c);transform:rotate(45deg)}
+.rule span{position:absolute;left:calc(var(--d)*100%);bottom:13px;transform:translateX(-100%);font-size:17px;font-weight:700;line-height:1;color:var(--c);font-variant-numeric:tabular-nums;white-space:nowrap}
+.info{max-width:760px}
+.info dd span{display:block;font-weight:500;font-size:16px;color:var(--dim)}
+.d-end{padding-top:12px;display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.d-end .lnk{margin-left:4px}
+footer{padding:34px 0 48px;border-top:1px solid rgba(127,227,230,.16);color:var(--mute);font-size:13px;letter-spacing:.04em}
+footer .wrap{display:flex;justify-content:space-between;gap:12px 24px;flex-wrap:wrap}
+footer .partners{flex-basis:100%;margin:0 0 20px;padding:0;border:0}
+@media(max-width:820px){.d-top,.senses,.work{grid-template-columns:minmax(0,1fr)}.d-top{gap:26px;align-items:start}.senses{gap:28px}.work img{max-width:300px}
+  .chain{grid-template-columns:minmax(0,1fr);gap:26px;margin-top:44px;padding-left:26px}.chain::before{left:4px;right:auto;top:6px;bottom:6px;width:1px;height:auto;background:linear-gradient(180deg,var(--mute),var(--cyan))}.chain div{padding-top:0}.chain div::before{left:-26px;top:7px}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -303,8 +367,10 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 <a class="skip" href="#dossier" data-dossier data-k="skip">Aller à la version texte</a>
 <canvas id="gl" aria-hidden="true"></canvas>
 
-<section id="boot" aria-label="Démarrage">
+<section id="boot" class="term" aria-label="Démarrage">
+  <span class="t-id" aria-hidden="true">SPES-07 // Terminal C-12</span>
   <div class="langs" role="group" aria-label="Langue · Language · Idioma"><button type="button" data-lang="fr">FR</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="es">ES</button></div>
+  <div class="t-body"><div class="boot-g">
   <div class="boot-in">
     <div class="kick" data-k="bKick">SPES-07 · pont 12 · caisson R26-0417</div>
     <h1 class="wm"><span>Galerie Ceysson &amp; Bénétière</span>un tableau,<br><b data-t="un sens">un sens</b></h1>
@@ -315,9 +381,17 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <p class="keys-t" data-k="keysT">Touche les boutons pour agir · glisse le doigt pour regarder</p>
     <p class="keys" data-k="keys"><kbd>F</kbd> agir · <kbd>1</kbd><kbd>2</kbd> répondre · <kbd>Espace</kbd> passer une réplique · souris pour regarder</p>
   </div>
+  <aside class="pod" aria-hidden="true"><div>
+    <div class="p-top"><span>BIO // R26-0417</span><b data-k="pState">Stase profonde</b></div>
+    <svg class="p-ecg" viewBox="0 0 300 60" preserveAspectRatio="none"><path d="M0 38H118l5-3 5 6 6-30 7 44 6-20 5 3H300"/><path class="run" pathLength="100" d="M0 38H118l5-3 5 6 6-30 7 44 6-20 5 3H300"/></svg>
+    <dl class="p-num"><div><dt data-k="pulse">Pouls</dt><dd>8<u>bpm</u></dd></div><div><dt data-k="temp">Temp.</dt><dd><span data-k="pTemp">4,0</span><u>°C</u></dd></div><div><dt data-k="pStase">Stase</dt><dd>474<u data-k="pYears">ans</u></dd></div></dl>
+    <ul class="p-rows"><li data-k="pR1">Cohorte R-26 · 23 caissons</li><li data-k="pR2">Liaison N-7 · appel en attente</li><li class="go" data-k="pR3">Protocole RÉSONANCE · prêt</li></ul>
+  </div></aside>
+  </div></div>
+  <span class="t-clk" aria-hidden="true"></span>
 </section>
 
-<div id="prologue"><div class="pro-in"><div class="kick" id="proH"></div><p id="proT"></p><span class="pro-skip" data-k="proSkip">Espace ou clic pour passer</span></div></div>
+<div id="prologue" class="term"><div class="pro-in"><div class="kick" id="proH"></div><p id="proT"></p><span class="pro-skip" data-k="proSkip">Espace ou clic pour passer</span></div></div>
 <div id="visor" aria-hidden="true"><div class="v-in"><div class="kick" data-k="vKick">Liaison N-7 · synchronisation neurale</div><div class="v-big"><span id="vPct">000</span><small>%</small></div><div class="v-bar"><span id="vBar"></span></div><ul id="vRows"></ul></div></div>
 
 <div id="hud">
@@ -342,30 +416,40 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
   <div class="tools"><button id="bSkip" type="button"><kbd aria-hidden="true">␣</kbd><span data-k="bSkip">Passer</span></button><button id="bVoice" type="button"><kbd aria-hidden="true">V</kbd><span data-k="bVoice">Voix</span></button><button id="bSound" type="button"><kbd aria-hidden="true">M</kbd><span data-k="bSound">Son</span></button><a href="#dossier" data-dossier><span data-k="txt">Version texte</span></a></div>
 </div>
 
-<section id="outro" aria-label="Fin de l'expérience">
-  <div class="o-in">
+<section id="outro" class="term" aria-label="Fin de l'expérience">
+  <span class="t-id" aria-hidden="true">SPES-07 // Terminal C-12</span>
+  <div class="t-body"><div class="o-in">
     <div class="kick" data-k="oKick">Protocole RÉSONANCE · 4/4 canaux rouverts</div>
     <h2 data-k="oH">Viens l'éprouver pour de vrai</h2>
     <p data-k="oP">Les quatre œuvres que tu viens de traverser existent. Elles t'attendent pour la clôture de l'exposition Résonances.</p>
+    <ul class="o-ch" aria-hidden="true"><li data-k="q0" style="--c:var(--amber)">Canal K · Kinesthésie</li><li data-k="q1" style="--c:var(--cyan)">Canal H · Toucher virtuel</li><li data-k="q2" style="--c:var(--lime)">Canal P · Proprioception</li><li data-k="q3" style="--c:var(--coral)">Canal I · Intéroception</li></ul>
     <dl class="facts"><div><dt data-k="fDates">Dates</dt><dd data-k="fDatesV">21 &amp; 22 novembre 2026<br>11h – 19h</dd></div><div><dt data-k="fPlace">Lieu</dt><dd>Galerie Ceysson &amp; Bénétière<br>10 rue des Aciéries, Saint-Étienne</dd></div><div><dt data-k="fAccess">Accès</dt><dd data-k="fAccessV">Entrée libre<br>Audioguide offert</dd></div></dl>
     <a class="cta" href="https://maps.google.com/?q=10+rue+des+Aci%C3%A9ries+Saint-%C3%89tienne" data-k="route">Voir l'itinéraire</a>
     <a class="lnk" href="#dossier" data-dossier data-k="readD">Lire le dossier</a>
     <button class="lnk" type="button" data-replay data-k="replay">Revivre le réveil</button>
-    <div class="partners"><img src="assets/Ceysson.svg" alt="Ceysson &amp; Bénétière" width="136" height="20"><span>Télécom Saint-Étienne</span></div>
-  </div>
+    <div class="partners"><img src="assets/Ceysson.svg" alt="Ceysson &amp; Bénétière" width="136" height="20"><img class="tse" src="assets/brand/telecom-saint-etienne.svg" alt="Télécom Saint-Étienne" width="147" height="42"></div>
+  </div></div>
+  <span class="t-clk" aria-hidden="true"></span>
 </section>
 
 <main id="dossier">
   <header class="d-head"><div class="wrap">
-    <div class="kick" data-k="dKick">Dossier de bord · version texte</div>
+    <span class="t-id" data-k="dKick">Dossier de bord · version texte</span>
     <h1>un tableau, un sens</h1>
-    <p data-k="dP">Un parcours sensoriel pour la clôture de l'exposition Résonances à la galerie Ceysson &amp; Bénétière. Quatre œuvres, quatre sens que personne ne t'a appris à l'école.</p>
+    <div class="d-top">
+      <p data-k="dP">Un parcours sensoriel pour la clôture de l'exposition Résonances à la galerie Ceysson &amp; Bénétière. Quatre œuvres, quatre sens que personne ne t'a appris à l'école.</p>
+      <div class="d-when"><p data-k="fDatesV">21 &amp; 22 novembre 2026<br>11h – 19h</p><p data-k="fAccessV">Entrée libre<br>Audioguide offert</p></div>
+    </div>
   </div></header>
 
   <section class="sec"><div class="wrap">
-    <span class="n" data-k="s1n">01 — Le principe</span><h2 data-k="s1h">Cinq sens, c'est un mythe</h2>
+    <h2 data-k="s1h">Cinq sens, c'est un mythe</h2>
     <p data-k="s1p">Les cinq sens d'Aristote décrivent seulement ton interface avec le dehors. Les neurosciences en comptent plus de vingt, et les plus puissants regardent vers l'intérieur. Le parcours s'en sert pour faire tomber la barrière de l'art contemporain.</p>
-    <div class="cols">
+    <div class="senses">
+      <div class="s-out"><h3 data-k="sOut">Tournés vers le dehors</h3><ul><li data-k="e1">Voir</li><li data-k="e2">Entendre</li><li data-k="e3">Toucher</li><li data-k="e4">Sentir</li><li data-k="e5">Goûter</li></ul></div>
+      <div class="s-in"><h3 data-k="sIn">Tournés vers le dedans</h3><ul><li data-s="0" style="--c:var(--amber)">Kinesthésie</li><li data-s="1" style="--c:var(--cyan)">Toucher haptique virtuel</li><li data-s="2" style="--c:var(--lime)">Proprioception spatiale</li><li data-s="3" style="--c:var(--coral)">Intéroception &amp; chronoception</li></ul><small data-k="sMore">et une vingtaine d'autres</small></div>
+    </div>
+    <div class="chain">
       <div><h3 data-k="c1h">Ce que tu connais</h3><p data-k="c1p">Voir, entendre, toucher, sentir, goûter : des capteurs tournés vers l'extérieur. Utiles, mais incomplets.</p></div>
       <div><h3 data-k="c2h">Ce que la galerie interdit</h3><p data-k="c2p">Ne pas toucher, ne pas goûter, ne pas faire de bruit. Tes sens externes sont bridés : c'est le déclencheur.</p></div>
       <div><h3 data-k="c3h">Ce qui se réveille</h3><p data-k="c3p">Privé de contact, ton cerveau bascule sur la position du corps, le rythme du cœur, la perception du temps.</p></div>
@@ -373,17 +457,17 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
   </div></section>
 
   <section class="sec"><div class="wrap">
-    <span class="n" data-k="s2n">02 — Les œuvres</span><h2 data-k="s2h">Quatre recalibrations</h2>
+    <h2 data-k="s2h">Quatre recalibrations</h2>
     <div class="works">
-      <article class="work" data-w="0" style="--c:var(--amber)"><div class="im"><img src="assets/works/ouie.jpg" alt="Plume sur Rhodoïde, Louis Cane" loading="lazy"></div><div><b>01 · Kinesthésie</b><h3>Plume sur Rhodoïde</h3><p class="by">Louis Cane, 1998</p><p class="d">Percevoir un mouvement dans ton propre corps devant une image immobile : ton cerveau simule la chute des plumes.</p><p class="c">«&nbsp;Fixe une seule plume, dix secondes, sans bouger.&nbsp;»</p></div></article>
-      <article class="work" data-w="1" style="--c:var(--cyan)"><div class="im"><img src="assets/works/toucher.jpg" alt="Résine sur grillage, Louis Cane" loading="lazy"></div><div><b>02 · Toucher haptique virtuel</b><h3>Résine sur grillage</h3><p class="by">Louis Cane, 2018</p><p class="d">L'œil déclenche une sensation tactile sans contact : le cortex reconstitue le froid du fer et le lisse de la résine.</p><p class="c">«&nbsp;Approche-toi à trente centimètres. Ne touche pas.&nbsp;»</p></div></article>
-      <article class="work" data-w="2" style="--c:var(--lime)"><div class="im"><img src="assets/works/odorat.jpg" alt="Arpenter 2/3, Aurélie Pétrel" loading="lazy"></div><div><b>03 · Proprioception spatiale</b><h3>Arpenter ⅔</h3><p class="by">Aurélie Pétrel, 2025</p><p class="d">Le sens de ta taille et de ta place dans l'espace : les troncs te dominent, ton cerveau recalcule ton échelle.</p><p class="c">«&nbsp;Place tes pieds sur le repère, à soixante centimètres.&nbsp;»</p></div></article>
-      <article class="work" data-w="3" style="--c:var(--coral)"><div class="im"><img src="assets/works/gout.jpg" alt="n°60, Philippe Favier" loading="lazy"></div><div><b>04 · Intéroception &amp; chronoception</b><h3>n°60</h3><p class="by">Philippe Favier, 2025</p><p class="d">Sentir l'intérieur de ton corps et l'écoulement du temps : un souvenir d'enfance change le rythme de ton cœur.</p><p class="c">«&nbsp;Penche-toi à vingt centimètres. Ralentis.&nbsp;»</p></div></article>
+      <article class="work" data-w="0" style="--c:var(--amber)"><div class="im"><img src="assets/works/ouie.jpg" alt="Plume sur Rhodoïde, Louis Cane" width="653" height="558" loading="lazy"></div><div><b>Kinesthésie</b><h3>Plume sur Rhodoïde</h3><p class="by">Louis Cane, 1998</p><p class="d">Percevoir un mouvement dans ton propre corps devant une image immobile : ton cerveau simule la chute des plumes.</p><div class="rule" style="--d:1" aria-hidden="true"><i></i><span>10 s</span></div><p class="c">«&nbsp;Fixe une seule plume, dix secondes, sans bouger.&nbsp;»</p></div></article>
+      <article class="work" data-w="1" style="--c:var(--cyan)"><div class="im"><img src="assets/works/toucher.jpg" alt="Résine sur grillage, Louis Cane" width="587" height="552" loading="lazy"></div><div><b>Toucher haptique virtuel</b><h3>Résine sur grillage</h3><p class="by">Louis Cane, 2018</p><p class="d">L'œil déclenche une sensation tactile sans contact : le cortex reconstitue le froid du fer et le lisse de la résine.</p><div class="rule" style="--d:.3" aria-hidden="true"><i></i><span>30 cm</span></div><p class="c">«&nbsp;Approche-toi à trente centimètres. Ne touche pas.&nbsp;»</p></div></article>
+      <article class="work" data-w="2" style="--c:var(--lime)"><div class="im"><img src="assets/works/odorat.jpg" alt="Arpenter 2/3, Aurélie Pétrel" width="300" height="764" loading="lazy"></div><div><b>Proprioception spatiale</b><h3>Arpenter ⅔</h3><p class="by">Aurélie Pétrel, 2025</p><p class="d">Le sens de ta taille et de ta place dans l'espace : les troncs te dominent, ton cerveau recalcule ton échelle.</p><div class="rule" style="--d:.6" aria-hidden="true"><i></i><span>60 cm</span></div><p class="c">«&nbsp;Place tes pieds sur le repère, à soixante centimètres.&nbsp;»</p></div></article>
+      <article class="work" data-w="3" style="--c:var(--coral)"><div class="im"><img src="assets/works/gout.jpg" alt="n°60, Philippe Favier" width="682" height="460" loading="lazy"></div><div><b>Intéroception &amp; chronoception</b><h3>n°60</h3><p class="by">Philippe Favier, 2025</p><p class="d">Sentir l'intérieur de ton corps et l'écoulement du temps : un souvenir d'enfance change le rythme de ton cœur.</p><div class="rule" style="--d:.2" aria-hidden="true"><i></i><span>20 cm</span></div><p class="c">«&nbsp;Penche-toi à vingt centimètres. Ralentis.&nbsp;»</p></div></article>
     </div>
   </div></section>
 
   <section class="sec"><div class="wrap">
-    <span class="n" data-k="s3n">03 — Venir</span><h2 data-k="s3h">Infos pratiques</h2>
+    <h2 data-k="s3h">Infos pratiques</h2>
     <dl class="info">
       <div><dt data-k="fDates">Dates</dt><dd data-k="iDatesV">21 &amp; 22 novembre 2026<span>Samedi et dimanche, 11h – 19h</span></dd></div>
       <div><dt data-k="fPlace">Lieu</dt><dd>Ceysson &amp; Bénétière<span>10 rue des Aciéries, 42000 Saint-Étienne</span></dd></div>
@@ -393,7 +477,7 @@ footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
     <div class="d-end"><a class="cta" href="https://maps.google.com/?q=10+rue+des+Aci%C3%A9ries+Saint-%C3%89tienne" data-k="route">Voir l'itinéraire</a><button class="lnk" type="button" data-replay data-k="launch">Lancer l'expérience 3D</button></div>
   </div></section>
 
-  <footer><div class="wrap"><span data-k="foot1">© 2026 — Design graphique avancé, Télécom Saint-Étienne B3 × galerie Ceysson &amp; Bénétière</span><span data-k="foot2">Corps : Human Base Meshes, Blender Foundation (CC0) · Visiteurs : mannequin X Bot, Mixamo · Matières : Poly Haven (CC0) · Terre : NASA (domaine public) · Voix : synthèse vocale</span></div></footer>
+  <footer><div class="wrap"><div class="partners"><img src="assets/Ceysson.svg" alt="Ceysson &amp; Bénétière" width="136" height="20" loading="lazy"><img class="tse" src="assets/brand/telecom-saint-etienne.svg" alt="Télécom Saint-Étienne" width="147" height="42" loading="lazy"></div><span data-k="foot1">© 2026 — Design graphique avancé, Télécom Saint-Étienne B3 × galerie Ceysson &amp; Bénétière</span><span data-k="foot2">Corps : Human Base Meshes, Blender Foundation (CC0) · Visiteurs : mannequin X Bot, Mixamo · Matières : Poly Haven (CC0) · Terre : NASA (domaine public) · Voix : synthèse vocale</span></div></footer>
 </main>
 
 <script type="module" src="app/main.js"></script>

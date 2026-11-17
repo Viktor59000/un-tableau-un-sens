@@ -8,7 +8,7 @@ Repère du décor (app/world.js) : x à droite, y vers le haut ; z = 0 est la fa
 en z = Z0), +z vers la baie, -z vers l'espace. Les trois ouvertures reprennent WC et HOLES de world.js, à ne pas déplacer : le
 soleil, son faisceau et le robot soudeur en dépendent. Le verre et les relevés projetés au-dessus du pupitre restent dessinés
 par le décor. Objets exportés : « cloison » (la tôle percée) et « hublots » (tout le reste).
-Matières reprises par nom (bayMats de world.js) : paroi, structure, panneau, sombre, acier, coque, cuivre, jaune, rouge, lueur, lueur_c, ecran, rampe.
+Matières reprises par nom (bayMats de world.js) : paroi, structure, panneau, sombre, acier, coque, cuivre, jaune, rouge, lueur, lueur_c, ecran, rampe, touche (touches à légende rétroéclairée, dessinée par le décor), ambre.
 """
 import math
 import os
@@ -22,7 +22,7 @@ from blender_kit import Parts, export, move, preview, reset, rot  # noqa: E402
 
 reset(12, {"paroi": (0.42, 0.47, 0.53, 1), "structure": (0.14, 0.16, 0.19, 1), "panneau": (0.2, 0.23, 0.27, 1), "sombre": (0.05, 0.06, 0.07, 1),
            "acier": (0.8, 0.82, 0.85, 1), "coque": (0.17, 0.2, 0.24, 1), "cuivre": (0.5, 0.33, 0.2, 1), "jaune": (0.7, 0.52, 0.08, 1),
-           "rouge": (0.55, 0.12, 0.09, 1), "lueur": (0.45, 0.6, 0.8, 1), "lueur_c": (0.3, 0.9, 1, 1), "ecran": (0.15, 0.5, 0.6, 1), "rampe": (0.5, 0.53, 0.56, 1)})
+           "rouge": (0.55, 0.12, 0.09, 1), "lueur": (0.45, 0.6, 0.8, 1), "lueur_c": (0.3, 0.9, 1, 1), "ecran": (0.15, 0.5, 0.6, 1), "rampe": (0.5, 0.53, 0.56, 1), "touche": (0.08, 0.09, 0.11, 1), "ambre": (1, 0.7, 0.2, 1)})
 M3 = rot("X", math.pi / 2)  # repère du décor (y vers le haut) -> repère de Blender (z vers le haut)
 rx, rz = (lambda a: rot("X", a)), (lambda a: rot("Z", a))
 BW, BH, TH = 11.0, 5.0, 0.5
@@ -157,9 +157,36 @@ for sx in (-1, 1):
     P.box("lueur_c", (1.4, 0.006, 0.02), (sx * 1.25, 0.045, -0.21))
     P.box("sombre", (0.6, 0.01, 0.3), (sx * 1.5, 0.034, 0.06))                                        # écrans encastrés
     P.box("ecran", (0.54, 0.004, 0.24), (sx * 1.5, 0.04, 0.06))
-    for i in range(6):                                                                                 # clavier
+    P.box("sombre", (0.42, 0.006, 0.26), (sx * 0.7625, 0.032, 0.0))                                   # platine du clavier
+    for i in range(6):                                                                                 # clavier : touches biseautées (leur légende est dessinée par le décor)
         for j in range(3):
-            P.box("sombre", (0.05, 0.014, 0.04), (sx * (0.6 + i * 0.065), 0.037, -0.02 + j * 0.055))
+            P.box("touche", (0.052, 0.02, 0.042), (sx * (0.6 + i * 0.065), 0.044, -0.02 + j * 0.055))
+    for i in range(8):                                                                                 # rangée de fonctions
+        P.box("touche", (0.038, 0.014, 0.024), (sx * (0.6 + i * 0.047), 0.041, -0.085))
+    for i in range(10):                                                                                # témoins
+        P.cyl(("lueur_c", "sombre", "ambre", "sombre", "lueur_c", "rouge", "sombre", "lueur_c", "sombre", "ambre")[i], 0.005, 0.005, 0.006, (sx * (0.6 + i * 0.035), 0.034, -0.125), axis="Y", seg=8)
+    P.box("sombre", (0.2, 0.006, 0.25), (sx * 1.075, 0.032, 0.04))                                    # platine des réglages
+    for i in range(3):                                                                                 # molettes crantées
+        x = sx * (0.99 + i * 0.08)
+        P.cyl("sombre", 0.03, 0.032, 0.008, (x, 0.038, -0.02), axis="Y", seg=20)
+        P.cyl("acier", 0.021, 0.023, 0.028, (x, 0.056, -0.02), axis="Y", seg=18)
+        for k in range(9):
+            a = k * 2 * math.pi / 9
+            P.box("acier", (0.004, 0.024, 0.004), (x + math.cos(a) * 0.0225, 0.056, -0.02 + math.sin(a) * 0.0225))
+        P.box("lueur_c", (0.004, 0.003, 0.016), (x, 0.0715, -0.027))
+    for i in range(4):                                                                                 # interrupteurs à levier ; le premier est sous capot
+        x = sx * (0.985 + i * 0.058)
+        P.box("structure", (0.03, 0.008, 0.044), (x, 0.038, 0.09))
+        P.rod("acier", (x, 0.04, 0.09), (x, 0.072, 0.09 + (0.012 if i % 2 else -0.012)), 0.0045, seg=6)
+        P.sphere("acier", 0.007, (x, 0.074, 0.09 + (0.012 if i % 2 else -0.012)), seg=8)
+        if i == 0:
+            for dz in (-0.024, 0.024):
+                P.box("rouge", (0.036, 0.03, 0.004), (x, 0.052, 0.09 + dz))
+            P.box("rouge", (0.036, 0.004, 0.052), (x, 0.068, 0.09))
+    P.box("sombre", (0.014, 0.006, 0.17), (sx * 1.875, 0.033, 0.06))                                  # curseur à glissière
+    P.box("touche", (0.034, 0.022, 0.022), (sx * 1.875, 0.045, 0.02))
+    for k in range(7):
+        P.box("lueur_c" if k == 4 else "acier", (0.01, 0.002, 0.002), (sx * 1.853, 0.035, -0.015 + k * 0.025))
     P.cyl("acier", 0.012, 0.012, 0.1, (sx * 1.98, 0.08, 0.1), axis="Y", seg=8)                        # manette
     P.sphere("rouge", 0.024, (sx * 1.98, 0.14, 0.1), seg=10)
     P.cyl("sombre", 0.04, 0.045, 0.012, (sx * 1.98, 0.036, 0.1), axis="Y", seg=12)
@@ -185,6 +212,7 @@ for sx in (-1, 1):
 P.bevel("panneau", 0.008, 2)
 P.bevel("structure", 0.006, 2)
 P.bevel("coque", 0.008, 2)
+P.bevel("touche", 0.0045, 2)
 hublots = P.to_object("hublots", sharp=38)
 
 preview("hublots-apercu.png", (0.6, -6.8, 1.9), (0, 0, 2.3), lens=24, res=(1500, 800))          # caméras dans le repère de Blender : (x, -z, y)

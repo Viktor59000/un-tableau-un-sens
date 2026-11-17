@@ -29,7 +29,7 @@ const STR = {
     tx: { bay: ['PONT 12 — BAIE CRYO C', 'cohorte R-26   ·   2 000 sujets en stase niv. 4', 'réveillés : 0001   ·   cycle J+173 141'],
       log: ['JOURNAL DE BORD — SPES-07', '2026 · embarquement de la cohorte R-26', '2140 · indice de Voile > 9 : la Grande Poussière', '2318 · dernier signal terrestre capté', '2500 · protocole RÉSONANCE — sujet R26-0417'],
       obs: '▲ OBSERVATION', stase: 'STASE NIV.4', earth: ['ORBITE BASSE — TERRE', 'indice de Voile : 9,7 / 10', 'surface habitable : 3 %'], fleet: ['FLOTTE HOPE', '212 arches en attente', 'SPES-07 · arche sensorielle'],
-      link: ['LIAISON N-7', 'danse sensorielle · lot 42-SE'], entree: 'ENTRÉE', narthex: 'NARTHEX · ACCUEIL', librairie: 'LIBRAIRIE', bistrot: 'LE BISTROT', nef: 'NEF · NIV. 0', niv1: 'NIV. 1', lot: 'LOT 42-SE', horsLot: 'HORS LOT', nonNum: 'non numérisé', accueil: 'ACCUEIL' }
+      link: ['LIAISON N-7', 'danse sensorielle · lot 42-SE'], con: ['ATMOSPHÈRE · BAIE C', 'ORBITE BASSE', 'COHORTE R-26', 'STASE', 'ÉVEIL', 'FLUX CRYO', 'VOLET IRIS', 'OUVERT', ','], wreck: ['HOPE-044', 'coque rompue · 2391', 'aucun signal'], entree: 'ENTRÉE', narthex: 'NARTHEX · ACCUEIL', librairie: 'LIBRAIRIE', bistrot: 'LE BISTROT', nef: 'NEF · NIV. 0', niv1: 'NIV. 1', lot: 'LOT 42-SE', horsLot: 'HORS LOT', nonNum: 'non numérisé', accueil: 'ACCUEIL' }
   },
   en: {
     speech: 'en-GB', dec: '.', quo: ['“', '”'],
@@ -63,9 +63,9 @@ const STR = {
     tx: { bay: ['DECK 12 — CRYO BAY C', 'cohort R-26   ·   2,000 subjects in stasis lvl 4', 'awake: 0001   ·   cycle D+173,141'],
       log: ["SHIP'S LOG — SPES-07", '2026 · cohort R-26 boards', '2140 · Veil index > 9: the Great Dust', '2318 · last signal received from Earth', '2500 · Protocol RESONANCE — subject R26-0417'],
       obs: '▲ OBSERVATION', stase: 'STASIS LVL 4', earth: ['LOW ORBIT — EARTH', 'Veil index: 9.7 / 10', 'habitable surface: 3 %'], fleet: ['HOPE FLEET', '212 arks standing by', 'SPES-07 · sensory ark'],
-      link: ['LINK N-7', 'sense dance · batch 42-SE'], entree: 'ENTRANCE', narthex: 'NARTHEX · RECEPTION', librairie: 'BOOKSHOP', bistrot: 'LE BISTROT', nef: 'NAVE · LEVEL 0', niv1: 'LEVEL 1', lot: 'BATCH 42-SE', horsLot: 'NOT IN BATCH', nonNum: 'not digitised', accueil: 'RECEPTION' },
+      link: ['LINK N-7', 'sense dance · batch 42-SE'], con: ['ATMOSPHERE · BAY C', 'LOW ORBIT', 'COHORT R-26', 'STASIS', 'AWAKE', 'CRYO FLOW', 'IRIS SHUTTER', 'OPEN', '.'], wreck: ['HOPE-044', 'hull breach · 2391', 'no signal'], entree: 'ENTRANCE', narthex: 'NARTHEX · RECEPTION', librairie: 'BOOKSHOP', bistrot: 'LE BISTROT', nef: 'NAVE · LEVEL 0', niv1: 'LEVEL 1', lot: 'BATCH 42-SE', horsLot: 'NOT IN BATCH', nonNum: 'not digitised', accueil: 'RECEPTION' },
     dom: { _title: 'un tableau, un sens — SPES · a sensory trail at Ceysson & Bénétière', _desc: 'Wake up aboard the SPES: leave your cryogenic pod, answer Gladys, and walk through a sense dance where four works from the Ceysson & Bénétière gallery recalibrate your senses. 21 & 22 November 2026, Saint-Étienne. Free entry.',
-      skip: 'Skip to the text version', bKick: 'SPES-07 · deck 12 · pod R26-0417',
+      skip: 'Skip to the text version', bKick: 'SPES-07 · deck 12 · pod R26-0417', sOut: 'Facing outward', sIn: 'Facing inward', sMore: 'and some twenty more', e1: 'Sight', e2: 'Hearing', e3: 'Touch', e4: 'Smell', e5: 'Taste', pState: 'Deep stasis', pStase: 'Stasis', pYears: 'yrs', pTemp: '4.0', pR1: 'Cohort R-26 · 23 pods', pR2: 'Link N-7 · call waiting', pR3: 'Protocol RESONANCE · ready',
       lede: 'You are subject R26-0417. You have been asleep for 474 years aboard an ark in orbit. A voice is calling you: Protocol RESONANCE begins.',
       txt: 'Text version', keysT: 'Tap the buttons to act · drag to look around', keys: '<kbd>F</kbd> act · <kbd>1</kbd><kbd>2</kbd> answer · <kbd>Space</kbd> skip a line · mouse to look',
       proSkip: 'Space or click to skip', vKick: 'Link N-7 · neural synchronisation', callI: 'Watch unit · SPES-07',
@@ -118,9 +118,9 @@ const STR = {
     tx: { bay: ['CUBIERTA 12 — BAHÍA CRIO C', 'cohorte R-26   ·   2 000 sujetos en estasis niv. 4', 'despiertos: 0001   ·   ciclo D+173 141'],
       log: ['DIARIO DE A BORDO — SPES-07', '2026 · embarque de la cohorte R-26', '2140 · índice de Velo > 9: el Gran Polvo', '2318 · última señal recibida de la Tierra', '2500 · protocolo RESONANCIA — sujeto R26-0417'],
       obs: '▲ OBSERVACIÓN', stase: 'ESTASIS NIV.4', earth: ['ÓRBITA BAJA — TIERRA', 'índice de Velo: 9,7 / 10', 'superficie habitable: 3 %'], fleet: ['FLOTA HOPE', '212 arcas en espera', 'SPES-07 · arca sensorial'],
-      link: ['ENLACE N-7', 'danza sensorial · lote 42-SE'], entree: 'ENTRADA', narthex: 'NÁRTEX · RECEPCIÓN', librairie: 'LIBRERÍA', bistrot: 'LE BISTROT', nef: 'NAVE · NIVEL 0', niv1: 'NIVEL 1', lot: 'LOTE 42-SE', horsLot: 'FUERA DE LOTE', nonNum: 'no digitalizada', accueil: 'RECEPCIÓN' },
+      link: ['ENLACE N-7', 'danza sensorial · lote 42-SE'], con: ['ATMÓSFERA · BAHÍA C', 'ÓRBITA BAJA', 'COHORTE R-26', 'ESTASIS', 'DESPIERTO', 'FLUJO CRIO', 'OBTURADOR IRIS', 'ABIERTO', ','], wreck: ['HOPE-044', 'casco roto · 2391', 'sin señal'], entree: 'ENTRADA', narthex: 'NÁRTEX · RECEPCIÓN', librairie: 'LIBRERÍA', bistrot: 'LE BISTROT', nef: 'NAVE · NIVEL 0', niv1: 'NIVEL 1', lot: 'LOTE 42-SE', horsLot: 'FUERA DE LOTE', nonNum: 'no digitalizada', accueil: 'RECEPCIÓN' },
     dom: { _title: 'un tableau, un sens — SPES · recorrido sensorial en Ceysson & Bénétière', _desc: 'Despierta a bordo de la SPES: sal de tu cápsula criogénica, responde a Gladys y recorre una danza sensorial en la que cuatro obras de la galería Ceysson & Bénétière recalibran tus sentidos. 21 y 22 de noviembre de 2026, Saint-Étienne. Entrada libre.',
-      skip: 'Ir a la versión de texto', bKick: 'SPES-07 · cubierta 12 · cápsula R26-0417',
+      skip: 'Ir a la versión de texto', bKick: 'SPES-07 · cubierta 12 · cápsula R26-0417', sOut: 'Hacia fuera', sIn: 'Hacia dentro', sMore: 'y una veintena más', e1: 'Vista', e2: 'Oído', e3: 'Tacto', e4: 'Olfato', e5: 'Gusto', pState: 'Estasis profunda', pStase: 'Estasis', pYears: 'años', pTemp: '4,0', pR1: 'Cohorte R-26 · 23 cápsulas', pR2: 'Enlace N-7 · llamada en espera', pR3: 'Protocolo RESONANCIA · listo',
       lede: 'Eres el sujeto R26-0417. Llevas 474 años dormido a bordo de un arca en órbita. Una voz te llama: comienza el protocolo RESONANCIA.',
       txt: 'Versión de texto', keysT: 'Toca los botones para actuar · desliza el dedo para mirar', keys: '<kbd>F</kbd> actuar · <kbd>1</kbd><kbd>2</kbd> responder · <kbd>Espacio</kbd> saltar una réplica · ratón para mirar',
       proSkip: 'Espacio o clic para saltar', vKick: 'Enlace N-7 · sincronización neuronal', callI: 'Unidad de vigilia · SPES-07',
@@ -158,5 +158,6 @@ export function localizeDom() { // le sélecteur de langue recharge la page : le
   if (!L.dom) return;
   if (L.dom._title) document.title = L.dom._title; if (L.dom._desc) for (const q of ['meta[name="description"]', 'meta[property="og:description"]']) { const m = document.querySelector(q); if (m) m.content = L.dom._desc; }
   document.querySelectorAll('[data-k]').forEach((el) => { const v = L.dom[el.dataset.k]; if (v != null) el.innerHTML = v; });
-  document.querySelectorAll('[data-w]').forEach((el) => { const i = +el.dataset.w, w = WTX[i]; el.querySelector('b').textContent = '0' + (i + 1) + ' · ' + w.sense; el.querySelector('.d').textContent = w.doc; el.querySelector('.c').textContent = QUO[0] + w.cns + QUO[1]; });
+  document.querySelectorAll('[data-s]').forEach((el) => { el.textContent = WTX[+el.dataset.s].sense; });
+  document.querySelectorAll('[data-w]').forEach((el) => { const i = +el.dataset.w, w = WTX[i]; el.querySelector('b').textContent = w.sense; el.querySelector('.d').textContent = w.doc; el.querySelector('.c').textContent = QUO[0] + w.cns + QUO[1]; });
 }
