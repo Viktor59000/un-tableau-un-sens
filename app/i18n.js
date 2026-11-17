@@ -64,7 +64,8 @@ const STR = {
       log: ["SHIP'S LOG — SPES-07", '2026 · cohort R-26 boards', '2140 · Veil index > 9: the Great Dust', '2318 · last signal received from Earth', '2500 · Protocol RESONANCE — subject R26-0417'],
       obs: '▲ OBSERVATION', stase: 'STASIS LVL 4', earth: ['LOW ORBIT — EARTH', 'Veil index: 9.7 / 10', 'habitable surface: 3 %'], fleet: ['HOPE FLEET', '212 arks standing by', 'SPES-07 · sensory ark'],
       link: ['LINK N-7', 'sense dance · batch 42-SE'], entree: 'ENTRANCE', narthex: 'NARTHEX · RECEPTION', librairie: 'BOOKSHOP', bistrot: 'LE BISTROT', nef: 'NAVE · LEVEL 0', niv1: 'LEVEL 1', lot: 'BATCH 42-SE', horsLot: 'NOT IN BATCH', nonNum: 'not digitised', accueil: 'RECEPTION' },
-    dom: { skip: 'Skip to the text version', bKick: 'SPES-07 · deck 12 · pod R26-0417',
+    dom: { _title: 'un tableau, un sens — SPES · a sensory trail at Ceysson & Bénétière', _desc: 'Wake up aboard the SPES: leave your cryogenic pod, answer Gladys, and walk through a sense dance where four works from the Ceysson & Bénétière gallery recalibrate your senses. 21 & 22 November 2026, Saint-Étienne. Free entry.',
+      skip: 'Skip to the text version', bKick: 'SPES-07 · deck 12 · pod R26-0417',
       lede: 'You are subject R26-0417. You have been asleep for 474 years aboard an ark in orbit. A voice is calling you: Protocol RESONANCE begins.',
       txt: 'Text version', keysT: 'Tap the buttons to act · drag to look around', keys: '<kbd>F</kbd> act · <kbd>1</kbd><kbd>2</kbd> answer · <kbd>Space</kbd> skip a line · mouse to look',
       proSkip: 'Space or click to skip', vKick: 'Link N-7 · neural synchronisation', callI: 'Watch unit · SPES-07',
@@ -118,7 +119,8 @@ const STR = {
       log: ['DIARIO DE A BORDO — SPES-07', '2026 · embarque de la cohorte R-26', '2140 · índice de Velo > 9: el Gran Polvo', '2318 · última señal recibida de la Tierra', '2500 · protocolo RESONANCIA — sujeto R26-0417'],
       obs: '▲ OBSERVACIÓN', stase: 'ESTASIS NIV.4', earth: ['ÓRBITA BAJA — TIERRA', 'índice de Velo: 9,7 / 10', 'superficie habitable: 3 %'], fleet: ['FLOTA HOPE', '212 arcas en espera', 'SPES-07 · arca sensorial'],
       link: ['ENLACE N-7', 'danza sensorial · lote 42-SE'], entree: 'ENTRADA', narthex: 'NÁRTEX · RECEPCIÓN', librairie: 'LIBRERÍA', bistrot: 'LE BISTROT', nef: 'NAVE · NIVEL 0', niv1: 'NIVEL 1', lot: 'LOTE 42-SE', horsLot: 'FUERA DE LOTE', nonNum: 'no digitalizada', accueil: 'RECEPCIÓN' },
-    dom: { skip: 'Ir a la versión de texto', bKick: 'SPES-07 · cubierta 12 · cápsula R26-0417',
+    dom: { _title: 'un tableau, un sens — SPES · recorrido sensorial en Ceysson & Bénétière', _desc: 'Despierta a bordo de la SPES: sal de tu cápsula criogénica, responde a Gladys y recorre una danza sensorial en la que cuatro obras de la galería Ceysson & Bénétière recalibran tus sentidos. 21 y 22 de noviembre de 2026, Saint-Étienne. Entrada libre.',
+      skip: 'Ir a la versión de texto', bKick: 'SPES-07 · cubierta 12 · cápsula R26-0417',
       lede: 'Eres el sujeto R26-0417. Llevas 474 años dormido a bordo de un arca en órbita. Una voz te llama: comienza el protocolo RESONANCIA.',
       txt: 'Versión de texto', keysT: 'Toca los botones para actuar · desliza el dedo para mirar', keys: '<kbd>F</kbd> actuar · <kbd>1</kbd><kbd>2</kbd> responder · <kbd>Espacio</kbd> saltar una réplica · ratón para mirar',
       proSkip: 'Espacio o clic para saltar', vKick: 'Enlace N-7 · sincronización neuronal', callI: 'Unidad de vigilia · SPES-07',
@@ -154,6 +156,7 @@ export function localizeDom() { // le sélecteur de langue recharge la page : le
   document.documentElement.lang = LANG;
   document.querySelectorAll('[data-lang]').forEach((b) => { const on = b.dataset.lang === LANG; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); b.addEventListener('click', () => setLang(b.dataset.lang)); });
   if (!L.dom) return;
+  if (L.dom._title) document.title = L.dom._title; if (L.dom._desc) for (const q of ['meta[name="description"]', 'meta[property="og:description"]']) { const m = document.querySelector(q); if (m) m.content = L.dom._desc; }
   document.querySelectorAll('[data-k]').forEach((el) => { const v = L.dom[el.dataset.k]; if (v != null) el.innerHTML = v; });
   document.querySelectorAll('[data-w]').forEach((el) => { const i = +el.dataset.w, w = WTX[i]; el.querySelector('b').textContent = '0' + (i + 1) + ' · ' + w.sense; el.querySelector('.d').textContent = w.doc; el.querySelector('.c').textContent = QUO[0] + w.cns + QUO[1]; });
 }

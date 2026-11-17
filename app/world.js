@@ -92,8 +92,8 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   const shade = (m) => { m.castShadow = !!m.material.isMeshStandardMaterial && !m.material.transparent; m.receiveShadow = true; return m; };
   const RIB0 = -13.0, NB = 12; // premier couple, nombre de travées
   new GLTFLoader().load('assets/models/baie.glb', (res) => { const mx = new THREE.Matrix4();
-    const repeat = (name, n) => { for (const [g, m] of parts(res.scene.getObjectByName(name))) { const im = shade(new THREE.InstancedMesh(g, m, n)); for (let i = 0; i < n; i++) im.setMatrixAt(i, mx.makeTranslation(0, 0, RIB0 + i * 2.6)); im.frustumCulled = false; bay.add(im); } };
-    const once = (name, z) => { for (const [g, m] of parts(res.scene.getObjectByName(name))) { const me = shade(new THREE.Mesh(g, m)); me.position.z = z; bay.add(me); } };
+    const repeat = (name, n) => { for (const [g, m] of parts(res.scene.getObjectByName(name))) for (let c = 0; c < n; c += 4) { const k = Math.min(4, n - c), im = shade(new THREE.InstancedMesh(g, m, k)); im.castShadow = false; for (let i = 0; i < k; i++) im.setMatrixAt(i, mx.makeTranslation(0, 0, RIB0 + (c + i) * 2.6)); im.computeBoundingSphere(); bay.add(im); } }; /* l'architecture reçoit les ombres mais n'en porte pas : la passe d'ombre ne redessine que caissons, robots et fauteuil */
+    const once = (name, z) => { for (const [g, m] of parts(res.scene.getObjectByName(name))) { const me = shade(new THREE.Mesh(g, m)); me.castShadow = false; me.position.z = z; bay.add(me); } };
     repeat('travee', NB); repeat('couple', NB + 1); once('avant', Z0); once('fond', Z1); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
   W.guideMat = glow(COL.cyan, 1.3);
   add(bay, new THREE.BoxGeometry(0.05, 0.02, BL), W.guideMat, -1.25, 0.035, ZC); add(bay, new THREE.BoxGeometry(0.05, 0.02, BL), W.guideMat, 1.25, 0.035, ZC);
@@ -124,7 +124,10 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   const bedGlow = new THREE.MeshBasicMaterial({ map: soft, color: new THREE.Color(COL.cyan).multiplyScalar(0.55), transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false });
   W.statMats = []; const bodySlots = [], headSlots = [], gPillow = rbox(0.3, 0.05, 0.34, 0.02), pods = [];
   new GLTFLoader().load('assets/models/caisson.glb', (res) => { const base = parts(res.scene.getObjectByName('caisson')), lid = parts(res.scene.getObjectByName('capot'));
-    for (const p of pods) { for (const [g, m] of base) p.add(shade(new THREE.Mesh(g, m))); for (const [g, m] of lid) p.userData.pivot.add(shade(new THREE.Mesh(g, m))); } for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
+    const mine = pods.find((p) => p.userData.pivot === W.lidPivot), halves = [pods.filter((p) => p !== mine && p.position.z < 1.3), pods.filter((p) => p !== mine && p.position.z >= 1.3)]; bay.updateMatrixWorld(true);
+    for (const [g, m] of base) mine.add(shade(new THREE.Mesh(g, m))); for (const [g, m] of lid) mine.userData.pivot.add(shade(new THREE.Mesh(g, m)));
+    const inst = (list, mat) => { for (const [g, m] of list) for (const half of halves) { const im = shade(new THREE.InstancedMesh(g, m, half.length)); half.forEach((p, i) => im.setMatrixAt(i, mat(p))); im.computeBoundingSphere(); bay.add(im); } };
+    inst(base, (p) => p.matrixWorld); inst(lid, (p) => p.userData.pivot.matrixWorld); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
   function pod(mine, num) {
     const g = new THREE.Group(); pods.push(g);
     add(g, cable, mDark); add(g, cable, mDark, 0, 0, 0.3);
@@ -162,38 +165,47 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
     vertexShader: 'varying vec3 vN;varying vec3 vV;varying vec2 vUv;void main(){vUv=uv;vec4 mv=modelViewMatrix*vec4(position,1.);vN=normalize(normalMatrix*normal);vV=normalize(-mv.xyz);gl_Position=projectionMatrix*mv;}',
     fragmentShader: 'uniform vec3 uColor;uniform float uOp,uTime;varying vec3 vN;varying vec3 vV;varying vec2 vUv;void main(){float f=clamp(abs(dot(normalize(vN),normalize(vV))),.0001,1.);float y=clamp(vUv.y,0.,1.);float along=pow(y,1.6)*smoothstep(0.,.14,y);float dust=.84+.16*sin(y*31.-uTime*2.2+vUv.x*12.57);gl_FragColor=vec4(uColor*pow(f,2.4)*along*dust*uOp,1.);}' }));
   const poolMat = new THREE.MeshBasicMaterial({ map: soft, color: new THREE.Color(COL.pale).multiplyScalar(0.5), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
+  // Les Veilleurs sont modélisés dans Blender (tools/robots_blender.py). Chaque pièce mobile arrive avec son origine sur son
+  // articulation : on prépare ici les pivots (slot), on y accroche les pièces au chargement, et le décor n'anime que les pivots.
+  const botMats = { coque: mBot, metal: mBotD, acier: mSteel, cable: mDark, verre: new THREE.MeshStandardMaterial({ color: 0x05080c, metalness: 0.3, roughness: 0.14, envMapIntensity: 1.4 }), lueur: glow(COL.cyan, 1.2), ambre: glow(COL.safran, 1.6) };
+  const botSlots = [], slot = (name, parent, x = 0, y = 0, z = 0) => { const g = new THREE.Group(); g.position.set(x, y, z); parent.add(g); botSlots.push([name, g]); return g; };
+  new GLTFLoader().load('assets/models/robots.glb', (res) => { const src = {};
+    for (const [name] of botSlots) { if (src[name]) continue; const o = res.scene.getObjectByName(name); if (!o) continue; o.position.set(0, 0, 0); o.traverse((m) => { if (m.isMesh) { m.material = botMats[m.material.name] || mBot; m.castShadow = !!m.material.isMeshStandardMaterial; m.receiveShadow = true; } }); src[name] = o; }
+    for (const [name, g] of botSlots) if (src[name]) g.add(src[name].clone()); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
+  // rails des bras, portique de liaison et robot soudeur : modélisés dans Blender (tools/equipements_blender.py)
+  const gear = new Promise((ok) => new GLTFLoader().load('assets/models/equipements.glb', (res) => ok(res.scene)));
+  gear.then((sc) => { const mx = new THREE.Matrix4(), wm = Object.assign({}, bayMats, { lueur: glow(COL.steel, 1.2), metal: mDark }), n = Math.ceil(BL / 2.6);
+    sc.getObjectByName('rail').traverse((o) => { if (!o.isMesh) return; const im = shade(new THREE.InstancedMesh(o.geometry, wm[o.material.name] || mMetal, n * 2)); im.castShadow = false;
+      for (let i = 0; i < n * 2; i++) im.setMatrixAt(i, mx.makeTranslation(i < n ? -2.2 : 2.2, 4.64, Z0 + 1.3 + (i % n) * 2.6)); im.frustumCulled = false; bay.add(im); }); });
   // bras de maintenance sur rail (un par rangée) : va de caisson en caisson, descend, scanne, repart
   function gantry(side, seq, off, hold) {
-    add(bay, new THREE.BoxGeometry(0.12, 0.1, BL), mMetal, side * 2.2, 4.64, ZC); add(bay, new THREE.BoxGeometry(0.03, 0.02, BL), glow(COL.steel, 1.2), side * 2.2, 4.585, ZC);
-    const car = new THREE.Group(); car.position.set(side * 2.2, 4.5, 0); bay.add(car); add(car, rbox(0.5, 0.22, 0.42, 0.05), mBot); add(car, new THREE.BoxGeometry(0.52, 0.03, 0.1), glow(COL.safran, 1.6), 0, 0, 0.17);
-    const sh = new THREE.Group(); sh.position.y = -0.12; car.add(sh); add(sh, new THREE.SphereGeometry(0.1, 14, 10), mBotD); add(sh, rbox(0.11, 1.3, 0.11, 0.03), mBot, 0, -0.65, 0); add(sh, new THREE.CylinderGeometry(0.02, 0.02, 1.2, 6), mBotD, 0.08, -0.65, 0);
-    const el = new THREE.Group(); el.position.y = -1.3; sh.add(el); add(el, new THREE.SphereGeometry(0.085, 14, 10), mBotD); add(el, rbox(0.085, 1.3, 0.085, 0.03), mBot, 0, -0.65, 0);
-    const wr = new THREE.Group(); wr.position.y = -1.3; el.add(wr); add(wr, new THREE.CylinderGeometry(0.07, 0.04, 0.2, 14), mBotD, 0, -0.1, 0);
-    const tip = add(wr, new THREE.SphereGeometry(0.03, 8, 8), glow(COL.cyan, 4), 0, -0.22, 0), beam = add(wr, beamGeo, beamMat(COL.cyan), 0, -0.2, 0), lt = new THREE.Sprite(new THREE.SpriteMaterial({ map: soft, color: new THREE.Color(COL.cyan).multiplyScalar(1.7), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })); lt.position.y = -0.24; lt.scale.setScalar(0.22); wr.add(lt); beam.scale.set(0.2, 1.0, 0.2);
-    for (const f of [-1, 1]) add(wr, new THREE.BoxGeometry(0.015, 0.14, 0.03), mBot, f * 0.045, -0.26, 0).rotation.z = f * 0.25;
+    const car = new THREE.Group(); car.position.set(side * 2.2, 4.5, 0); bay.add(car); slot('chariot', car);
+    const sh = slot('bras1', car, 0, -0.12, 0), el = slot('bras2', sh, 0, -1.3, 0), wr = slot('outil', el, 0, -1.3, 0); /* épaule, coude, poignet */
+    const tip = add(wr, new THREE.SphereGeometry(0.022, 10, 8), glow(COL.cyan, 4), 0, -0.212, 0), beam = add(wr, beamGeo, beamMat(COL.cyan), 0, -0.22, 0), lt = new THREE.Sprite(new THREE.SpriteMaterial({ map: soft, color: new THREE.Color(COL.cyan).multiplyScalar(1.7), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })); lt.position.y = -0.25; lt.scale.setScalar(0.22); wr.add(lt); beam.scale.set(0.2, 1.0, 0.2);
     let rel = null; upd.push((t) => { const T = 11; let tt = t + off; if (hold) { if (W.wakeHold) tt = T * 0.4; else { if (rel === null) rel = t; tt = t - rel + T * 0.6; } } const n = Math.floor(tt / T), u = (tt % T) / T, L = seq.length, zA = -11.7 + seq[((n % L) + L) % L] * 2.6, zB = -11.7 + seq[(((n + 1) % L) + L) % L] * 2.6;
       const work = sm(0.02, 0.16, u) * (1 - sm(0.62, 0.76, u)); car.position.z = zA + (zB - zA) * sm(0.76, 1, u);
       sh.rotation.z = side * (1.25 - work * 0.5 + Math.sin(t * 1.3) * 0.02 * work); el.rotation.z = side * (-2.3 + work * 2.05); wr.rotation.z = side * (0.5 - work * 0.95) + Math.sin(t * 2.1) * 0.1 * work;
       const on = work > 0.9 ? 1 : 0; beam.material.uniforms.uOp.value = (hold && W.wakeHold ? 0 : on) * (0.5 + 0.14 * Math.sin(t * 17)); lt.material.opacity = on * (0.75 + 0.25 * Math.sin(t * 23)); tip.material.color.setHex(on ? COL.cyan : COL.safran).multiplyScalar(4); });
   }
   W.wakeHold = true; gantry(-1, [5, 9, 2, 7, 0, 11, 4], 0, true); gantry(1, [3, 8, 1, 10, 6], 6.5, false);
-  // drones de surveillance : balayent les rangées avec un faisceau
+  // drones de surveillance : quatre rotors carénés, un œil à l'avant, un objectif sous le ventre qui balaie les rangées
   function drone(path, len) {
-    const d = new THREE.Group(); add(d, rbox(0.4, 0.13, 0.28, 0.05), mBot); add(d, rbox(0.2, 0.08, 0.2, 0.03), mBotD, 0, 0.09, 0); add(d, new THREE.SphereGeometry(0.045, 12, 10), glow(COL.coral, 3), 0, 0, 0.14);
-    for (const [x, z] of [[-0.2, -0.14], [0.2, -0.14], [-0.2, 0.14], [0.2, 0.14]]) { add(d, new THREE.CylinderGeometry(0.035, 0.05, 0.06, 10), mBotD, x, -0.08, z); add(d, new THREE.CircleGeometry(0.03, 10), glow(COL.pale, 3), x, -0.112, z).rotation.x = PI / 2; }
-    add(d, new THREE.CylinderGeometry(0.004, 0.004, 0.22, 4), mBotD, -0.12, 0.2, -0.08);
-    const beam = add(d, beamGeo, beamMat(COL.pale), 0, -0.1, 0); beam.scale.set(0.2 * len, len, 0.2 * len); const pool = add(d, new THREE.PlaneGeometry(1, 1), poolMat, 0, -0.08 - len, 0); pool.rotation.x = -PI / 2; pool.scale.setScalar(0.62 * len); bay.add(d);
-    let px = 0, pz = 0; upd.push((t) => { const p = path(t); d.position.set(p[0], p[1] + Math.sin(t * 1.9 + p[2]) * 0.04, p[2]); const dx = p[0] - px, dz = p[2] - pz; if (Math.abs(dx) + Math.abs(dz) > 1e-5) { const ta = Math.atan2(dx, dz); d.rotation.y += Math.atan2(Math.sin(ta - d.rotation.y), Math.cos(ta - d.rotation.y)) * 0.05; } px = p[0]; pz = p[2]; d.rotation.z = Math.sin(t * 0.8) * 0.05; beam.material.uniforms.uOp.value = 0.3 + 0.05 * Math.sin(t * 9 + p[2]); });
+    const d = new THREE.Group(); slot('drone', d); add(d, new THREE.SphereGeometry(0.022, 10, 8), glow(COL.coral, 3), 0, 0, 0.172);
+    const props = [[-1, -1], [-1, 1], [1, -1], [1, 1]].map(([sx, sz]) => { const h = slot('helice', d, sx * 0.215, 0.024, sz * 0.165); h.userData.s = sx * sz; return h; });
+    const beam = add(d, beamGeo, beamMat(COL.pale), 0, -0.1, 0.02); beam.scale.set(0.2 * len, len, 0.2 * len); const pool = add(d, new THREE.PlaneGeometry(1, 1), poolMat, 0, -0.08 - len, 0.02); pool.rotation.x = -PI / 2; pool.scale.setScalar(0.62 * len); bay.add(d);
+    let px = 0, pz = 0; upd.push((t, dt) => { const p = path(t); d.position.set(p[0], p[1] + Math.sin(t * 1.9 + p[2]) * 0.04, p[2]); const dx = p[0] - px, dz = p[2] - pz; if (Math.abs(dx) + Math.abs(dz) > 1e-5) { const ta = Math.atan2(dx, dz); d.rotation.y += Math.atan2(Math.sin(ta - d.rotation.y), Math.cos(ta - d.rotation.y)) * 0.05; } px = p[0]; pz = p[2]; d.rotation.z = Math.sin(t * 0.8) * 0.05; d.rotation.x = 0.06 + Math.sin(t * 0.6 + p[2]) * 0.02;
+      for (const h of props) h.rotation.y += dt * 41 * h.userData.s; beam.material.uniforms.uOp.value = 0.3 + 0.05 * Math.sin(t * 9 + p[2]); });
   }
   drone((t) => [-4.35 + Math.sin(t * 0.21) * 0.22, 3.05, 1 + Math.sin(t * 0.09 + 0.5) * 12.5], 1.9);
   drone((t) => [4.35 + Math.sin(t * 0.17 + 2) * 0.22, 3.2, 1 + Math.sin(t * 0.075 + 2.4) * 12.5], 2.05);
   drone((t) => [Math.sin(t * 0.13) * 2.2, 3.9, -8.4 + Math.cos(t * 0.13) * 2.2], 3.78);
-  // robots d'entretien au sol
+  // robots d'entretien au sol : six roues, une brosse, une tourelle de relevé qui balaie les caissons
   function rover(x, sp, ph) {
-    const r = new THREE.Group(); add(r, rbox(0.56, 0.14, 0.38, 0.06), mBotD, 0, 0.11, 0); add(r, rbox(0.3, 0.07, 0.24, 0.03), mBot, -0.04, 0.2, 0); add(r, new THREE.SphereGeometry(0.05, 10, 8, 0, PI * 2, 0, PI / 2), glow(COL.amber, 2.5), 0.12, 0.23, 0);
-    add(r, new THREE.BoxGeometry(0.02, 0.03, 0.3), glow(COL.pale, 3), 0.285, 0.12, 0); for (const z of [-0.2, 0.2]) add(r, new THREE.BoxGeometry(0.4, 0.015, 0.01), glow(COL.amber, 1.4), 0, 0.12, z);
-    add(r, new THREE.PlaneGeometry(1.6, 1.1), new THREE.MeshBasicMaterial({ map: soft, color: new THREE.Color(COL.amber).multiplyScalar(0.5), transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }), 0.55, 0.036, 0).rotation.x = -PI / 2; bay.add(r);
-    upd.push((t) => { const L = BL - 5, u = ((t * sp + ph) % (2 * L) + 2 * L) % (2 * L), fw = u < L; r.position.set(x, 0, Z0 + 2.5 + (fw ? u : 2 * L - u)); r.rotation.y = fw ? -PI / 2 : PI / 2; });
+    const r = new THREE.Group(); slot('rover', r); const wheels = [-0.19, 0, 0.19].flatMap((wx) => [-1, 1].map((s) => slot('roue', r, wx, 0.056, s * 0.172))), mast = slot('mat', r, -0.08, 0.2, 0);
+    add(r, new THREE.SphereGeometry(0.034, 10, 8, 0, PI * 2, 0, PI / 2), glow(COL.amber, 2.5), 0.12, 0.214, 0); add(r, new THREE.BoxGeometry(0.004, 0.018, 0.26), glow(COL.pale, 3), 0.297, 0.097, 0);
+    add(r, new THREE.PlaneGeometry(1.6, 1.1), new THREE.MeshBasicMaterial({ map: soft, color: new THREE.Color(COL.amber).multiplyScalar(0.5), transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }), 0.6, 0.036, 0).rotation.x = -PI / 2; bay.add(r);
+    upd.push((t) => { const L = BL - 5, d = t * sp + ph, u = (d % (2 * L) + 2 * L) % (2 * L), fw = u < L; r.position.set(x, 0, Z0 + 2.5 + (fw ? u : 2 * L - u)); r.rotation.y = fw ? -PI / 2 : PI / 2;
+      for (const w of wheels) w.rotation.z = -d / 0.056; mast.rotation.y = Math.sin(t * 0.7 + ph) * 1.15; });
   }
   rover(-1.6, 0.55, 3); rover(1.6, 0.42, 21);
   upd.push((t) => {
@@ -201,22 +213,15 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
     W.statMats.forEach((m, i) => { const on = Math.sin(t * 1.4 + i * 1.9) > -0.6; m.color.setHex(m.userData.mine ? COL.amber : COL.cyan).multiplyScalar(on ? 2 : 0.5); });
   });
 
-  // --- mur des hublots ---
-  const sh = new THREE.Shape(); sh.moveTo(-BW / 2, 0); sh.lineTo(BW / 2, 0); sh.lineTo(BW / 2, BH); sh.lineTo(-BW / 2, BH); sh.closePath();
-  const WC = { x: 0, y: 2.55, r: 2.05 }, HOLES = [[WC.x, WC.y, WC.r], [-3.95, 2.7, 0.72], [3.95, 2.7, 0.72]];
-  for (const [x, y, r] of HOLES) { const h = new THREE.Path(); h.absarc(x, y, r, 0, PI * 2, true); sh.holes.push(h); }
-  add(bay, new THREE.ExtrudeGeometry(sh, { depth: 0.55, bevelEnabled: false, curveSegments: 48 }), mMetal, 0, 0, Z0 - 0.55);
-  for (const [x, y, r] of HOLES) {
-    add(bay, new THREE.TorusGeometry(r + 0.1, r > 1 ? 0.13 : 0.08, 14, 72), mPanel, x, y, Z0 + 0.02); add(bay, new THREE.TorusGeometry(r - 0.03, 0.016, 8, 72), glow(COL.steel, 2.2), x, y, Z0 + 0.06);
-    add(bay, new THREE.TorusGeometry(r + 0.02, 0.05, 10, 72), mDark, x, y, Z0 - 0.5);
-    add(bay, new THREE.CircleGeometry(r, 48), new THREE.MeshBasicMaterial({ color: 0x8fb4d8, transparent: true, opacity: 0.035, depthWrite: false }), x, y, Z0 - 0.3);
-  }
-  const mt = new THREE.Matrix4(), bolts = new THREE.InstancedMesh(new THREE.SphereGeometry(0.045, 8, 6), mMetal, 28);
-  for (let i = 0; i < 28; i++) { const a = i / 28 * PI * 2; mt.makeTranslation(WC.x + Math.cos(a) * 2.33, WC.y + Math.sin(a) * 2.33, Z0 + 0.03); bolts.setMatrixAt(i, mt); } bay.add(bolts);
-  add(bay, rbox(4.4, 0.85, 0.7, 0.1), mPanel, 0, 0.42, Z0 + 0.75); add(bay, new THREE.BoxGeometry(4.2, 0.02, 0.03), glow(COL.cyan, 1.6), 0, 0.86, Z0 + 1.08);
-  add(bay, new THREE.CylinderGeometry(0.025, 0.025, 4.6, 8), mBot, 0, 1.05, Z0 + 1.35).rotation.z = PI / 2; for (const x of [-2.2, 0, 2.2]) add(bay, new THREE.CylinderGeometry(0.02, 0.02, 1.05, 8), mBot, x, 0.52, Z0 + 1.35);
-  const scr1 = textPlane(TX.earth, { color: '#ff4f38', w: 560, size: 44, sub: 28, scale: 1.45 }); scr1.position.set(-1.25, 1.14, Z0 + 0.8); scr1.rotation.x = -0.5; bay.add(scr1);
-  const scr2 = textPlane(TX.fleet, { color: '#7fe3e6', w: 560, size: 44, sub: 28, scale: 1.45 }); scr2.position.set(1.25, 1.14, Z0 + 0.8); scr2.rotation.x = -0.5; bay.add(scr2);
+  // --- mur des hublots : modélisé dans Blender (tools/hublots_blender.py) — cloison percée, grand hublot à volet-iris, hublots
+  // latéraux, pupitre, garde-corps. Seuls le verre et les relevés projetés au-dessus du pupitre restent dessinés ici.
+  const WC = { x: 0, y: 2.55, r: 2.05 }, HOLES = [[WC.x, WC.y, WC.r], [-3.95, 2.7, 0.72], [3.95, 2.7, 0.72]]; /* à garder en accord avec le script */
+  for (const [x, y, r] of HOLES) add(bay, new THREE.CircleGeometry(r, 48), new THREE.MeshBasicMaterial({ color: 0x8fb4d8, transparent: true, opacity: 0.035, depthWrite: false }), x, y, Z0 - 0.3);
+  const mt = new THREE.Matrix4();
+  new GLTFLoader().load('assets/models/hublots.glb', (res) => { const g = new THREE.Group(); g.position.z = Z0; bay.add(g); const wm = Object.assign({}, bayMats, { lueur: glow(COL.steel, 2.2), lueur_c: glow(COL.cyan, 1.6), ecran: ecranMat(false), rampe: new THREE.MeshStandardMaterial({ color: 0x6f767d, metalness: 0.6, roughness: 0.62, envMapIntensity: 0.5 }) });
+    res.scene.traverse((o) => { if (!o.isMesh) return; const name = o.material.name; if (TILE[name]) boxUV(o.geometry, TILE[name]); const me = shade(new THREE.Mesh(o.geometry, wm[name] || mPanel)); if (/^cloison/.test(o.name)) me.castShadow = false; g.add(me); }); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
+  const scr1 = textPlane(TX.earth, { color: '#ff4f38', w: 560, size: 44, sub: 28, scale: 1.45 }); scr1.position.set(-1.25, 1.17, Z0 + 0.52); scr1.rotation.x = -0.5; bay.add(scr1);
+  const scr2 = textPlane(TX.fleet, { color: '#7fe3e6', w: 560, size: 44, sub: 28, scale: 1.45 }); scr2.position.set(1.25, 1.17, Z0 + 0.52); scr2.rotation.x = -0.5; bay.add(scr2);
 
   // --- poste de liaison neurale : fauteuil, câble cervical, casque ---
   const link = new THREE.Group(); link.position.set(3.25, 0, -11.4); link.rotation.y = 0.74; bay.add(link); // l'avant du fauteuil = -Z local (face au hublot)
@@ -233,10 +238,14 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
     const take = (name, to) => { const n = dress(res.scene.getObjectByName(name)); n.position.set(0, 0, 0); to.add(n); };
     link.add(dress(res.scene.getObjectByName('fauteuil'))); take('accoudoir_g', armG[0]); take('accoudoir_d', armG[1]); take('casque', visArm); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
   // halo de liaison derrière la tête : couronne, anneaux qui tournent, enseigne
-  add(link, new THREE.TorusGeometry(0.78, 0.05, 12, 64), mMetal, 0, 1.5, 0.88); W.linkGlow = glow(COL.cyan, 2.2); add(link, new THREE.TorusGeometry(0.7, 0.016, 8, 64), W.linkGlow, 0, 1.5, 0.88);
-  const lr = [add(link, new THREE.TorusGeometry(0.56, 0.007, 6, 48), glow(COL.pale, 1.6), 0, 1.5, 0.88), add(link, new THREE.TorusGeometry(0.42, 0.007, 6, 48), glow(COL.cyan, 1.6), 0, 1.5, 0.88)];
+  gear.then((sc) => { const n = sc.getObjectByName('portique'); n.traverse((m) => { if (m.isMesh) { m.material = seatMats[m.material.name] || mBotD; m.castShadow = !!m.material.isMeshStandardMaterial; m.receiveShadow = true; } }); n.position.set(0, 0, 0); link.add(n); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
+  W.linkGlow = glow(COL.cyan, 2.2); add(link, new THREE.TorusGeometry(0.7, 0.016, 8, 64), W.linkGlow, 0, 1.5, 0.88);
+  /* les anneaux tournants ont été retirés (retour du commanditaire, 17/11) : la liaison se lit par les émetteurs du portique */
   const sign = textPlane(TX.link, { color: '#7fe3e6', w: 560, size: 46, sub: 26, scale: 1.4, align: 'center' }); sign.position.set(0, 2.62, 0.88); sign.rotation.y = PI; link.add(sign);
-  W.linkSpin = 1; upd.push((t, dt) => { lr[0].rotation.y += dt * 0.8 * W.linkSpin; lr[1].rotation.x += dt * 1.1 * W.linkSpin; });
+  // six filets de lumière vont des émetteurs du portique vers la tête quand la liaison monte en puissance (W.linkSpin : 1 au repos, 7 à la synchronisation)
+  W.linkSpin = 1; { const pts = [], RR = 0.555; for (let i = 0; i < 6; i++) { const a = PI / 6 + i * PI / 3; pts.push(Math.cos(a) * RR, 1.5 + Math.sin(a) * RR, 0.9, 0, 1.47, 0.4); }
+    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3)); const lm = new THREE.LineBasicMaterial({ color: new THREE.Color(COL.cyan).multiplyScalar(1.6), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+    const ln = new THREE.LineSegments(lg, lm); ln.frustumCulled = false; link.add(ln); let k = 0; upd.push((t, dt) => { k += (Math.min(1, Math.max(0, (W.linkSpin - 1) / 6)) - k) * Math.min(1, dt * 2); lm.opacity = k * (0.55 + 0.25 * Math.sin(t * 23) + 0.2 * Math.sin(t * 7.3)); }); }
   // bracelets de maintien : quatre arceaux articulés sur les accoudoirs, qui se referment sur les avant-bras une fois assis
   const clampGlow = glow(COL.cyan, 1.4), clamps = [];
   for (const g of armG) for (const z of [0.27, 0.13]) { const s = g.userData.s, R = 0.071, pv = new THREE.Group(); pv.position.set(s * R, 0.305, z - 0.62); g.add(pv); const arc = new THREE.TorusGeometry(R, 0.009, 8, 22, PI); arc.translate(-s * R, 0, 0);
@@ -279,7 +288,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
       res.scene.traverse((o) => { if (o.isMesh) { const g = o.geometry.clone(); g.applyMatrix4(o.matrixWorld); parts.push([o.material.name, g]); } });
       bodySlots.forEach((bs, i) => { if ((i + (i >> 2)) % 2 !== gi) return; // une femme, un homme, sans alternance trop régulière
         for (const [mn, g] of parts) { const m = new THREE.Mesh(g, mn === 'peau' ? mSkin[(i * 3 + (i >> 2)) % 5] : mn === 'combinaison' ? mSuit[i % 3] : mn === 'bonnet' ? mCap : mn === 'bandeau' ? mBand : mn === 'temoin' ? mLed : mn === 'cable' ? mBotD : mBot);
-          m.castShadow = mn !== 'temoin'; m.receiveShadow = true; bs.add(m); } }); })); }
+          m.castShadow = false; m.receiveShadow = true; bs.add(m); } }); })); }
 
   /* ================= ESPACE ================= */
   const space = new THREE.Group(); scene.add(space); W.space = space;
@@ -465,10 +474,9 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   W.setSun(0);
   // robot soudeur accroché au bord extérieur du grand hublot
   const wa = 0.72, welder = new THREE.Group(); welder.position.set(Math.cos(wa) * 1.86, WC.y + Math.sin(wa) * 1.86, Z0 - 0.78); welder.rotation.z = wa; space.add(welder);
-  add(welder, rbox(0.3, 0.2, 0.22, 0.04), spaceMat(0xb9bec4)); add(welder, new THREE.SphereGeometry(0.035, 8, 8), glow(COL.safran, 3), -0.12, 0.06, 0.1);
-  for (const [x, y] of [[0.12, 0.12], [0.12, -0.12], [-0.1, 0.12], [-0.1, -0.12]]) add(welder, new THREE.CylinderGeometry(0.012, 0.012, 0.22, 5), spaceMat(0x4b5158), x + 0.06, y, 0).rotation.z = PI / 2 + (y > 0 ? 0.5 : -0.5);
-  add(welder, new THREE.CylinderGeometry(0.014, 0.014, 0.3, 5), spaceMat(0x8e959c), 0.2, 0, 0.06).rotation.z = PI / 2 - 0.3;
-  const arc = new THREE.Sprite(new THREE.SpriteMaterial({ map: soft, color: new THREE.Color(0xbfe0ff).multiplyScalar(2.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); arc.position.set(0.34, -0.04, 0.08); welder.add(arc);
+  add(welder, new THREE.SphereGeometry(0.022, 8, 8), glow(COL.safran, 3), -0.12, 0.06, 0.095);
+  gear.then((sc) => { const wm = { coque: spaceMat(0xb9bec4), metal: spaceMat(0x3c4249), acier: spaceMat(0x9aa1a8), ambre: glow(COL.safran, 1.6), cuivre: spaceMat(0xa06a40) }, n = sc.getObjectByName('soudeur'); n.traverse((m) => { if (m.isMesh) m.material = wm[m.material.name] || wm.metal; }); n.position.set(0, 0, 0); welder.add(n); });
+  const arc = new THREE.Sprite(new THREE.SpriteMaterial({ map: soft, color: new THREE.Color(0xbfe0ff).multiplyScalar(2.2), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false })); arc.position.set(0.34, -0.04, 0.15); welder.add(arc);
   const spN = 40, spp = new Float32Array(spN * 3), spv = []; for (let i = 0; i < spN; i++) { spv.push([0, 0, 0, 0]); spp.set([0, 99, 0], i * 3); }
   const spg = new THREE.BufferGeometry(); spg.setAttribute('position', new THREE.BufferAttribute(spp, 3));
   const sparks = new THREE.Points(spg, new THREE.PointsMaterial({ color: new THREE.Color(0xffd9a0).multiplyScalar(4), size: 0.03, transparent: true, fog: false, depthWrite: false, blending: THREE.AdditiveBlending })); sparks.position.copy(arc.position); sparks.frustumCulled = false; welder.add(sparks);
