@@ -90,7 +90,7 @@ export function createBody(scene) {
       // bassin : sur son appui, ou sous la tête (reculé quand on penche le buste ou qu'on baisse les yeux vers ses pieds)
       lean += (st.lean - lean) * (1 - Math.exp(-dt * 3)); let hx, hy, hz;
       if (A) { hx = A[0] - fx * EYE_Z * SCALE; hy = A[1] - TOR * SCALE; hz = A[2] - fz * EYE_Z * SCALE; }
-      else { const le = lean + (st.pose === 'stand' ? 0.26 * Math.min(1, Math.max(0, -S.pitch)) : 0), zo = (TOR * Math.sin(le) + EYE_Z * Math.cos(le)) * SCALE, yo = (TOR * Math.cos(le) - EYE_Z * Math.sin(le)) * SCALE;
+      else { const le = lean + (st.pose === 'stand' ? 0.17 * Math.min(1, Math.max(0, -S.pitch)) : 0), zo = (TOR * Math.sin(le) + EYE_Z * Math.cos(le)) * SCALE, yo = (TOR * Math.cos(le) - EYE_Z * Math.sin(le)) * SCALE;
         hx = (L ? L[0] : S.pos.x) - fx * zo; hz = (L ? L[1] : S.pos.z) - fz * zo; hy = S.pos.y - yo; if (st.pose === 'stand') hy = Math.min(hy, floor + LEG * SCALE); }
       if (jump) hip.set(hx, hy, hz); else { const k = 1 - Math.exp(-dt * st.rate); hip.x += (hx - hip.x) * k; hip.y += (hy - hip.y) * k; hip.z += (hz - hip.z) * k; }
       // buste : des hanches vers la tête
@@ -100,9 +100,9 @@ export function createBody(scene) {
       grip += (GRIP[st.pose] - grip) * (1 - Math.exp(-dt * 4.5)); for (const h of hands) h.morphTargetInfluences[0] = Math.min(1, Math.max(0, grip + r * 0.05 * Math.sin(t * 19)));
       // jambes : assis, celles de la pose (corrigées de l'inclinaison du buste) ; debout, pliées juste ce qu'il faut pour que les pieds restent au sol
       let cf = 0, ck = 0; if (!seated) { const h = Math.max(0.3, (hip.y - floor) / SCALE); if (h < LEG - 0.003) { let lo = 0, hi = 1.55; for (let i = 0; i < 14; i++) { cf = (lo + hi) / 2; const q = L1 * Math.sin(cf) / L2; if (L1 * Math.cos(cf) + L2 * Math.sqrt(Math.max(0, 1 - q * q)) > h) lo = cf; else hi = cf; } ck = cf + Math.asin(Math.min(1, L1 * Math.sin(cf) / L2)); } }
-      const A2 = 0.42 * w, As = (0.3 + 0.22 * r) * w, k = 1 - Math.exp(-dt * (st.pose === 'hands' ? 3 : 6)), kl = 1 - Math.exp(-dt * (seated ? Math.min(6, st.rate * 2) : 12));
+      const ld = Math.min(1, Math.max(0, -S.pitch)), A2 = 0.42 * w, As = (0.3 + 0.06 * r) * w * (1 - 0.7 * ld), /* quand on regarde ses pieds, les bras restent le long du corps : ce sont les jambes qu'on voit */ k = 1 - Math.exp(-dt * (st.pose === 'hands' ? 3 : 6)), kl = 1 - Math.exp(-dt * (seated ? Math.min(6, st.rate * 2) : 12));
       for (let i = 0; i < 2; i++) { const sg = i ? -1 : 1, tr = r * 0.035 * Math.sin(t * 21 + i * 2.3) + (st.pose === 'hands' ? 0.03 * Math.sin(t * 17 + i) : 0), o = i * 6; // tr : tremblement d'un corps qui se dérouille
-        const tgt = [P[0] - sg * As * s + w * r * 0.25 + br * 0.012 + (seated || st.pose === 'rail' ? 0 : th), P[1] + w * (0.3 + 0.95 * r) + 0.15 * As * (1 - sg * s) + tr,
+        const tgt = [P[0] - sg * As * s + w * r * 0.06 + br * 0.012 + (seated || st.pose === 'rail' ? 0 : th * 0.55 * (1 - ld)), P[1] + w * (0.1 + 0.12 * r) + 0.15 * As * (1 - sg * s) + tr, /* bras : balancement d'épaule, coude à peine plié — les mains restent sous la taille, même raides */
           seated ? Math.max(-0.3, P[2] + th) : cf + th + sg * A2 * s, seated ? P[3] : ck + 0.95 * w * Math.max(0, sg * c), P[4], P[5]];
         for (let j = 0; j < 6; j++) cur[o + j] += (tgt[j] - cur[o + j]) * (j === 2 || j === 3 ? kl : k); }
       const a = (n, x, z = 0, y = 0) => { const p = J[n]; if (p) p.rotation.set(x, y, z); };

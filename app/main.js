@@ -352,7 +352,7 @@ async function act1() {
   S.walk = 1; await camTo({ pos: new V3(-3.3, 1.66, 2.5), look: new V3(-4.2, 0.95, 3.9), lead: 0.5 }, 1.7, trap); BODY.set({ lean: 0.5 }); await camTo({ pos: new V3(-3.76, 1.48, 3.02), look: new V3(-4.36, 0.86, 3.9), lead: 0.6 }, 2.1, trap); S.walk = 0; await dbg('voisin'); await wait(2.4); BODY.set({ lean: 0 }); /* buste penché sur le dormeur, pieds au sol */
   S.walk = 1; await camTo({ pos: new V3(-1.3, 1.68, 1.9), yaw: -PI / 2 + 0.4, pitch: 0.04, lead: 0.4 }, 2.8, trap); S.walk = 0; await l1; await dbg('stand');
   quest(P1, UI.q.obs); GOAL = [0, -11.6]; await ask(UI.a.walk); vit.loc = UI.loc[1]; vitals();
-  S.walk = 1; await camTo({ pos: new V3(0, 1.68, 0.6), yaw: -0.5, pitch: -1.0, lead: 0.45 }, 3.4, trap); await dbg('aisle'); // premiers pas : on regarde ses pieds avancer
+  S.walk = 1; await camTo({ pos: new V3(0, 1.68, 0.6), yaw: -0.5, pitch: -1.36, lead: 0.4 }, 3.6, trap); await dbg('aisle'); // premiers pas : on regarde ses pieds avancer
   tween(9, (k) => BODY.set({ rust: 1 - k })); // le corps se dérouille en marchant
   const l2 = say('g05');
   await camTo({ pos: new V3(0, 1.68, -10.6), look: new V3(-0.4, 2.3, -15), lead: 0.22 }, 9.6, trap); S.walk = 0; await l2;
@@ -410,11 +410,11 @@ async function act2() {
 const trap = (k) => { const a = 0.16, b = 0.2, v = 1 / (1 - a / 2 - b / 2); return k < a ? v * k * k / (2 * a) : k > 1 - b ? 1 - v * (1 - k) * (1 - k) / (2 * b) : v * (k - a / 2); }; // vitesse constante, départ et arrivée doux
 const lerpA = (a, b, k) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k;
 function walk(leg, look, onK) { // marche le long d'un tronçon : le regard suit le chemin, puis se pose sur « look » à l'arrivée
-  const c = W.legs[leg], [s0, len] = W.legLen[leg], p = new V3(), tg = new V3(), y0 = S.yaw, q0 = S.pitch;
-  return tween(len / 1.45 + 0.6, (k) => { c.getPointAt(k, p); S.pos.set(p.x, p.y + 1.66 + DSY, p.z); c.getTangentAt(Math.min(1, k + 0.04), tg);
+  const c = W.legs[leg], [s0, len] = W.legLen[leg], p = new V3(), tg = new V3(); let tl = T; /* 1,2 m/s en moyenne : un pas de visite */
+  return tween(len / 1.2 + 0.6, (k) => { c.getPointAt(k, p); S.pos.set(p.x, p.y + 1.66 + DSY, p.z); c.getTangentAt(Math.min(1, k + 0.04), tg);
     let yw = Math.atan2(-tg.x, -tg.z), pt = Math.atan2(tg.y, Math.hypot(tg.x, tg.z)) * 0.45;
-    if (look) { const a = aim(S.pos, look), dy = Math.atan2(Math.sin(a.yaw - yw), Math.cos(a.yaw - yw)), seen = Math.abs(dy) < 1.25 ? 1 : 0, b = Math.max(sm(0.8, 1, k), seen * sm(0.45, 0.7, k)); yw = lerpA(yw, a.yaw, b); pt += (a.pitch - pt) * b; } /* dès que l'œuvre entre dans le champ, le regard s'y pose ; le corps, lui, continue sur le chemin */
-    const i = sm(0, 0.14, k); S.yaw = lerpA(y0, yw, i); S.pitch = q0 + (pt - q0) * i; W.pathU.uHead.value = s0 + len * k; if (onK) onK(k); }, trap);
+    if (look) { const a = aim(S.pos, look), dy = Math.atan2(Math.sin(a.yaw - yw), Math.cos(a.yaw - yw)), b = Math.max(sm(0.8, 1, k), sm(1.5, 0.8, Math.abs(dy)) * sm(0.4, 0.7, k)); yw = lerpA(yw, a.yaw, b); pt += (a.pitch - pt) * b; } /* quand l'œuvre entre dans le champ, le regard s'y pose ; le corps, lui, continue sur le chemin */
+    { const dt = Math.min(0.1, Math.max(0, T - tl)); tl = T; const e = 1 - Math.exp(-dt * 4.5), wy = Math.atan2(Math.sin(yw - S.yaw), Math.cos(yw - S.yaw)), my = 1.7 * dt; S.yaw += Math.max(-my, Math.min(my, wy * e)); S.pitch += (pt - S.pitch) * e; if (k >= 1 && QUICK) { S.yaw = yw; S.pitch = pt; } } /* la tête rejoint sa cible à vitesse de tête (pas plus de ~100°/s), sans à-coup */ W.pathU.uHead.value = s0 + len * k; if (onK) onK(k); }, trap);
 }
 // mesure affichée pendant qu'un sens s'éveille : elle met un chiffre sur ce que le corps éprouve
 const senseEl = $('#sense'); let senseK = '';
