@@ -4,7 +4,6 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
-import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
@@ -182,15 +181,21 @@ function drawFace(t) {
 let renderer, composer, bloom, gtao, fx, scene, camera, W, running = false, T = 0, frameN = 0;
 const clock = new THREE.Clock();
 const S = { pos: new V3(), yaw: 0, pitch: 0, roll: 0, fov: 60, mx: 0, my: 0, lx: 0, ly: 0, free: 1, walk: 0, sway: 0 };
-const FX = { uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uGlitch: { value: 0 }, uAb: { value: 0.0018 }, uFade: { value: 0 }, uWhite: { value: 0 }, uCold: { value: 0 }, uWarm: { value: 0 }, uTunnel: { value: 0 }, uPulse: { value: 0 }, uSurge: { value: 0 } },
+const FX = { uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uGlitch: { value: 0 }, uAb: { value: 0.0018 }, uFade: { value: 0 }, uWhite: { value: 0 }, uCold: { value: 0 }, uWarm: { value: 0 }, uTunnel: { value: 0 }, uPulse: { value: 0 }, uSurge: { value: 0 }, uExpo: { value: 1.1 }, uSharp: { value: 0 }, uTexel: { value: new THREE.Vector2(0.001, 0.001) }, tBloom: { value: null }, uBloom: { value: 0 } },
   vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-  fragmentShader: `uniform sampler2D tDiffuse;uniform float uTime,uGlitch,uAb,uFade,uWhite,uCold,uWarm,uTunnel,uPulse,uSurge;varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse;uniform sampler2D tBloom;uniform float uTime,uGlitch,uAb,uFade,uWhite,uCold,uWarm,uTunnel,uPulse,uSurge,uExpo,uSharp,uBloom;uniform vec2 uTexel;varying vec2 vUv;
     float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+    /* mise en tons ACES et passage en sRGB : mêmes formules que la passe de sortie de three.js, fusionnées ici pour économiser une passe plein écran */
+    vec3 rrt(vec3 v){vec3 a=v*(v+0.0245786)-0.000090537;vec3 b=v*(0.983729*v+0.4329510)+0.238081;return a/b;}
+    vec3 aces(vec3 c){const mat3 mi=mat3(vec3(0.59719,0.07600,0.02840),vec3(0.35458,0.90834,0.13383),vec3(0.04823,0.01566,0.83777));const mat3 mo=mat3(vec3(1.60475,-0.10208,-0.00327),vec3(-0.53108,1.10813,-0.07276),vec3(-0.07367,-0.00605,1.07602));return clamp(mo*rrt(mi*(c*uExpo/0.6)),0.,1.);}
+    vec3 srgb(vec3 v){return mix(pow(v,vec3(0.41666))*1.055-vec3(0.055),v*12.92,vec3(lessThanEqual(v,vec3(0.0031308))));}
     void main(){ vec2 uv=.5+(vUv-.5)*(1.-uPulse*.014); float g=uGlitch;
       if(g>.001){ float band=floor(uv.y*mix(14.,56.,h(vec2(floor(uTime*13.),1.)))); float r=h(vec2(band,floor(uTime*21.)));
         uv.x+=(r-.5)*.3*g*step(.6,r); uv.y+=(h(vec2(floor(uTime*9.),band))-.5)*.03*g; }
       vec2 d=uv-.5; float ab=uAb*(.4+dot(d,d)*3.)+g*.03;
       vec3 c=vec3(texture2D(tDiffuse,uv+d*ab).r,texture2D(tDiffuse,uv).g,texture2D(tDiffuse,uv-d*ab).b);
+      if(uSharp>.001){ vec3 nb=texture2D(tDiffuse,uv+vec2(uTexel.x,0.)).rgb+texture2D(tDiffuse,uv-vec2(uTexel.x,0.)).rgb+texture2D(tDiffuse,uv+vec2(0.,uTexel.y)).rgb+texture2D(tDiffuse,uv-vec2(0.,uTexel.y)).rgb; c=max(c+(c-nb*.25)*uSharp,0.); } /* définition interne réduite : on redonne du piqué */
+      c+=texture2D(tBloom,uv).rgb*uBloom;
       if(g>.15){ float b=h(floor(uv*vec2(26.,15.))+floor(uTime*17.)); if(b>1.-g*.16) c=c.gbr*1.7+vec3(.02,.0,.03); }
       float r2=dot(d,d); c*=1.-r2*.95;
       c*=mix(1.,smoothstep(.36,.02,r2)*.9+.1,uTunnel); c=mix(c,c*vec3(1.14,.97,.8),uTunnel*.55);                                  /* tunnel : le monde s'éteint autour du regard */
@@ -198,18 +203,24 @@ const FX = { uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uGlitch
       c=mix(c,c*vec3(1.12,1.,.86),uWarm*.5); c+=vec3(.55,.04,.02)*uPulse*r2*1.3;                                                  /* tiédeur de la résine ; battement du cœur */
       float sa=atan(d.y,d.x); float sr=pow(abs(sin(sa*17.+h(vec2(floor(sa*7.),floor(uTime*22.)))*6.28)),22.); c+=(vec3(.3,.9,1.)*sr*smoothstep(.05,.5,r2)*2.4+vec3(.16,.5,.6)*r2*1.6)*uSurge; /* branchement : décharge venue des bords */
       c+=(h(uv*vec2(1731.,977.)+uTime*61.)-.5)*.022;
-      c=mix(c*uFade,vec3(2.2),uWhite); gl_FragColor=vec4(c,1.); }` };
-// qualité adaptative : si l'appareil peine, on baisse la résolution puis on coupe le bloom (les images d'un onglet en arrière-plan ne comptent pas)
-const QL = { dpr: 1, lvl: touch ? 1 : 0, n: 0, acc: 0, warm: 2 }, MSAA = LITE || touch ? 0 : (Q.has('msaa') ? +Q.get('msaa') : 4); // anticrénelage : indispensable aux filets fins de la galerie
-function adapt(raw) { if (LITE || Q.has('noadapt') || QL.lvl > 5 || raw > 0.4 || document.hidden) return; QL.acc += raw; if (++QL.n < 50) return; const avg = QL.acc / QL.n; QL.n = 0; QL.acc = 0;
-  if (QL.warm-- > 0 || avg < 0.0215) return; // on vise ~50 images/s ; les premières mesures (compilation des shaders) sont ignorées
-  QL.lvl++; // ordre des sacrifices : occlusion ambiante, résolution (deux crans), ombres, anticrénelage, bloom
-  if (QL.lvl === 5 && msRT) { msRT.dispose(); msRT = null; }
-  if (QL.lvl === 2 || QL.lvl === 3) { const d = Math.max(0.6, QL.dpr * (QL.lvl === 2 ? 0.85 : 0.7)); renderer.setPixelRatio(d); composer.setPixelRatio(d); msSize(); }
-  if (QL.lvl === 4) for (const l of W.shadowLights) l.castShadow = false; if (QL.lvl === 6) bloom.enabled = false; }
+      c=mix(c*uFade,vec3(2.2),uWhite); gl_FragColor=vec4(srgb(aces(c)),1.); }` };
+// Fluidité : on vise 60 images/s. Comme dans les jeux, c'est d'abord la définition interne du rendu 3D qui s'ajuste (par pas de 5 %,
+// compensée par une accentuation dans la passe finale ; l'interface, elle, reste nette), et seulement en dernier recours les effets.
+// Les images d'un onglet en arrière-plan ne comptent pas ; ?noadapt fige tout, ?timer aussi (la boucle de test ne suit pas l'écran).
+const QL = { dpr: 1, scale: 1, min: 0.7, lvl: touch ? 1 : 0, n: 0, acc: 0, warm: 2, ok: 0, up: false, block: 0 }, MSAA = LITE || touch ? 0 : (Q.has('msaa') ? +Q.get('msaa') : 4); // anticrénelage : indispensable aux filets fins de la galerie
+function setScale(k) { QL.scale = k; const d = QL.dpr * k; renderer.setPixelRatio(d); composer.setPixelRatio(d); msSize(); fx.uniforms.uSharp.value = Math.min(0.8, (1 - k) * 2.4); fx.uniforms.uTexel.value.set(1 / (innerWidth * d), 1 / (innerHeight * d)); if (W.pathU) W.pathU.uPx.value = d * innerHeight / 760; }
+function adapt(raw) { if (LITE || Q.has('noadapt') || Q.has('timer') || raw > 0.4 || document.hidden) return; QL.acc += raw; if (++QL.n < 30) return; const avg = QL.acc / QL.n * 1000; QL.n = 0; QL.acc = 0;
+  if (QL.warm-- > 0) return; // les premières mesures (compilation des shaders) sont ignorées
+  if (avg > 18.4) { QL.ok = 0; if (QL.up) QL.block = T + 40; QL.up = false; // sous ~54 images/s : on allège (et si c'était un essai de remontée, on n'en retente pas avant 40 s)
+    if (QL.scale > QL.min + 0.001) setScale(Math.max(QL.min, QL.scale - (avg > 24 ? 0.1 : 0.05)));
+    else if (QL.lvl < 5) { QL.lvl++; // ordre des sacrifices une fois la définition au plancher : occlusion ambiante, plancher plus bas, ombres, anticrénelage, bloom
+      if (QL.lvl === 2) QL.min = 0.55; if (QL.lvl === 3) for (const l of W.shadowLights) l.castShadow = false;
+      if (QL.lvl === 4 && msRT) { msRT.dispose(); msRT = null; } if (QL.lvl === 5) bloom.enabled = false; } }
+  else if (avg < 17.4) { if (QL.scale < 1 && T > QL.block && ++QL.ok >= 6) { QL.ok = 0; QL.up = true; setScale(Math.min(1, QL.scale + 0.05)); } else if (QL.up && QL.ok >= 2) QL.up = false; } // trois secondes à 60 images/s : on tente de remonter d'un cran
+  else QL.ok = 0; }
 // La scène est rendue dans une cible multi-échantillonnée, résolue UNE fois, puis recopiée dans la chaîne de post-traitement :
 // donner des échantillons aux tampons du composer coûtait une résolution par passe (≈ +17 ms par image sur carte intégrée).
-let msRT = null; const msSize = () => { if (msRT) { const r = renderer.getPixelRatio(); msRT.setSize(Math.floor(innerWidth * r), Math.floor(innerHeight * r)); } };
+let msRT = null, msQuad = null; const msSize = () => { if (msRT) { const r = QL.dpr * QL.scale; msRT.setSize(Math.floor(innerWidth * r), Math.floor(innerHeight * r)); } };
 function initGL() {
   renderer = new THREE.WebGLRenderer({ canvas: $('#gl'), antialias: false, powerPreference: 'high-performance' });
   const dpr = LITE ? 0.5 : Math.min(window.devicePixelRatio || 1, touch ? 1.5 : 1.25); QL.dpr = dpr; renderer.setPixelRatio(dpr); renderer.setSize(innerWidth, innerHeight);
@@ -217,19 +228,28 @@ function initGL() {
   scene = new THREE.Scene(); scene.background = new THREE.Color(0x020306); scene.fog = new THREE.FogExp2(0x0a1016, 0.034);
   camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.05, 1600);
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
-  W = buildWorld(scene, new THREE.TextureLoader(), WORKS, TX, { lite: LITE, touch, reel: Q.has('reel') }); BODY = createBody(scene); window.__spes = { renderer, QL, scene, W, S, BODY };
+  W = buildWorld(scene, new THREE.TextureLoader(), WORKS, TX, { lite: LITE, touch, reel: Q.has('reel') });
+  { let wt = 0; THREE.DefaultLoadingManager.onLoad = () => { clearTimeout(wt); wt = setTimeout(() => { if (W.warm && !W.ds.visible) W.warm(renderer, camera); }, 300); }; } /* modèles chargés : on prépare les programmes des états d'éclairage */ BODY = createBody(scene); window.__spes = { renderer, QL, scene, W, S, BODY };
   composer = new EffectComposer(renderer); composer.setPixelRatio(dpr); composer.setSize(innerWidth, innerHeight); const rp = new RenderPass(scene, camera); composer.addPass(rp);
-  if (MSAA) { msRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: MSAA }); msSize(); const base = rp.render.bind(rp), quad = new FullScreenQuad(new THREE.ShaderMaterial({ uniforms: { tDiffuse: { value: null } }, depthTest: false, depthWrite: false, vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+  if (MSAA) { msRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: MSAA, depthTexture: new THREE.DepthTexture(4, 4, THREE.UnsignedIntType) }); msSize(); const base = rp.render.bind(rp), quad = msQuad = new FullScreenQuad(new THREE.ShaderMaterial({ uniforms: { tDiffuse: { value: null } }, depthTest: false, depthWrite: false, vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
       fragmentShader: 'uniform sampler2D tDiffuse;varying vec2 vUv;void main(){gl_FragColor=vec4(clamp(texture2D(tDiffuse,vUv).rgb,0.,24.),1.);}' })); // la recopie borne aussi les pics de reflet avant le bloom
-    rp.render = (r, wb, rb, d, mk) => { if (!msRT) return base(r, wb, rb, d, mk); base(r, wb, msRT, d, mk); quad.material.uniforms.tDiffuse.value = msRT.texture; r.setRenderTarget(rb); quad.render(r); }; }
+    rp.render = (r, wb, rb, d, mk) => { if (!msRT) return base(r, wb, rb, d, mk); base(r, wb, msRT, d, mk); if (gtao.enabled) return; quad.material.uniforms.tDiffuse.value = msRT.texture; r.setRenderTarget(rb); quad.render(r); }; }
   // occlusion ambiante (demi-résolution) : ancre les objets au sol ; les objets transparents/lumineux n'y participent pas
   gtao = new GTAOPass(scene, camera, 256, 256); const gs = gtao.setSize.bind(gtao); gtao.setSize = (w, h) => gs(Math.ceil(w * 0.5), Math.ceil(h * 0.5));
   gtao.updateGtaoMaterial({ radius: 0.42, distanceExponent: 1.4, thickness: 1.3, scale: 1.25, samples: 8 }); gtao.blendIntensity = 0.95;
   gtao.overrideVisibility = function () { const c = this._visibilityCache; this.scene.traverse((o) => { c.set(o, o.visible); if (o.userData.twin || o.isPoints || o.isLine || o.isSprite || (o.isMesh && o.material && !o.material.userData.ao && (o.material.transparent || o.material.isMeshBasicMaterial || o.material.isShaderMaterial))) o.visible = false; }); };
+  if (msRT) { gtao._renderGBuffer = false; gtao.depthTexture = msRT.depthTexture; for (const m of [gtao.gtaoMaterial, gtao.pdMaterial]) { m.defines.NORMAL_VECTOR_TYPE = 0; m.defines.DEPTH_SWIZZLING = 'x'; m.uniforms.tDepth.value = msRT.depthTexture; m.needsUpdate = true; } } /* normales reconstruites depuis la profondeur : une passe de géométrie en moins */
+  // Avec la cible multi-échantillonnée, la passe est réécrite : elle relit directement la scène résolue (et la borne), et répartit son calcul
+  // sur deux images — l'occlusion une image, son débruitage la suivante. Le voile d'ombre a donc une à deux images de retard, ce qui ne se voit pas.
+  { const full = gtao.render.bind(gtao); let n = 0; gtao.render = function (r, wb, rb) { if (!msRT) return full(r, wb, rb); const g = this.gtaoMaterial.uniforms, cam = this.camera, both = n < 2;
+      if (both || n % 2 === 0) { g.cameraNear.value = cam.near; g.cameraFar.value = cam.far; g.cameraProjectionMatrix.value.copy(cam.projectionMatrix); g.cameraProjectionMatrixInverse.value.copy(cam.projectionMatrixInverse); g.cameraWorldMatrix.value.copy(cam.matrixWorld); this.renderPass(r, this.gtaoMaterial, this.gtaoRenderTarget, 0xffffff, 1.0); }
+      if (both || n % 2 === 1) { this.pdMaterial.uniforms.cameraProjectionMatrixInverse.value.copy(cam.projectionMatrixInverse); this.renderPass(r, this.pdMaterial, this.pdRenderTarget, 0xffffff, 1.0); } n++;
+      msQuad.material.uniforms.tDiffuse.value = msRT.texture; r.setRenderTarget(wb); msQuad.render(r);
+      this.blendMaterial.uniforms.intensity.value = this.blendIntensity; this.blendMaterial.uniforms.tDiffuse.value = this.pdRenderTarget.texture; this.renderPass(r, this.blendMaterial, wb); }; }
   gtao.enabled = !LITE; composer.addPass(gtao);
-  bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.5, 0.5, 0.92); bloom.enabled = !LITE; composer.addPass(bloom);
-  fx = new ShaderPass(FX); composer.addPass(fx); composer.addPass(new OutputPass()); Object.assign(window.__spes, { composer, bloom, gtao, camera });
-  addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); msSize(); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
+  bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.5, 0.5, 0.92); bloom.enabled = !LITE; bloom.blendMaterial.visible = false; composer.addPass(bloom); /* son résultat est ajouté par la passe finale (tBloom) : une passe plein écran en moins */
+  fx = new ShaderPass(FX); fx.uniforms.tBloom.value = bloom.renderTargetsHorizontal[0].texture; composer.addPass(fx); Object.assign(window.__spes, { composer, bloom, gtao, camera, setScale }); setScale(1);
+  addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); setScale(QL.scale); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
 }
 const tweens = [];
 const io = (k) => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2), lin = (k) => k, out = (k) => 1 - Math.pow(1 - k, 3);
@@ -245,7 +265,7 @@ function camTo(o, dur = 2, ease = io) {
 const ray = new THREE.Raycaster(), ndc = new THREE.Vector2(), hitL = new V3(), hit2 = new THREE.Vector2();
 let heart = null, bloomBase = 0.5, stepT = 0, BODY = null; // BODY : le corps du visiteur (app/corps.js)
 function frame() {
-  if (!running) return; nextFrame(frame);
+  if (!running) return; nextFrame(frame); if (window.__spes.pause) { clock.getDelta(); return; } /* __spes.pause = true : fige la boucle, pour chronométrer composer.render() à la main */
   const raw = clock.getDelta(), dt = Math.min(raw, 0.1), tdt = Math.min(raw, 0.6); T += dt; adapt(raw);
   for (let i = tweens.length - 1; i >= 0; i--) { const tw = tweens[i]; tw.t += tdt; const k = Math.min(1, tw.t / tw.dur); tw.fn(tw.ease(k)); if (k >= 1) { tweens.splice(i, 1); tw.res(); } }
   if (touch && !drag) { S.mx *= 0.97; S.my *= 0.97; } S.lx += (S.mx - S.lx) * 0.06; S.ly += (S.my - S.ly) * 0.06;
@@ -265,9 +285,9 @@ function frame() {
   mouth += (m - mouth) * 0.4;
   if (frameN % 2 === 1) drawMap(); vitalsLive(dt); lockFrame();
   if (callEl.classList.contains('on')) { drawFace(T); callEl.style.setProperty('--amp', mouth.toFixed(2)); if (callEl.dataset.s === 'live') { const s = ((performance.now() - callStart) / 1000) | 0; callT.textContent = String((s / 60) | 0).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); } }
-  frameN++; if (W.bay.visible) { const kz = Math.max(-10.5, Math.min(12, S.pos.z - 0.6)); W.keyLight.position.z = kz; W.keyLight.target.position.z = kz; if (frameN % 2 === 0) W.keyLight.shadow.needsUpdate = true; } // le projecteur principal suit le visiteur ; son ombre est recalculée une image sur deux
-  gtao.enabled = !LITE && !NOAO && QL.lvl < 1; if (gtao.enabled) { gtao.gtaoMaterial.uniforms.cameraProjectionMatrix.value.copy(camera.projectionMatrix); gtao.gtaoMaterial.uniforms.cameraProjectionMatrixInverse.value.copy(camera.projectionMatrixInverse); gtao.pdMaterial.uniforms.cameraProjectionMatrixInverse.value.copy(camera.projectionMatrixInverse); }
-  BODY.update(dt, T, S); W.update(T, dt, camera.position); fx.uniforms.uTime.value = T; composer.render();
+  frameN++; if (W.bay.visible) { const kz = Math.max(-10.5, Math.min(12, S.pos.z - 0.6)); W.keyLight.position.z = kz; W.keyLight.target.position.z = kz; if (frameN % 3 === 0) W.keyLight.shadow.needsUpdate = true; } // le projecteur principal suit le visiteur ; son ombre est recalculée une image sur trois
+  gtao.enabled = !LITE && !NOAO && QL.lvl < 1 && (MSAA === 0 || !!msRT); if (gtao.enabled) { gtao.gtaoMaterial.uniforms.cameraProjectionMatrix.value.copy(camera.projectionMatrix); gtao.gtaoMaterial.uniforms.cameraProjectionMatrixInverse.value.copy(camera.projectionMatrixInverse); gtao.pdMaterial.uniforms.cameraProjectionMatrixInverse.value.copy(camera.projectionMatrixInverse); }
+  BODY.update(dt, T, S); W.update(T, dt, camera.position); fx.uniforms.uTime.value = T; fx.uniforms.uExpo.value = renderer.toneMappingExposure; fx.uniforms.uBloom.value = bloom.enabled ? 1 : 0; composer.render();
 }
 
 /* ============================== RÉCIT ============================== */
@@ -375,7 +395,7 @@ async function act3() {
   BODY.set({ pose: 'stand', vis: true, rust: 0 }); W.setScene('ds'); const LK = W.dsLook; scene.background.copy(LK.bg); scene.fog.color.copy(LK.fog); scene.fog.density = LK.density; bloomBase = LK.bloomBase; if (Q.has('reel')) hud.classList.add('reel'); bloom.threshold = LK.bloom; bloom.radius = 0.4; renderer.toneMappingExposure = LK.exposure; sfx.room(true);
   callState('live'); hud.classList.add('ds'); vit.bpm = 92; vit.tmp = 36.8;
   const setLoc = (n) => { if (vit.loc !== UI.loc[n]) { vit.loc = UI.loc[n]; vitals(); } }; setLoc(ST0 > 1 ? 6 : ST0 ? 5 : 4); vitals();
-  W.pathU.uPx.value = renderer.getPixelRatio() * innerHeight / 760;
+  W.pathU.uPx.value = QL.dpr * QL.scale * innerHeight / 760;
   const p0 = W.legs[ST0].getPointAt(0), t0 = W.legs[ST0].getTangentAt(0.02);
   S.pos.set(p0.x, p0.y + 1.66 + DSY, p0.z + (ST0 ? 0 : 3)); S.yaw = Math.atan2(-t0.x, -t0.z); S.pitch = 0.06; S.roll = 0; S.fov = 62; S.free = 1; fx.uniforms.uFade.value = 1; fx.uniforms.uWhite.value = 1; fx.uniforms.uGlitch.value = 1; $('#visor').classList.remove('on');
   tween(1.8, (k) => { fx.uniforms.uWhite.value = 1 - k; fx.uniforms.uGlitch.value = 1 - k; });

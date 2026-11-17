@@ -51,7 +51,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   const U = (m) => { W.timeU.push(m.uniforms.uTime); return m; };
 
   /* ================= MATÉRIAUX ================= */
-  const pbr = (name, rx, ry, o, rough) => { const mk = (suf, srgb) => { const t = loader.load('assets/tex/pbr/' + name + '_' + suf + '.jpg'); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = 8; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; };
+  const pbr = (name, rx, ry, o, rough) => { const mk = (suf, srgb) => { const t = loader.load('assets/tex/pbr/' + name + '_' + suf + '.jpg'); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); t.anisotropy = srgb ? 8 : 2; if (srgb) t.colorSpace = THREE.SRGBColorSpace; return t; };
     return new THREE.MeshStandardMaterial(Object.assign({ map: mk('diff', true), normalMap: mk('nor', false), envMapIntensity: 0.55 }, rough ? { roughnessMap: mk('rough', false) } : {}, o)); };
   const mMetal = new THREE.MeshStandardMaterial({ color: 0x232a31, metalness: 0.85, roughness: 0.4, envMapIntensity: 0.55 });
   const mPanel = new THREE.MeshStandardMaterial({ color: 0x2c343c, metalness: 0.55, roughness: 0.62, envMapIntensity: 0.4 });
@@ -91,8 +91,12 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   const parts = (node) => { const out = []; node.traverse((o) => { if (!o.isMesh) return; const name = o.material.name, g = o.geometry; if (TILE[name]) boxUV(g, TILE[name]); out.push([g, bayMats[name] || mPanel]); }); return out; };
   const shade = (m) => { m.castShadow = !!m.material.isMeshStandardMaterial && !m.material.transparent; m.receiveShadow = true; return m; };
   const RIB0 = -13.0, NB = 12; // premier couple, nombre de travées
+  // Tri de profondeur des instances : dans un lot, les pièces sont dessinées dans l'ordre de leur liste. Rangées du plus près au plus loin de l'œil,
+  // les pièces proches masquent les lointaines AVANT que celles-ci soient éclairées. On retrie quand le visiteur a avancé de 80 cm.
+  const sorted = [], sortZ = { z: 1e9 }, sm4 = new THREE.Matrix4(), sv = new V3(); const nearFirst = (im) => { const n = im.count, src = im.instanceMatrix.array.slice(), zs = []; for (let i = 0; i < n; i++) { sm4.fromArray(src, i * 16); zs.push(sv.setFromMatrixPosition(sm4).z); } sorted.push([im, src, zs]); return im; };
+  upd.push((t, dt, cam) => { if (!cam || !bay.visible || Math.abs(cam.z - sortZ.z) < 0.8) return; sortZ.z = cam.z; for (const [im, src, zs] of sorted) { const order = zs.map((z, i) => i).sort((a, b) => Math.abs(zs[a] - cam.z) - Math.abs(zs[b] - cam.z)); order.forEach((i, k) => im.instanceMatrix.array.set(src.subarray(i * 16, i * 16 + 16), k * 16)); im.instanceMatrix.needsUpdate = true; } });
   new GLTFLoader().load('assets/models/baie.glb', (res) => { const mx = new THREE.Matrix4();
-    const repeat = (name, n) => { for (const [g, m] of parts(res.scene.getObjectByName(name))) for (let c = 0; c < n; c += 4) { const k = Math.min(4, n - c), im = shade(new THREE.InstancedMesh(g, m, k)); im.castShadow = false; for (let i = 0; i < k; i++) im.setMatrixAt(i, mx.makeTranslation(0, 0, RIB0 + (c + i) * 2.6)); im.computeBoundingSphere(); bay.add(im); } }; /* l'architecture reçoit les ombres mais n'en porte pas : la passe d'ombre ne redessine que caissons, robots et fauteuil */
+    const repeat = (name, n) => { for (const [g, m] of parts(res.scene.getObjectByName(name))) for (let c = 0; c < n; c += 4) { const k = Math.min(4, n - c), im = shade(new THREE.InstancedMesh(g, m, k)); im.castShadow = false; for (let i = 0; i < k; i++) im.setMatrixAt(i, mx.makeTranslation(0, 0, RIB0 + (c + i) * 2.6)); im.computeBoundingSphere(); bay.add(nearFirst(im)); } }; /* l'architecture reçoit les ombres mais n'en porte pas : la passe d'ombre ne redessine que caissons, robots et fauteuil */
     const once = (name, z) => { for (const [g, m] of parts(res.scene.getObjectByName(name))) { const me = shade(new THREE.Mesh(g, m)); me.castShadow = false; me.position.z = z; bay.add(me); } };
     repeat('travee', NB); repeat('couple', NB + 1); once('avant', Z0); once('fond', Z1); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
   W.guideMat = glow(COL.cyan, 1.3);
@@ -126,7 +130,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   new GLTFLoader().load('assets/models/caisson.glb', (res) => { const base = parts(res.scene.getObjectByName('caisson')), lid = parts(res.scene.getObjectByName('capot'));
     const mine = pods.find((p) => p.userData.pivot === W.lidPivot), halves = [pods.filter((p) => p !== mine && p.position.z < 1.3), pods.filter((p) => p !== mine && p.position.z >= 1.3)]; bay.updateMatrixWorld(true);
     for (const [g, m] of base) mine.add(shade(new THREE.Mesh(g, m))); for (const [g, m] of lid) mine.userData.pivot.add(shade(new THREE.Mesh(g, m)));
-    const inst = (list, mat) => { for (const [g, m] of list) for (const half of halves) { const im = shade(new THREE.InstancedMesh(g, m, half.length)); half.forEach((p, i) => im.setMatrixAt(i, mat(p))); im.computeBoundingSphere(); bay.add(im); } };
+    const inst = (list, mat) => { for (const [g, m] of list) for (const half of halves) { const im = shade(new THREE.InstancedMesh(g, m, half.length)); half.forEach((p, i) => im.setMatrixAt(i, mat(p))); im.computeBoundingSphere(); bay.add(nearFirst(im)); } };
     inst(base, (p) => p.matrixWorld); inst(lid, (p) => p.userData.pivot.matrixWorld); for (const l of W.shadowLights) l.shadow.needsUpdate = true; });
   function pod(mine, num) {
     const g = new THREE.Group(); pods.push(g);
@@ -283,12 +287,20 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
           float sz=smoothstep(.004,.0015,abs(vSp.z))*step(.02,vSp.x)*step(vSp.x,.45); diffuseColor.rgb*=1.-min(1.,sb*.45+sz*.6);`)
           .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n float sl=smoothstep(.011,.007,length(vSp.xz-vec2(.13,.055)))*step(.05,vSp.y); totalEmissiveRadiance+=vec3(.3,.9,1.)*sl*(1.2+.8*sin(uTime*1.3+vSp.z*40.));'); };
       m.customProgramCacheKey = () => 'stase'; return m; };
-    const mSuit = [0x7c8794, 0x5f6c80, 0x8a8377].map(suit), mCap = new THREE.MeshStandardMaterial({ color: 0x2a323c, roughness: 0.6, metalness: 0.1, envMapIntensity: 0.4 }), mBand = new THREE.MeshStandardMaterial({ color: 0x0a0c0f, roughness: 0.24, metalness: 0.55, envMapIntensity: 1 }), mLed = glow(COL.cyan, 3);
-    ['dormeuse', 'dormeur'].forEach((name, gi) => new GLTFLoader().load('assets/models/' + name + '.glb', (res) => { const parts = []; res.scene.updateMatrixWorld(true);
-      res.scene.traverse((o) => { if (o.isMesh) { const g = o.geometry.clone(); g.applyMatrix4(o.matrixWorld); parts.push([o.material.name, g]); } });
-      bodySlots.forEach((bs, i) => { if ((i + (i >> 2)) % 2 !== gi) return; // une femme, un homme, sans alternance trop régulière
-        for (const [mn, g] of parts) { const m = new THREE.Mesh(g, mn === 'peau' ? mSkin[(i * 3 + (i >> 2)) % 5] : mn === 'combinaison' ? mSuit[i % 3] : mn === 'bonnet' ? mCap : mn === 'bandeau' ? mBand : mn === 'temoin' ? mLed : mn === 'cable' ? mBotD : mBot);
-          m.castShadow = false; m.receiveShadow = true; bs.add(m); } }); })); }
+    const SKIN = [0xe8c4a8, 0xc99673, 0x8d6548, 0xf0d5c2, 0xb07e5e].map((c) => new THREE.Color(c)), SUIT = [0x7c8794, 0x5f6c80, 0x8a8377].map((c) => new THREE.Color(c));
+    const mSkin1 = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.58, metalness: 0, envMapIntensity: 0.35 }), mSuit1 = suit(0xffffff), mCap = new THREE.MeshStandardMaterial({ color: 0x2a323c, roughness: 0.6, metalness: 0.1, envMapIntensity: 0.4 }), mBand = new THREE.MeshStandardMaterial({ color: 0x0a0c0f, roughness: 0.24, metalness: 0.55, envMapIntensity: 1 }), mLed = glow(COL.cyan, 3);
+    // Un appel de rendu par matière, par modèle (femme, homme) et par niveau de détail, au lieu d'un par morceau de chaque dormeur. À chaque image,
+    // chaque dormeur prend le modèle complet s'il est à moins de 7 m du visiteur, l'allégé sinon (tools/lod_blender.py) : la bascule ne se voit pas
+    // sous la verrière givrée. La carnation et la teinte de la combinaison sont portées par l'instance.
+    const who = [[], []], sets = [[null, null], [null, null]], cp = new V3(); bodySlots.forEach((bs, i) => who[(i + (i >> 2)) % 2].push([bs, i])); /* une femme, un homme, sans alternance trop régulière */
+    const matOf = (mn) => (mn === 'peau' ? mSkin1 : mn === 'combinaison' ? mSuit1 : mn === 'bonnet' ? mCap : mn === 'bandeau' ? mBand : mn === 'temoin' ? mLed : mn === 'cable' ? mBotD : mBot);
+    [['dormeuse', 0, 0], ['dormeuse-lod', 0, 1], ['dormeur', 1, 0], ['dormeur-lod', 1, 1]].forEach(([name, gi, lod]) => new GLTFLoader().load('assets/models/' + name + '.glb', (res) => { const ims = []; res.scene.updateMatrixWorld(true);
+      res.scene.traverse((o) => { if (!o.isMesh) return; const g = o.geometry.clone(); g.applyMatrix4(o.matrixWorld); const mn = o.material.name, im = new THREE.InstancedMesh(g, matOf(mn), who[gi].length);
+        im.count = 0; im.frustumCulled = false; im.receiveShadow = true; im.userData.tint = mn === 'peau' ? SKIN : mn === 'combinaison' ? SUIT : null; bay.add(im); ims.push(im); }); sets[gi][lod] = ims; }));
+    upd.push((t, dt, cam) => { if (!bay.visible) return; for (let gi = 0; gi < 2; gi++) { const hi = sets[gi][0], lo = sets[gi][1]; if (!hi && !lo) continue; let nh = 0, nl = 0;
+      for (const [bs, i] of who[gi]) { bs.updateWorldMatrix(true, false); const near = !lo || (!!hi && !!cam && cp.setFromMatrixPosition(bs.matrixWorld).distanceToSquared(cam) < 49), k = near ? nh++ : nl++;
+        for (const im of (near ? hi : lo)) { im.setMatrixAt(k, bs.matrixWorld); const tn = im.userData.tint; if (tn) im.setColorAt(k, tn === SKIN ? SKIN[(i * 3 + (i >> 2)) % 5] : SUIT[i % 3]); } }
+      for (const [set, n] of [[hi, nh], [lo, nl]]) if (set) for (const im of set) { im.count = n; im.instanceMatrix.needsUpdate = true; if (im.instanceColor) im.instanceColor.needsUpdate = true; } } }); }
 
   /* ================= ESPACE ================= */
   const space = new THREE.Group(); scene.add(space); W.space = space;
@@ -415,11 +427,17 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
     if (o.live !== 0) { const p = new THREE.Mesh(plumeGeo, plumeMat); p.scale.setScalar(L); g.add(p); const gl = new THREE.Sprite(glowTex); gl.scale.set(L * 0.1, L * 0.065, 1); gl.position.set(-L * 0.525, 0, 0); g.add(gl); }
     return g;
   }
+  // Test « portail » : depuis la baie, l'espace ne se voit qu'à travers les trois hublots. Chaque vaisseau inscrit ici (avec le rayon de sa sphère
+  // englobante) n'est dessiné que si cette sphère, vue depuis l'œil, recoupe l'une des ouvertures. Rien ne change à l'image ; depuis l'allée,
+  // la plupart des coques (60 000 triangles pièce) ne sont plus envoyées à la carte graphique.
+  const portal = [], pc = new V3(), viaPortal = (o, r) => { o.userData.on = true; portal.push([o, r]); return o; };
+  upd.push((t, dt, cam) => { if (!cam || !space.visible) return; const dz = cam.z - (Z0 - 0.3); for (const [o, r] of portal) { let vis = o.userData.on; if (vis && dz > 0.2) { o.getWorldPosition(pc); const dd = cam.z - pc.z;
+      if (dd > dz) { const k = dz / dd, px = cam.x + (pc.x - cam.x) * k, py = cam.y + (pc.y - cam.y) * k, rr = r * k + 0.3; vis = false; for (const [hx, hy, hr] of HOLES) if (Math.hypot(px - hx, py - hy) < hr + rr) vis = true; } } o.visible = vis; } });
   // la flotte proche : quatre arches au-dessus de l'horizon terrestre, flanc droit tourné vers le soleil et vers nous
   const fleet = [[110, -30, 99, -230, 2.3], [60, -143, 167, -260, 2.6], [44, 36, 125, -179, 2.2], [30, -45, 28, -153, 2.5]];
-  W.ships = fleet.map(([len, x, y, z, ry]) => { const s = ark(len); s.position.set(x, y, z); s.rotation.y = ry; s.rotation.z = rnd(-0.06, 0.06); s.rotation.x = rnd(-0.5, 0.5); space.add(s); return s; });
+  W.ships = fleet.map(([len, x, y, z, ry]) => { const s = ark(len); s.position.set(x, y, z); s.rotation.y = ry; s.rotation.z = rnd(-0.06, 0.06); s.rotation.x = rnd(-0.5, 0.5); space.add(s); return viaPortal(s, len * 0.8); });
   // une arche qui n'a pas tenu : coque brisée en deux, feux éteints, braises dans la cassure, nuage d'éclats
-  const wreck = new THREE.Group(); wreck.position.set(91, 62, -237); wreck.rotation.set(0.5, 0.9, -0.3); space.add(wreck);
+  const wreck = new THREE.Group(); wreck.position.set(91, 62, -237); wreck.rotation.set(0.5, 0.9, -0.3); space.add(wreck); viaPortal(wreck, 74);
   { const a = ark(74, { live: 0, cut: [1, 0.03], tint: 0x8a8580 }), b = ark(74, { live: 0, cut: [-1, -0.01], ring: false, tint: 0x8a8580 }); a.position.set(9, 3, -2); a.rotation.set(0.5, -0.32, 0.22); a.userData.ring.rotation.set(0, 0.12, 0.08); wreck.add(a, b);
     const n = 70, sh = new THREE.InstancedMesh(rockGeo, spaceMat(0x5d5f63), n); for (let i = 0; i < n; i++) { const k = rnd(0.12, 1.1) * (i < 8 ? 2.2 : 1); ps.set(rnd(-6, 16), rnd(-9, 9), rnd(-9, 9)); sc.set(k * rnd(0.3, 1.6), k * rnd(0.1, 0.6), k * rnd(0.3, 1.6)); eu.set(rnd(6), rnd(6), rnd(6)); q.setFromEuler(eu); mt.compose(ps, q, sc); sh.setMatrixAt(i, mt); }
     sh.frustumCulled = false; wreck.add(sh); upd.push((t, dt) => { wreck.rotation.x += dt * 0.006; a.rotation.z += dt * 0.004; sh.rotation.x += dt * 0.01; }); }
@@ -428,7 +446,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   giant.quaternion.setFromUnitVectors(new V3(1, 0, 0), gDir).multiply(new THREE.Quaternion().setFromAxisAngle(new V3(1, 0, 0), PI / 2)); // voilures à plat : elles nous couvrent le ciel
   W.flyby = (k) => { giant.visible = k > 0; giant.position.lerpVectors(gA, gB, k); };
   // les navettes de liaison
-  const shuttle = new THREE.Group(), shuttle2 = new THREE.Group(); space.add(shuttle, shuttle2);
+  const shuttle = new THREE.Group(), shuttle2 = new THREE.Group(); space.add(shuttle, shuttle2); viaPortal(shuttle, 9); viaPortal(shuttle2, 8);
   whenModels(() => { const m = hullMat({ mode: 1, scale: 1.3, fill: 0.06 }); for (const s of [shuttle, shuttle2]) { s.add(new THREE.Mesh(GEO.navette, m)); for (const y of [-2.55, 2.55]) { const gl = new THREE.Sprite(glowTex); gl.scale.set(3.2, 1.7, 1); gl.position.set(-5.6, 0.3, y); s.add(gl); } } shuttle2.scale.setScalar(0.8); });
   // le pont avant de notre propre arche, en contrebas à droite du hublot, et la perche d'instruments au premier plan
   whenModels(() => { const d = new THREE.Mesh(GEO.pont, hullMat({ mode: 1, scale: 0.66, fill: 0.03 })); d.position.set(0, 0, Z0); d.frustumCulled = false; space.add(d); });
@@ -436,7 +454,13 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   whenModels(() => { const ring = GEO['arche-lod'].ring.clone(); ring.translate(0.2, 0, 0); const far = mergeGeometries([GEO['arche-lod'].hull, ring]);
     const fN = opts.touch || opts.lite ? 26 : 64, fm = new THREE.InstancedMesh(far, hullMat({ fill: 0.03 }), fN);
     for (let i = 0; i < fN; i++) { const u = i / fN; ps.set(-260 + u * 980 + rnd(-40, 40), -30 + u * 190 + rnd(-26, 26), -520 - Math.sin(u * PI) * 420 + rnd(-60, 60)); const k = rnd(16, 34); sc.set(k, k, k); eu.set(rnd(6), 2.4 + rnd(-0.25, 0.25), rnd(-0.1, 0.1)); q.setFromEuler(eu); mt.compose(ps, q, sc); fm.setMatrixAt(i, mt); }
-    fm.frustumCulled = false; space.add(fm); });
+    fm.frustumCulled = false; space.add(fm);
+    // même test « portail », arche par arche : seules celles qui se voient à travers un hublot restent dans la liste dessinée (recalculée quand l'œil bouge)
+    const all = fm.instanceMatrix.array.slice(), ctr = [], last = new V3(1e9, 0, 0), m4 = new THREE.Matrix4(); for (let i = 0; i < fN; i++) { m4.fromArray(all, i * 16); ctr.push([new V3().setFromMatrixPosition(m4), m4.getMaxScaleOnAxis() * 0.75]); }
+    upd.push((t, dt, cam) => { if (!cam || !space.visible || last.distanceToSquared(cam) < 0.0009) return; last.copy(cam); const dz = cam.z - (Z0 - 0.3); let n = 0;
+      for (let i = 0; i < fN; i++) { const [c, r] = ctr[i], dd = cam.z - c.z; let vis = true; if (dz > 0.2 && dd > dz) { const k = dz / dd, px = cam.x + (c.x - cam.x) * k, py = cam.y + (c.y - cam.y) * k, rr = r * k + 0.3; vis = false; for (const [hx, hy, hr] of HOLES) if (Math.hypot(px - hx, py - hy) < hr + rr) vis = true; }
+        if (vis) { fm.instanceMatrix.array.set(all.subarray(i * 16, i * 16 + 16), n * 16); n++; } }
+      fm.count = n; fm.instanceMatrix.needsUpdate = true; }); });
   // poussière de glace devant la baie : elle scintille quand le soleil arrive de face
   const iceMat = new THREE.PointsMaterial({ map: soft, size: 0.16, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, color: 0x000000 });
   { const n = opts.touch || opts.lite ? 260 : 700, p = new Float32Array(n * 3); for (let i = 0; i < n; i++) p.set([rnd(-34, 46), rnd(-9, 30), Z0 - rnd(3, 80)], i * 3); const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
@@ -496,7 +520,12 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   // plan du pont pour la mini-carte : coque, caissons, allée, grand hublot, poste de liaison
   W.planShip = { walls: [[-BW / 2, Z0, BW / 2, Z0], [BW / 2, Z0, BW / 2, Z1], [BW / 2, Z1, -BW / 2, Z1], [-BW / 2, Z1, -BW / 2, Z0]], soft: [[-1.25, Z0 + 2, -1.25, Z1], [1.25, Z0 + 2, 1.25, Z1], [-2.05, Z0 - 0.5, 2.05, Z0 - 0.5]], boxes: [[3.25, -11.4, 1.1, 1.1]], path: null };
   for (let i = 0; i < 12; i++) for (const s of [-1, 1]) if (!(s === 1 && i === 0)) W.planShip.boxes.push([s * 3.5, -11.7 + i * 2.6, 2.5, 1.05]);
+  // Une lumière d'intensité nulle coûte autant qu'une lumière allumée dans chaque pixel éclairé : le soleil (avant son lever) et la lampe de la
+  // fiche cervicale (avant le branchement) sortent donc du calcul tant qu'elles sont éteintes. Chaque combinaison demande ses propres
+  // programmes : W.warm les prépare pendant le chargement, pour qu'aucun à-coup ne se produise à l'allumage.
+  upd.push(() => { sunL.visible = sunL.intensity > 0.004; plugLight.visible = plugLight.intensity > 0.004; });
+  W.warm = (renderer, camera) => { const a = sunL.visible, b = plugLight.visible; for (const [x, y] of [[true, true], [true, false], [false, true], [false, false]]) { sunL.visible = x; plugLight.visible = y; renderer.compile(scene, camera); } sunL.visible = a; plugLight.visible = b; };
   W.update = (t, dt, cam) => { for (const u of W.timeU) u.value = t; for (const f of upd) f(t, dt, cam); };
-  W.setScene = (name) => { const d = name === 'ds'; bay.visible = !d; space.visible = !d; ds.visible = d; if (d && W.dsSun) W.dsSun.shadow.needsUpdate = true; };
+  W.setScene = (name) => { const d = name === 'ds'; bay.visible = !d; space.visible = !d; ds.visible = d; bay.matrixWorldAutoUpdate = space.matrixWorldAutoUpdate = !d; ds.matrixWorldAutoUpdate = d; /* le décor masqué ne recalcule plus ses positions */ if (d && W.dsSun) W.dsSun.shadow.needsUpdate = true; };
   return W;
 }
