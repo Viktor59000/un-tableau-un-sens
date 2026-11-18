@@ -126,12 +126,13 @@ export function createBody(scene) {
       lean += (st.lean - lean) * (1 - Math.exp(-dt * 3)); let hx, hy, hz;
       if (A) { hx = A[0] - fx * EYE_Z * SCALE; hy = A[1] - TOR * SCALE; hz = A[2] - fz * EYE_Z * SCALE; }
       else { const le = lean + (st.pose === 'stand' ? 0.17 * Math.min(1, Math.max(0, -S.pitch)) : 0), zo = (TOR * Math.sin(le) + EYE_Z * Math.cos(le)) * SCALE, yo = (TOR * Math.cos(le) - EYE_Z * Math.sin(le)) * SCALE;
-        hx = (L ? L[0] : S.pos.x) - fx * zo; hz = (L ? L[1] : S.pos.z) - fz * zo; hy = S.pos.y - yo; if (st.pose === 'stand') hy = Math.min(hy, (st.feet ? st.feet[1] : floor) + LEG * SCALE); }
+        const sw = st.pose === 'stand' && !st.feet && !L ? (1 - wl) * Math.sin(t * 0.55) * 0.012 : 0; /* debout sans rien faire, le poids passe d'une jambe à l'autre */
+        hx = (L ? L[0] : S.pos.x) - fx * zo + lx * sw; hz = (L ? L[1] : S.pos.z) - fz * zo + lz * sw; hy = S.pos.y - yo; if (st.pose === 'stand') hy = Math.min(hy, (st.feet ? st.feet[1] : floor) + LEG * SCALE); }
       if (jump) hip.set(hx, hy, hz); else { const k = 1 - Math.exp(-dt * (!A && w > 0.3 ? 18 : st.rate)); /* en marchant le bassin suit de près : le buste ne part pas en avant */ hip.x += (hx - hip.x) * k; hip.y += (hy - hip.y) * k; hip.z += (hz - hip.z) * k; }
       // buste : des hanches vers la tête
       const vz = (S.pos.x - hip.x) * fx + (S.pos.z - hip.z) * fz, tt = cl(Math.atan2(vz, S.pos.y - hip.y) - TILT0, -1.9, 1.25); if (jump) th = tt; else th += (tt - th) * (1 - Math.exp(-dt * 16));
       const br = Math.sin(t * 1.55), hl = HIP * SCALE; shock *= Math.exp(-dt * 2.2); // respiration : les épaules montent et descendent à peine
-      root.rotation.set(th, yaw, wl * 0.025 * s, 'YXZ'); root.position.set(hip.x - fx * hl * Math.sin(th), hip.y - hl * Math.cos(th) + br * 0.0035, hip.z - fz * hl * Math.sin(th)); root.updateMatrixWorld(true);
+      root.rotation.set(th, yaw, wl * 0.025 * s + (st.pose === 'stand' ? (1 - wl) * Math.sin(t * 0.55) * 0.006 : 0), 'YXZ'); root.position.set(hip.x - fx * hl * Math.sin(th), hip.y - hl * Math.cos(th) + br * 0.0035, hip.z - fz * hl * Math.sin(th)); root.updateMatrixWorld(true);
       // jambes : assis, celles de la pose (corrigées de l'inclinaison du buste) ; debout, pliées juste ce qu'il faut pour que les pieds restent au sol
       let cf = 0, ck = 0; if (!seated && !st.feet) { const h = Math.max(0.3, (hip.y - floor) / SCALE); if (h < LEG - 0.003) { let lo = 0, hi = 1.55; for (let i = 0; i < 14; i++) { cf = (lo + hi) / 2; const q = L1 * Math.sin(cf) / L2; if (L1 * Math.cos(cf) + L2 * Math.sqrt(Math.max(0, 1 - q * q)) > h) lo = cf; else hi = cf; } ck = cf + Math.asin(Math.min(1, L1 * Math.sin(cf) / L2)); } }
       fk += ((st.feet ? 1 : 0) - fk) * (1 - Math.exp(-dt * 5));
