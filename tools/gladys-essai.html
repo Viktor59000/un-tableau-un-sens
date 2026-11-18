@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><base href="../"><title>Gladys — banc d'essai du portrait</title>
+<meta name="robots" content="noindex">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<style>
+  body{margin:0;background:#06080c;color:#9aa7b5;font:14px system-ui;display:flex;gap:28px;align-items:flex-start;padding:20px}
+  .pf{position:relative;background:radial-gradient(ellipse 80% 60% at 50% 38%,rgba(40,62,78,.92),rgba(5,8,12,.96));outline:1.5px solid #7fe3e6}
+  .pf canvas{display:block}
+  .pf::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.12) 2px 3px);pointer-events:none}
+</style></head><body>
+<!-- Le portrait de Gladys en grand, hors du récit, pour régler le visage. Paramètres : ?ring (sonnerie), ?mute (bouche fermée), ?t=12.5 (temps figé), ?yaw=0.4 (tête tournée). -->
+<div class="pf" style="width:600px;height:680px"><canvas id="big" width="600" height="680"></canvas></div>
+<div><div class="pf" style="width:150px;height:170px"><canvas id="small" width="300" height="340" style="width:150px;height:170px"></canvas></div><p id="info"></p></div>
+<script type="module">
+import { createGladys } from './app/gladys.js';
+const Q = new URLSearchParams(location.search), A = createGladys(document.querySelector('#big')), B = createGladys(document.querySelector('#small'));
+const t0 = performance.now(); window.__g = { A, B, speed: 1 };
+setInterval(() => { const t = Q.has('t') ? +Q.get('t') : (performance.now() - t0) / 1000 * window.__g.speed;
+  // une voix simulée : des syllabes par groupes, puis un silence
+  const phrase = (t % 7) < 4.6, m = Q.has('mute') || !phrase ? 0 : Math.max(0, Math.sin(t * 17) * 0.5 + Math.sin(t * 7.3) * 0.35 + 0.25) * (0.6 + 0.4 * Math.sin(t * 2.1));
+  const o = Q.has('yaw') ? { yaw: +Q.get('yaw') } : undefined;
+  A.render(t, Math.min(1, m), Q.has('ring'), o); B.render(t, Math.min(1, m), Q.has('ring'), o); document.querySelector('#info').textContent = 't = ' + t.toFixed(1) + ' s'; }, 33);
+</script></body></html>
