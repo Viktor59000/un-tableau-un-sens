@@ -114,7 +114,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   for (const z of [10.5, -10.5]) { const f = new THREE.PointLight(0xb9d6f2, 16, 16, 2); f.position.set(0, BH - 0.7, z); bay.add(f); }
   { const sp = new THREE.SpotLight(0xd6e6f5, 150, 20, 1.12, 0.85, 1.6); sp.position.set(0, BH - 0.42, 1); sp.target.position.set(0, 0, 1); sp.castShadow = true;
     sp.shadow.mapSize.set(1536, 1536); sp.shadow.camera.near = 0.4; sp.shadow.camera.far = 11; sp.shadow.bias = -0.0005; sp.shadow.normalBias = 0.03; sp.shadow.autoUpdate = false; sp.shadow.needsUpdate = true; bay.add(sp, sp.target); W.shadowLights.push(sp); W.keyLight = sp; }
-  const es = new THREE.PointLight(0xe0a868, 9, 11, 2); es.position.set(-0.6, 2.4, Z0 + 1.2); bay.add(es); const esBase = new THREE.Color(0xe0a868), esArc = new THREE.Color(0xbfe0ff), esSun = new THREE.Color(0xfff0dc), keyBase = new THREE.Color(0xd6e6f5), keyAmber = new THREE.Color(COL.amber);
+  const es = new THREE.PointLight(0x9cc8dc, 9, 11, 2); es.position.set(-0.6, 2.4, Z0 + 1.2); bay.add(es); const esBase = new THREE.Color(0x9cc8dc), esArc = new THREE.Color(0xbfe0ff), esSun = new THREE.Color(0xfff0dc), keyBase = new THREE.Color(0xd6e6f5), keyAmber = new THREE.Color(COL.amber);
   W.beacon = { intensity: 0 }; // gyrophare de réveil : il teinte le projecteur principal (voir update)
   // signalétique holographique (contexte)
   const sgn = textPlane(TX.bay, { color: '#7fe3e6', w: 620, size: 54, sub: 27, scale: 2.1, align: 'center' }); sgn.position.set(0, 3.0, -5.2); bay.add(sgn);
@@ -289,9 +289,9 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
         rows.forEach(([n, v, d, u, k], i) => { const y = 66 + i * 36; g.fillStyle = CY; F(g, 24, 700); g.fillText(n, 20, y); g.fillStyle = 'rgba(127,227,230,.16)'; g.fillRect(96, y + 6, w - 270, 14); g.fillStyle = i === 2 ? AM : CY; g.fillRect(96, y + 6, (w - 270) * Math.min(1, k + Math.sin(t * 1.3 + i) * 0.01), 14);
           g.fillStyle = '#e8f6f8'; F(g, 24); g.textAlign = 'right'; g.fillText(num(v, d) + u, w - 20, y); g.textAlign = 'left'; }); },
       (g, w, h, t) => { frame(g, w, h, L[1], 'NAV-07'); const cx = w * 0.3, cy = h * 0.62, R = h * 0.26; g.strokeStyle = DIM; g.lineWidth = 1; for (let i = 1; i < 4; i++) { g.beginPath(); g.arc(cx, cy, R * (0.4 + i * 0.45), 0, 6.29); g.stroke(); }
-        g.fillStyle = 'rgba(213,150,57,.55)'; g.beginPath(); g.arc(cx, cy, R, 0, 6.29); g.fill(); g.strokeStyle = CY; g.lineWidth = 2; g.beginPath(); g.ellipse(cx, cy, R * 1.75, R * 1.05, -0.35, 0, 6.29); g.stroke();
+        g.fillStyle = 'rgba(86,186,192,.5)'; g.beginPath(); g.arc(cx, cy, R, 0, 6.29); g.fill(); g.strokeStyle = CY; g.lineWidth = 2; g.beginPath(); g.ellipse(cx, cy, R * 1.75, R * 1.05, -0.35, 0, 6.29); g.stroke();
         const a = t * 0.25, px = cx + Math.cos(a) * R * 1.75 * Math.cos(-0.35) - Math.sin(a) * R * 1.05 * Math.sin(-0.35), py = cy + Math.cos(a) * R * 1.75 * Math.sin(-0.35) + Math.sin(a) * R * 1.05 * Math.cos(-0.35); g.fillStyle = AM; g.beginPath(); g.arc(px, py, 6, 0, 6.29); g.fill(); F(g, 18, 700); g.textAlign = px > cx ? 'right' : 'left'; g.fillText('SPES-07', px + (px > cx ? -12 : 12), py - 22); g.textAlign = 'left';
-        const x0 = w * 0.6; [['ALT', num(412 + Math.sin(t * 0.2) * 0.4, 1) + ' km'], ['V', num(7.66, 2) + ' km/s'], ['INCL', num(51.6, 1) + '°'], ['T+', String(173141) + ' j']].forEach(([n, v], i) => { const y = 66 + i * 40; g.fillStyle = DIM; F(g, 20); g.fillText(n, x0, y); g.fillStyle = '#e8f6f8'; F(g, 26, 700); g.fillText(v, x0 + 62, y - 4); }); },
+        const x0 = w * 0.6; [['ALT', num(845 + Math.sin(t * 0.2) * 0.4, 1) + ' km'], ['V', num(7.43, 2) + ' km/s'], ['INCL', num(51.6, 1) + '°'], ['T+', String(173141) + ' j']].forEach(([n, v], i) => { const y = 66 + i * 40; g.fillStyle = DIM; F(g, 20); g.fillText(n, x0, y); g.fillStyle = '#e8f6f8'; F(g, 26, 700); g.fillText(v, x0 + 62, y - 4); }); },
       (g, w, h, t) => { frame(g, w, h, L[2], 'CRYO-C'); const cw = (w - 60) / 12, on = Math.floor(t * 2) % 2; for (let i = 0; i < 23; i++) { const r = i < 12 ? 0 : 1, c = r ? i - 12 : i, x = 24 + c * cw + (r ? cw * 0.5 : 0), y = 70 + r * 52, mine = i === 5; g.fillStyle = mine ? (on ? AM : 'rgba(252,163,17,.35)') : 'rgba(127,227,230,.5)'; g.fillRect(x, y, cw - 8, 36);
           g.fillStyle = '#04161a'; F(g, 13, 700); g.fillText(String(412 + i), x + 4, y + 20); }
         g.fillStyle = CY; F(g, 24, 700); g.fillText(L[3] + ' 22', 24, h - 64); g.fillStyle = AM; g.fillText(L[4] + ' 01 · R26-0417', 24, h - 36); },
@@ -324,7 +324,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
       glassMat.visible = false; renderer.setRenderTarget(rRT); renderer.clear(); renderer.render(scene, rcam); renderer.setRenderTarget(rt); renderer.shadowMap.autoUpdate = sa; head.visible = false; glassMat.visible = true; /* le verre ne se reflète pas lui-même */
       glassU.uVP.value.multiplyMatrices(rcam.projectionMatrix, rcam.matrixWorldInverse); at.copy(eye); };
     upd.push((t, dt, cam) => { if (!cam) return; glassU.uEye.value.copy(cam); glassU.uSun.value = W.sunIn || 0; glassU.uK.value = sm(0.9, 0.25, cam.distanceTo(at)) * (1 - 0.55 * Math.min(1, (W.sunIn || 0) * 1.4)); }); } /* le reflet n'est juste que depuis l'endroit de la prise : il s'efface dès qu'on s'en éloigne */
-  const scr1 = textPlane(TX.earth, { color: '#ff4f38', w: 560, size: 44, sub: 28, scale: 1.45 }); scr1.position.set(-1.25, 1.17, Z0 + 0.52); scr1.rotation.x = -0.5; bay.add(scr1);
+  const scr1 = textPlane(TX.earth, { color: '#a8e61d', w: 560, size: 44, sub: 28, scale: 1.45 }); scr1.position.set(-1.25, 1.17, Z0 + 0.52); scr1.rotation.x = -0.5; bay.add(scr1);
   const scr2 = textPlane(TX.fleet, { color: '#7fe3e6', w: 560, size: 44, sub: 28, scale: 1.45 }); scr2.position.set(1.25, 1.17, Z0 + 0.52); scr2.rotation.x = -0.5; bay.add(scr2);
 
   // --- poste de liaison neurale : fauteuil, câble cervical, casque ---
@@ -409,64 +409,89 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
 
   /* ================= ESPACE ================= */
   const space = new THREE.Group(); scene.add(space); W.space = space;
-  const SUN = new V3(1, 0.32, 0.28).normalize(), EC = new V3(-150, -100, -330), EDIR = EC.clone().normalize();
-  // ciel : étoiles fines sur trois échelles + Voie lactée (un dôme, un seul appel de rendu)
-  const skyU = { uTime: { value: 0 }, uK: { value: 1 } }, sky = add(space, new THREE.SphereGeometry(1300, 32, 20), U(new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyU,
-    vertexShader: 'varying vec3 vD;void main(){vD=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: `uniform float uTime;uniform float uK;varying vec3 vD;${NOISE}
+  const SUN = new V3(1, 0.32, 0.28).normalize();
+  // ALMA — la planète où la flotte est arrivée, vue d'une orbite basse : elle n'est pas « un globe au loin », elle remplit le bas du hublot et son
+  // horizon barre le ciel. Rayon apparent de 62° (altitude ≈ 0,13 rayon). À cette échelle une sphère maillée devrait être plus loin que le plan
+  // de coupe et que la flotte : la planète est donc calculée dans la matière du ciel (intersection rayon-sphère), derrière tout le reste.
+  // dirAE : direction donnée par son azimut (positif vers la droite du hublot) et sa hauteur, en degrés.
+  const dirAE = (az, el) => new V3(Math.sin(az * PI / 180) * Math.cos(el * PI / 180), Math.sin(el * PI / 180), -Math.cos(az * PI / 180) * Math.cos(el * PI / 180));
+  const V0 = new V3(0.12, 1.7, -13.4), PA = 62 * PI / 180, PD = 3000, PR = PD * Math.sin(PA), EDIR = dirAE(-24.4, -42), EC = V0.clone().addScaledVector(EDIR, PD);
+  // repère de la planète : son axe Z pointe vers nous (centre de la carte), son axe Y vers l'horizon ; elle tourne lentement sous l'arche
+  const PB = (() => { const z = EDIR.clone().negate(), y = new V3(0, 1, 0).addScaledVector(z, -z.y).normalize().applyAxisAngle(z, 0.3), x = new V3().crossVectors(y, z); return [x, y, z]; })(), pRot = new THREE.Matrix3();
+  const setSpin = (a) => { const c = Math.cos(a), s = Math.sin(a), [x, y, z] = PB; pRot.set(c * x.x - s * z.x, c * x.y - s * z.y, c * x.z - s * z.z, y.x, y.y, y.z, s * x.x + c * z.x, s * x.y + c * z.y, s * x.z + c * z.z); }; setSpin(0.12);
+  const pMap = loader.load('assets/space/alma.jpg'), pDet = loader.load('assets/space/grain.jpg'); pMap.anisotropy = 4; pDet.anisotropy = 2; pDet.wrapS = pDet.wrapT = THREE.RepeatWrapping; /* cartes de grandeurs (altitude, humidité, nuages) et bruit de détail : tools/planete.py */
+  // ciel : étoiles fines sur trois échelles + Voie lactée, et la planète (un dôme, un seul appel de rendu)
+  const skyU = { uTime: { value: 0 }, uK: { value: 1 }, uSun: { value: SUN }, uPC: { value: EC }, uPR: { value: PR }, uRot: { value: pRot }, uMap: { value: pMap }, uDet: { value: pDet } }, sky = add(space, new THREE.SphereGeometry(1300, 32, 20), U(new THREE.ShaderMaterial({ side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyU,
+    vertexShader: 'varying vec3 vD;varying vec3 vWp;void main(){vD=normalize(position);vec4 w=modelMatrix*vec4(position,1.);vWp=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
+    fragmentShader: `uniform float uTime;uniform float uK;uniform vec3 uSun;uniform vec3 uPC;uniform float uPR;uniform mat3 uRot;uniform sampler2D uMap;uniform sampler2D uDet;varying vec3 vD;varying vec3 vWp;${NOISE}
       float h3(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
       float stars(vec3 d,float sc,float th,float r){ vec3 p=d*sc; vec3 c=floor(p); vec3 f=fract(p)-.5; float o=h3(c+7.3);
         float hr=h3(c); float dd=length(f-(vec3(h3(c+1.1),h3(c+2.2),h3(c+3.3))-.5)*.5); return step(th,hr)*smoothstep(r,0.,dd)*(.35+o)*(.78+.22*sin(uTime*(1.+o*3.)+o*40.)); }
-      void main(){ vec3 d=normalize(vD); float s=stars(d,60.,.6,.075)+stars(d,110.,.84,.13)*.6+stars(d,190.,.934,.21)*.32;
-        vec3 ax=normalize(vec3(.35,.8,-.48)); float bd=dot(d,ax)*3.2; float band=exp(-bd*bd); vec2 q=vec2(atan(d.z,d.x)*3.,d.y*6.); float neb=fbm(q*1.6)*fbm(q*4.+3.);
-        gl_FragColor=vec4((vec3(.82,.88,1.)*s*(1.+band*1.6)+vec3(.20,.24,.34)*band*neb*.5+vec3(.34,.22,.16)*band*neb*neb*neb*.9)*uK,1.); }` }))); sky.renderOrder = 1; // dessiné après les parois : seuls les pixels des hublots sont calculés
-  // Terre endommagée : continents désertifiés, océans retirés (croûtes de sel), tempêtes de poussière, foyers côté nuit, voile au limbe
-  const day = loader.load('assets/space/earth.jpg'); day.colorSpace = THREE.SRGBColorSpace;
-  const earthMat = U(new THREE.ShaderMaterial({ uniforms: { uDay: { value: day }, uSun: { value: SUN }, uTime: { value: 0 } },
-    vertexShader: 'varying vec2 vUv;varying vec3 vN;varying vec3 vNv;varying vec3 vPv;void main(){vUv=uv;vN=normalize(mat3(modelMatrix)*normal);vNv=normalize(normalMatrix*normal);vec4 mv=modelViewMatrix*vec4(position,1.);vPv=mv.xyz;gl_Position=projectionMatrix*mv;}',
-    fragmentShader: `uniform sampler2D uDay;uniform vec3 uSun;uniform float uTime;varying vec2 vUv;varying vec3 vN;varying vec3 vNv;varying vec3 vPv;${NOISE}
-      void main(){ vec3 d=texture2D(uDay,vUv).rgb; float lum=dot(d,vec3(.3,.59,.11));
-        float ob=d.b-max(d.r,d.g)*.92; float ocean=smoothstep(.0,.06,ob); float shore=smoothstep(.0,.03,ob)*(1.-smoothstep(.03,.09,ob));
-        vec3 land=mix(vec3(.26,.15,.07),vec3(.58,.39,.2),clamp(lum*1.9,0.,1.));
-        vec3 sea=mix(vec3(.07,.06,.055),vec3(.24,.19,.15),clamp(lum*2.4,0.,1.));
-        vec3 col=mix(land,sea,ocean); col=mix(col,vec3(.7,.66,.58),shore*.55);
-        vec2 q=vUv*vec2(9.,4.5)+vec2(uTime*.003,0.); float storm=fbm(q); col=mix(col,vec3(.56,.4,.24),smoothstep(.56,.84,storm)*.6);
-        float scar=smoothstep(.62,.7,fbm(vUv*vec2(26.,13.)+3.)); col=mix(col,vec3(.05,.04,.04),scar*.55*(1.-ocean));
-        float ndl=dot(normalize(vN),uSun); float dayk=smoothstep(-.12,.4,ndl); float dusk=smoothstep(-.12,.1,ndl)*(1.-smoothstep(.1,.42,ndl));
-        float fire=smoothstep(.7,.82,fbm(vUv*vec2(70.,35.)))*(1.-ocean)*(1.-dayk);
-        float fr=pow(clamp(1.-dot(normalize(vNv),normalize(-vPv)),0.,1.),2.6);
-        vec3 c=col*dayk*(.2+.62*max(ndl,0.))+vec3(.9,.34,.1)*dusk*.16+vec3(1.,.36,.08)*fire*2.4+col*.012; c=mix(c,vec3(.72,.5,.32)*dayk,fr*.55);
-        gl_FragColor=vec4(c,1.); }` }));
-  const earth = add(space, new THREE.SphereGeometry(150, 96, 64), earthMat, EC.x, EC.y, EC.z); earth.rotation.set(0.35, 2.1, 0.2);
-  const cl = loader.load('assets/space/clouds.png');
-  const dustS = add(space, new THREE.SphereGeometry(151.6, 72, 48), new THREE.ShaderMaterial({ transparent: true, depthWrite: false, uniforms: { uC: { value: cl }, uSun: { value: SUN } },
-    vertexShader: 'varying vec2 vUv;varying vec3 vN;void main(){vUv=uv;vN=normalize(mat3(modelMatrix)*normal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-    fragmentShader: 'uniform sampler2D uC;uniform vec3 uSun;varying vec2 vUv;varying vec3 vN;void main(){float a=texture2D(uC,vUv).a;float l=smoothstep(-.1,.45,dot(normalize(vN),uSun));gl_FragColor=vec4(vec3(.5,.37,.23)*l,a*.3*l);}' }), EC.x, EC.y, EC.z);
-  dustS.rotation.copy(earth.rotation);
-  add(space, new THREE.SphereGeometry(158, 64, 48), new THREE.ShaderMaterial({ transparent: true, side: THREE.BackSide, blending: THREE.AdditiveBlending, depthWrite: false, uniforms: { uSun: { value: SUN }, uC: { value: EC } },
-    vertexShader: 'varying vec3 vWp;void main(){vec4 w=modelMatrix*vec4(position,1.);vWp=w.xyz;gl_Position=projectionMatrix*viewMatrix*w;}',
-    fragmentShader: `uniform vec3 uSun;uniform vec3 uC;varying vec3 vWp;
-      void main(){ vec3 rd=normalize(vWp-cameraPosition); vec3 oc=uC-cameraPosition; float hgt=clamp((length(cross(rd,oc))-150.)/8.,0.,1.); float g=exp(-hgt*3.4)*(1.-smoothstep(.8,1.,hgt));
-        vec3 nl=normalize(cameraPosition+rd*dot(oc,rd)-uC); float day=smoothstep(-.25,.35,dot(nl,uSun)); float fw=max(dot(rd,uSun),0.); // voile éclairé côté jour ; à contre-jour, il s'embrase là où le soleil va paraître
-        gl_FragColor=vec4(vec3(.95,.6,.32)*g*day*1.3+vec3(1.,.72,.45)*g*(pow(fw,90.)*9.+pow(fw,10.)*.9),1.); }` }), EC.x, EC.y, EC.z);
-  upd.push((t, dt) => { earth.rotation.y += dt * 0.0035; dustS.rotation.y += dt * 0.006; });
+      void main(){
+        // où le rayon de ce pixel touche-t-il la planète ? (calculé pour tous : les dérivées servent au choix du niveau de détail des cartes)
+        vec3 ro=cameraPosition, rd=normalize(vWp-cameraPosition), oc=uPC-ro; float b=dot(oc,rd); float d2=dot(oc,oc)-b*b; float dist=sqrt(max(d2,0.));
+        float fw=fwidth(dist)*.8+.01; float hit=(1.-smoothstep(uPR-fw,uPR+fw,dist))*step(0.,b);
+        vec3 n=normalize(ro+rd*(b-sqrt(max(uPR*uPR-d2,0.)))-uPC); vec3 p=uRot*n; float lat=asin(clamp(p.y,-1.,1.)); vec2 q=vec2(atan(p.x,p.z),lat)*57.2958; /* longitude, latitude en degrés */
+        vec2 gx=dFdx(q), gy=dFdy(q); vec3 col=vec3(0.);
+        if(hit<.999){ // le ciel : étoiles, Voie lactée, et la tranche d'air de la planète vue par la tranche
+          vec3 d=normalize(vD); float s=stars(d,60.,.6,.075)+stars(d,110.,.84,.13)*.6+stars(d,190.,.934,.21)*.32;
+          vec3 ax=normalize(vec3(.35,.8,-.48)); float bd=dot(d,ax)*3.2; float band=exp(-bd*bd); vec2 q0=vec2(atan(d.z,d.x)*3.,d.y*6.); float neb=fbm(q0*1.6)*fbm(q0*4.+3.);
+          col=(vec3(.82,.88,1.)*s*(1.+band*1.6)+vec3(.20,.24,.34)*band*neb*.5+vec3(.34,.22,.16)*band*neb*neb*neb*.9)*uK;
+          float hg=clamp((dist-uPR)/(uPR*.016),0.,1.); float g=exp(-hg*4.2)*(1.-smoothstep(.8,1.,hg))*step(0.,b);
+          vec3 nl=normalize(ro+rd*b-uPC); float dy=smoothstep(-.22,.3,dot(nl,uSun)); float fwd=max(dot(rd,uSun),0.); /* à contre-jour, le halo s'embrase là où le soleil va paraître */
+          col+=vec3(.2,.58,1.)*g*dy*.85+vec3(1.,.66,.38)*g*(pow(fwd,90.)*9.+pow(fwd,10.)*.9)+vec3(.03,.13,.17)*g*.3; }
+        if(hit>.001){ // la planète. Les cartes sont lues avec des dérivées explicites (textureGrad) pour que ce bloc soit réellement sauté ailleurs
+          mat2 R2=mat2(.8,.6,-.6,.8); vec2 K=1./vec2(120.,90.); float px=length(gx)+length(gy); /* taille d'un pixel, en degrés de planète */
+          vec3 m=textureGrad(uMap,q*K+.5,gx*K,gy*K).rgb; vec3 dA=textureGrad(uDet,q*.125,gx*.125,gy*.125).rgb; vec3 dB=textureGrad(uDet,R2*q*.83,R2*gx*.83,R2*gy*.83).rgb;
+          // relief : la carte donne la forme, le bruit ajoute le détail des côtes ; le seuil est tranché après coup, donc net à toute distance
+          float h=m.r+(dA.r-.5)*.09+(dB.r-.5)*.028; float fh=clamp(px*.12,.0012,.03); float land=smoothstep(.5-fh,.5+fh,h); float e=max(h-.5,0.)*2.; float dep=clamp((.5-h)*6.,0.,1.);
+          vec3 sea=mix(vec3(.025,.31,.33),vec3(.005,.055,.105),smoothstep(0.,.75,dep)); sea=mix(sea,vec3(.10,.52,.47),smoothstep(.1,0.,dep)*.55);
+          float M=m.g+(dA.g-.5)*.3+(dB.g-.5)*.12; float al=abs(lat);
+          vec3 lush=mix(vec3(.022,.13,.055),vec3(.06,.21,.085),dB.g); vec3 dry=mix(vec3(.33,.2,.105),vec3(.46,.3,.18),dA.g);
+          vec3 gr=mix(dry,lush,smoothstep(.36,.6,M-e*.3)); gr=mix(gr,vec3(.5,.45,.36),smoothstep(.018,0.,e)*.75); gr=mix(gr,vec3(.2,.175,.16),smoothstep(.3,.56,e)); gr=mix(gr,vec3(.78,.82,.88),smoothstep(.56,.7,e+al*.4+(dB.r-.5)*.16));
+          vec3 sf=mix(sea,gr,land);
+          float ndl=dot(n,uSun), day=smoothstep(-.08,.22,ndl); vec3 V=-rd; float nv=max(dot(n,V),0.);
+          // nuages : couverture de la carte, bords rongés par le bruit qui dérive. Un second relevé, décalé vers le soleil, donne à la fois
+          // l'ombre qu'ils portent et la pente du terrain (un versant tourné vers le soleil est plus clair)
+          float tt=uTime*.0005; vec2 c1=vec2(tt,tt*.3), c2=vec2(-tt*2.,tt*.4); float cB=textureGrad(uDet,R2*q*.62+c2,R2*gx*.62,R2*gy*.62).b;
+          float cl=smoothstep(.47,.74,m.b+(textureGrad(uDet,q*.11+c1,gx*.11,gy*.11).b-.5)*.4+(cB-.5)*.2);
+          vec3 so=uRot*uSun, ea=normalize(vec3(p.z,0.,-p.x)), no=cross(p,ea); vec2 qs=q+vec2(dot(so,ea)/max(cos(lat),.3),dot(so,no))*.4;
+          vec3 mS=textureGrad(uMap,qs*K+.5,gx*K,gy*K).rgb; float sh=smoothstep(.47,.74,mS.b+(textureGrad(uDet,qs*.11+c1,gx*.11,gy*.11).b-.5)*.4+(cB-.5)*.2);
+          float dif=max(ndl,0.)*(1.+clamp((m.r-mS.r)*7.,-.45,.6)*land); sf*=1.-.5*sh*(1.-cl);
+          vec3 hv=normalize(uSun+V); float nh=max(dot(n,hv),0.); float sp=pow(nh,220.)*1.5+pow(nh,26.)*.1; /* le soleil sur la mer */
+          vec3 lit=sf*(dif*.9+.015)*day+vec3(1.,.9,.74)*sp*(1.-land)*(1.-cl)*day;
+          vec3 cc=mix(vec3(1.,.6,.4),vec3(1.),smoothstep(-.02,.13,ndl))*(max(ndl,0.)*.56+.05)*day; lit=mix(lit,cc,cl*.92);
+          lit+=mix(sf,vec3(.45),cl)*.0035; /* côté nuit : presque rien, la lueur des lunes */
+          // atmosphère : voile bleu qui s'épaissit vers l'horizon, bande chaude au terminateur, liseré de nuit
+          float fr=pow(1.-nv,2.6); float dusk=smoothstep(-.1,.03,ndl)*(1.-smoothstep(.03,.16,ndl));
+          lit=mix(lit,vec3(.2,.53,.95)*(.08+.6*day),clamp(fr*.8+.05,0.,1.)*(.25+.75*day))+vec3(1.,.45,.2)*dusk*fr*.32+vec3(.03,.13,.17)*pow(1.-nv,5.)*.3;
+          col=mix(col,lit,hit); }
+        gl_FragColor=vec4(col,1.); }` }))); sky.renderOrder = 1; // dessiné après les parois : seuls les pixels des hublots sont calculés
+  upd.push((t) => setSpin(Math.max(-0.5, 0.12 - t * 0.001))); // le sol défile vers la gauche : l'arche avance vers le lever du soleil
+  // deux lunes : ce ciel n'est pas celui de la Terre
+  const moonMat = (c) => new THREE.ShaderMaterial({ uniforms: { uSun: { value: SUN }, uC: { value: new THREE.Color(c) } },
+    vertexShader: 'varying vec3 vN;varying vec3 vP;void main(){vN=normalize(mat3(modelMatrix)*normal);vP=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+    fragmentShader: `uniform vec3 uSun;uniform vec3 uC;varying vec3 vN;varying vec3 vP;${NOISE}
+      void main(){ vec3 p=normalize(vP); vec2 q=vec2(atan(p.x,p.z)*2.,p.y*3.); float a=fbm(q*2.2), cr=smoothstep(.5,.6,fbm(q*5.+9.));
+        vec3 c=uC*(.5+.6*a)*(1.-.4*cr)*(.85+.3*fbm(q*9.+4.)); float l=smoothstep(-.03,.3,dot(normalize(vN),uSun)); gl_FragColor=vec4(c*(l*.8+.01),1.); }` });
+  for (const [az, el, dd, r, c] of [[-21, 31, 1150, 31, 0xb9b3a8], [15, 41, 1210, 8, 0xa98a72]]) { const mo = add(space, new THREE.SphereGeometry(r, 48, 32), moonMat(c), 0, 0, 0); mo.position.copy(V0).addScaledVector(dirAE(az, el), dd); mo.rotation.set(0.4, az, 0.2); }
   // matériau « éclairé par le soleil » (coques, roches) : tôles, lignes de hublots le long de la coque, reflet terrestre
   const spaceMat = (base, win = 0, ws = [8, 3]) => new THREE.ShaderMaterial({ side: THREE.DoubleSide, uniforms: { uBase: { value: new THREE.Color(base) }, uSun: { value: SUN }, uEarth: { value: EDIR }, uWin: { value: win }, uWS: { value: new THREE.Vector2(ws[0], ws[1]) } },
     vertexShader: 'varying vec3 vN;varying vec2 vUv;void main(){vUv=uv;vec4 n=vec4(normal,0.);\n#ifdef USE_INSTANCING\n n=instanceMatrix*n;\n vec4 p=instanceMatrix*vec4(position,1.);\n#else\n vec4 p=vec4(position,1.);\n#endif\n vN=normalize(mat3(modelMatrix)*n.xyz);gl_Position=projectionMatrix*modelViewMatrix*p;}',
     fragmentShader: `uniform vec3 uBase;uniform vec3 uSun;uniform vec3 uEarth;uniform float uWin;uniform vec2 uWS;varying vec3 vN;varying vec2 vUv;
       float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
       void main(){ vec3 n=normalize(vN); float l=max(dot(n,uSun),0.); vec2 pg=vUv*uWS*.5; float pl=.84+.16*hash(floor(pg)); vec2 pf=abs(fract(pg)-.5); float seam=1.-smoothstep(.47,.5,max(pf.x,pf.y))*.4;
-        vec3 c=uBase*pl*seam*(l*1.25+.025)+uBase*vec3(.6,.42,.26)*max(dot(n,uEarth),0.)*.22;
+        vec3 c=uBase*pl*seam*(l*1.25+.025)+uBase*vec3(.34,.52,.6)*max(dot(n,uEarth),0.)*.22;
         if(uWin>0.){ vec2 g=vUv*uWS; vec2 f=fract(g); float row=step(.72,hash(vec2(floor(g.x),3.))); float on=step(.45,hash(floor(g)));
           float w=step(.3,f.x)*step(f.x,.7)*step(.25,f.y)*step(f.y,.6); c+=vec3(1.,.82,.55)*row*on*w*uWin; }
         gl_FragColor=vec4(c,1.); }` });
   const rockGeo = mergeVertices(new THREE.IcosahedronGeometry(1, 2)); { const rp = rockGeo.attributes.position, v = new V3(); for (let i = 0; i < rp.count; i++) { v.fromBufferAttribute(rp, i); const n = 0.72 + 0.2 * Math.sin(v.x * 3.1 + v.y * 1.7) + 0.16 * Math.sin(v.y * 4.3 + v.z * 2.9) + 0.12 * Math.sin(v.z * 6.1 + v.x * 5.3); v.multiplyScalar(n); rp.setXYZ(i, v.x, v.y, v.z); } rockGeo.computeVertexNormals(); }
-  const dN = 380, deb = new THREE.InstancedMesh(rockGeo, spaceMat(0x7d7061), dN), q = new THREE.Quaternion(), sc = new V3(), ps = new V3(), eu = new THREE.Euler();
+  const dN = 90, deb = new THREE.InstancedMesh(rockGeo, spaceMat(0x7d7061), dN), q = new THREE.Quaternion(), sc = new V3(), ps = new V3(), eu = new THREE.Euler();
   for (let i = 0; i < dN; i++) {
     const near = i < 26, a = rnd(PI * 2), r = rnd(175, 250);
-    if (near) ps.set(rnd(-80, 80), rnd(-34, 44), rnd(-190, -60)); else ps.set(Math.cos(a) * r, rnd(-6, 6) + Math.sin(a * 2) * 4, Math.sin(a) * r);
+    if (near) ps.set(rnd(-80, 80), rnd(-34, 44), rnd(-190, -60)); else ps.set(rnd(-420, 560), rnd(-60, 150) + Math.sin(a * 2) * 12, rnd(-640, -170));
     const k = near ? rnd(0.06, 0.4) : rnd(0.4, 2.6); sc.set(k * rnd(0.5, 1.6), k * rnd(0.4, 1.2), k * rnd(0.5, 1.8)); eu.set(rnd(6), rnd(6), rnd(6)); q.setFromEuler(eu);
-    mt.compose(ps, q, sc); if (!near) mt.premultiply(new THREE.Matrix4().makeRotationZ(0.42).setPosition(EC.x, EC.y, EC.z)); deb.setMatrixAt(i, mt);
+    mt.compose(ps, q, sc); deb.setMatrixAt(i, mt);
   }
   deb.frustumCulled = false; space.add(deb);
 
@@ -495,7 +520,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
       else base*=tint*streak*(1.-s1*.55)*(1.-s2*.3);
       base=mix(base*uTint,vec3(.02,.018,.016),chr*.9);
       float nl=dot(n,uSun); vec3 ed=normalize(uEC-vW);
-      vec3 c=base*max(nl,0.)*uSunK*1.25+base*vec3(.66,.46,.28)*max(dot(n,ed)*.6+.4,0.)*.3*uEarthK+base*vec3(.5,.6,.8)*uFill*(.5+.5*dot(n,v));
+      vec3 c=base*max(nl,0.)*uSunK*1.25+base*vec3(.36,.56,.64)*max(dot(n,ed)*.6+.4,0.)*.3*uEarthK+base*vec3(.5,.6,.8)*uFill*(.5+.5*dot(n,v));
       c+=vec3(1.,.95,.88)*pow(max(dot(n,normalize(uSun+v)),0.),gloss)*shine*step(0.,nl)*uSunK*(1.-chr);
       if(m<.5&&uLive>0.){ vec2 g=q*vec2(3.3,2.2); vec2 gc=floor(g); vec2 gf=fract(g); float gp=max(fwidth(g).x,fwidth(g).y); // hublots : des ponts entiers allumés, d'autres éteints
         float on=step(.42,h(gc))*step(.5,h(vec2(gc.y,5.))); float w=step(.28,gf.x)*step(gf.x,.72)*step(.3,gf.y)*step(gf.y,.62);
@@ -577,10 +602,11 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   { const n = opts.touch || opts.lite ? 260 : 700, p = new Float32Array(n * 3); for (let i = 0; i < n; i++) p.set([rnd(-34, 46), rnd(-9, 30), Z0 - rnd(3, 80)], i * 3); const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
     const ice = new THREE.Points(g, iceMat); ice.frustumCulled = false; space.add(ice); upd.push((t, dt) => { ice.position.x = Math.sin(t * 0.02) * 3; ice.position.y = Math.sin(t * 0.013) * 1.5; }); }
 
-  /* ----- le soleil : il se lève derrière la Terre (W.setSun, appelée par le récit) ----- */
+  /* ----- le soleil : il se lève derrière l'horizon d'Alma (W.setSun, appelée par le récit) ----- */
   // Tout l'éclairage de l'espace lit le même vecteur SUN : le déplacer suffit. k = 0 : caché derrière le globe, tout est
   // dans l'ombre, on ne voit que des feux et des hublots ; k ≈ 0,05 : il perce au limbe ; k = 1 : haut sur la droite.
-  const S1 = new V3(0.93, 0.33, 0.12).normalize(), sunAxis = new V3().crossVectors(EDIR, S1).normalize(), SA = EDIR.clone().applyAxisAngle(sunAxis, 19 * PI / 180), SWEEP = SA.angleTo(S1);
+  const S1 = new V3(0.93, 0.33, 0.12).normalize(), limb = (() => { let a = -30, b = 60; for (let i = 0; i < 40; i++) { const m = (a + b) / 2; if (dirAE(12, m).angleTo(EDIR) < PA) a = m; else b = m; } return dirAE(12, a); })(),
+    sunAxis = new V3().crossVectors(limb, S1).normalize(), SA = limb.clone().applyAxisAngle(sunAxis, -5.5 * PI / 180), SWEEP = SA.angleTo(S1);
   W.setSun = (k) => { W.sunK = k; SUN.copy(SA).applyAxisAngle(sunAxis, SWEEP * k); sky.quaternion.setFromAxisAngle(sunAxis, SWEEP * k * 0.3); };
   // disque et halo : un panneau face caméra posé juste devant la coque, que seuls les murs de la baie peuvent masquer
   const flareU = { uVis: { value: 0 }, uSize: { value: 1 } };
@@ -601,7 +627,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
     fragmentShader: 'uniform float uK;varying float vT;varying vec3 vN;varying vec3 vV;void main(){float e=pow(abs(dot(normalize(vN),vV)),1.7);gl_FragColor=vec4(vec3(1.,.9,.74)*e*(1.-vT)*(1.-vT)*uK,1.);}' })); beam.frustumCulled = false; beam.position.copy(WCv); bay.add(beam);
   const tv = new V3(), UP = new V3(0, 1, 0), DOWN = new V3();
   upd.push((t, dt, cam) => { if (!cam) return;
-    const d = tv.copy(EC).sub(cam).length(), aR = Math.asin(150 / d), vis = sm(aR - 0.004, aR + 0.02, SUN.angleTo(tv)), thru = sm(0.03, 0.3, -SUN.z); W.sunVis = vis; W.sunIn = vis * thru;
+    const d = tv.copy(EC).sub(cam).length(), aR = Math.asin(PR / d), vis = sm(aR - 0.004, aR + 0.02, SUN.angleTo(tv)), thru = sm(0.03, 0.3, -SUN.z); W.sunVis = vis; W.sunIn = vis * thru;
     SK.sun.value = vis; SK.earth.value = 0.15 + 0.85 * (0.5 - 0.5 * SUN.dot(EDIR)); skyU.uK.value = 1 - 0.5 * vis * thru; iceMat.color.setRGB(1, 0.92, 0.8).multiplyScalar(vis * (0.12 + 0.6 * thru));
     const tz = SUN.z < -0.03 ? (Z0 - 1.6 - cam.z) / SUN.z : 0; flare.visible = tz > 0 && vis > 0.002; if (flare.visible) { flare.position.copy(cam).addScaledVector(SUN, tz); flareU.uSize.value = tz * 0.5; flareU.uVis.value = vis; }
     sunL.intensity = vis * thru * 7; sunL.position.copy(WCv).addScaledVector(SUN, 70); sunL.target.position.copy(WCv).addScaledVector(SUN, -10); sunL.angle = Math.atan(1.95 * Math.sqrt(Math.max(0.05, -SUN.z)) / 70);
@@ -618,7 +644,7 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   upd.push((t, dt) => {
     W.ships.forEach((s, i) => { const v = dt * (0.25 + i * 0.05); s.position.x += Math.cos(s.rotation.y) * v; s.position.z -= Math.sin(s.rotation.y) * v; s.userData.ring.rotation.x += dt * 0.12; }); giant.userData.ring.rotation.x += dt * 0.1;
     const k = (t * 0.03) % 1; shuttle.position.set(46 - k * 92, 3.2 + Math.sin(k * 6) * 0.6, -36 - k * 6); shuttle.rotation.set(Math.sin(k * 6) * 0.08, PI + 0.065, 0);
-    const k2 = (t * 0.021 + 0.4) % 1; shuttle2.position.set(-38 + k2 * 76, 12 - k2 * 5, -62 + k2 * 10); shuttle2.rotation.y = -0.13; deb.rotation.y += dt * 0.0006;
+    const k2 = (t * 0.021 + 0.4) % 1; shuttle2.position.set(-38 + k2 * 76, 12 - k2 * 5, -62 + k2 * 10); shuttle2.rotation.y = -0.13; 
     const on = (t % 5.2) < 2.6, f = on ? 0.5 + Math.random() * 0.5 : 0; arc.scale.setScalar(f * 0.2 + 0.001); es.color.copy(esBase).lerp(esArc, f * 0.7).lerp(esSun, (W.sunIn || 0) * 0.85); es.intensity = (9 + f * 9) * (0.3 + 0.7 * SK.earth.value) + (W.sunIn || 0) * 46; es.distance = 11 + (W.sunIn || 0) * 9; // le soleil de face inonde l'avant de la baie
     const bk = Math.min(1, W.beacon.intensity / 26); W.keyLight.color.copy(keyBase).lerp(keyAmber, bk * 0.75);
     for (let i = 0; i < spN; i++) { const v = spv[i]; v[3] -= dt; if (v[3] <= 0 && on) { v[0] = rnd(-0.6, 0.9); v[1] = rnd(-0.9, 0.3); v[2] = rnd(-0.5, 0.5); v[3] = rnd(0.3, 1); spp.set([0, 0, 0], i * 3); } else if (v[3] > 0) { spp[i * 3] += v[0] * dt; spp[i * 3 + 1] += v[1] * dt; spp[i * 3 + 2] += v[2] * dt; } else spp.set([0, 99, 0], i * 3); } spg.attributes.position.needsUpdate = true;

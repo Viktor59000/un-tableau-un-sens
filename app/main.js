@@ -231,7 +231,7 @@ function initGL() {
   camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.05, 1600);
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
   W = buildWorld(scene, new THREE.TextureLoader(), WORKS, TX, { lite: LITE, touch, reel: Q.has('reel') });
-  { let wt = 0; THREE.DefaultLoadingManager.onLoad = () => { clearTimeout(wt); wt = setTimeout(() => { if (W.warm && !W.ds.visible) W.warm(renderer, camera); menu(); }, 300); }; } /* modèles chargés : on prépare les programmes des états d'éclairage */ BODY = createBody(scene); window.__spes = { renderer, QL, scene, W, S, BODY };
+  { let wt = 0; THREE.DefaultLoadingManager.onLoad = () => { clearTimeout(wt); wt = setTimeout(() => { if (W.warm && !W.ds.visible) { renderer.setRenderTarget(msRT || composer.renderTarget1); W.warm(renderer, camera); renderer.setRenderTarget(null); } menu(); /* dans la cible de rendu : un programme compilé pour l'écran (sortie sRGB) n'est pas celui dont la scène se sert */ }, 300); }; } /* modèles chargés : on prépare les programmes des états d'éclairage */ BODY = createBody(scene); window.__spes = { renderer, QL, scene, W, S, BODY };
   composer = new EffectComposer(renderer); composer.setPixelRatio(dpr); composer.setSize(innerWidth, innerHeight); const rp = new RenderPass(scene, camera); composer.addPass(rp);
   if (MSAA) { msRT = new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType, samples: MSAA, depthTexture: new THREE.DepthTexture(4, 4, THREE.UnsignedIntType) }); msSize(); const base = rp.render.bind(rp), quad = msQuad = new FullScreenQuad(new THREE.ShaderMaterial({ uniforms: { tDiffuse: { value: null } }, depthTest: false, depthWrite: false, vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
       fragmentShader: 'uniform sampler2D tDiffuse;varying vec2 vUv;void main(){gl_FragColor=vec4(clamp(texture2D(tDiffuse,vUv).rgb,0.,24.),1.);}' })); // la recopie borne aussi les pics de reflet avant le bloom
@@ -389,7 +389,7 @@ async function visorBoot() {
 async function act2() {
   BODY.set({ pose: 'stand', vis: true, rust: 0 }); S.fov = 66; W.lidPivot.rotation.x = -1.9; W.frost.value = 1.4; W.wakeHold = false; vit.bpm = 92; vit.tmp = 36.8; vit.loc = UI.loc[2]; vitals(); callState('live');
   card('02', UI.card[1]); quest(P2, UI.q.earth); GOAL = null;
-  // on s'avance jusqu'au garde-corps, on y pose les mains ; en relevant les yeux, on croise son propre reflet dans le verre, puis la Terre
+  // on s'avance jusqu'au garde-corps, on y pose les mains ; en relevant les yeux, on croise son propre reflet dans le verre, puis la planète
   await dbg('window'); S.walk = 1; await camTo({ pos: new V3(0.12, 1.71, -13.3), yaw: 0.03, pitch: -0.6, lead: 0.6 }, 2.9, trap); S.walk = 0;
   // La barre (relevée à 1,08 m de haut, z = -13,65). La main droite s'y pose, la gauche suit, les doigts se referment ; puis on s'y appuie : le buste avance,
   // les mains ne bougent plus d'un millimètre. Le corps reste ancré là, seule la tête regarde ensuite.
@@ -397,9 +397,9 @@ async function act2() {
     BODY.set({ pose: 'rail', lock: [0.12, -13.34, 0.03], hands: { r: bar(0.35) } }); look({ pitch: -0.95 }, 0.6); await wait(0.28); BODY.set({ hands: { l: bar(-0.11) } }); await wait(0.5); }
   await camPath([{ t: 1, pos: new V3(0.12, 1.7, -13.41) }], 0.9, out); sfx.thump(); W.reflect(renderer, S.pos); await dbg('rail'); await wait(0.6);
   await look({ look: new V3(0.12, 1.69, -15.3) }, 1.0); await dbg('reflet'); await wait(1.8);
-  await look({ look: new V3(-0.55, 2.05, -15) }, 1.1); await dbg('earth');
-  // le soleil se lève derrière la Terre : un fil de lumière au limbe, puis il perce, la baie s'éclaire, la flotte sort de l'ombre
-  sfx.dawn(); tween(8, (k) => W.setSun(0.1 * k), out).then(() => tween(17, (k) => W.setSun(0.1 + 0.9 * k)));
+  await look({ look: new V3(-0.55, 1.86, -15) }, 1.1); await dbg('earth');
+  // le soleil se lève derrière l'horizon d'Alma : un fil de lumière au limbe, puis il perce, la baie s'éclaire, la flotte sort de l'ombre
+  sfx.dawn(); tween(6, (k) => W.setSun(0.1 * k), out).then(() => tween(6.5, (k) => W.setSun(0.1 + 0.75 * k), io)).then(() => tween(9, (k) => W.setSun(0.85 + 0.15 * k), out)); /* il perce pendant « Ce n'est pas la Terre », la planète s'éclaire sur « Voici Alma » */
   await say('g06'); W.reflect(renderer, S.pos); await dbg('sun'); /* la baie s'est éclairée : le reflet aussi */
   // une arche nous dépasse, tout près, au-dessus de la baie : la coque en tremble, puis elle rejoint la flotte
   sfx.rumble(10); tween(17, (k) => { W.flyby(k); const e = Math.exp(-(((k - 0.3) / 0.17) ** 2)); S.roll = Math.sin(k * 610) * 0.005 * e; }, lin);

@@ -6,9 +6,9 @@
    "d": 11.02
   },
   "g02a": {
-   "t": "Pont 12, baie cryo C, à bord du SPES : Station Pour l'Éveil des Sens. Une arche du programme HOPE, en orbite basse autour de ce qui reste de la Terre.",
-   "say": "Pont douze, baie cryo C, à bord du Spèce : Station Pour l'Éveil des Sens. Une arche du programme Hope, en orbite basse autour de ce qui reste de la Terre.",
-   "d": 9.03
+   "t": "Pont 12, baie cryo C, à bord du SPES : Station Pour l'Éveil des Sens. Une arche du programme HOPE. Nous avons quitté l'orbite de la Terre il y a trois cent soixante ans.",
+   "say": "Pont douze, baie cryo C, à bord du Spèce : Station Pour l'Éveil des Sens. Une arche du programme Hope. Nous avons quitté l'orbite de la Terre il y a trois cent soixante ans.",
+   "d": 9.44
   },
   "g02b": {
    "t": "Quatre cent soixante-quatorze ans. Tu t'es endormi en 2026, avec la cohorte R-26. Nous sommes en 2500, et j'ai compté chaque jour.",
@@ -24,18 +24,18 @@
    "d": 8.88
   },
   "g05": {
-   "t": "Suis les lignes au sol jusqu'à la baie d'observation. Il faut que tu voies pourquoi nous sommes partis.",
-   "d": 4.98
+   "t": "Suis les lignes au sol jusqu'à la baie d'observation. Il faut que tu voies ce qui nous attend.",
+   "d": 4.65
   },
   "g06": {
-   "t": "Voilà la Terre. Indice de Voile : 9,7. La Grande Poussière a recouvert les continents, et les océans se sont retirés. Elle ne peut plus nous porter.",
-   "say": "Voilà la Terre. Indice de Voile : neuf virgule sept. La Grande Poussière a recouvert les continents, et les océans se sont retirés. Elle ne peut plus nous porter.",
-   "d": 9.07
+   "t": "Ce n'est pas la Terre. La Grande Poussière l'a recouverte : indice de Voile 9,7. Elle ne pouvait plus nous porter. Voici Alma. De l'eau, de l'air, un sol vivant. Nous y descendrons dans un an.",
+   "say": "Ce n'est pas la Terre. La Grande Poussière l'a recouverte : indice de Voile, neuf virgule sept. Elle ne pouvait plus nous porter. Voici Alma. De l'eau, de l'air, un sol vivant. Nous y descendrons dans un an.",
+   "d": 12.26
   },
   "g07": {
-   "t": "Deux cent douze arches attendent en orbite qu'elle guérisse. Dans nos soutes, il y a des graines, des livres, et le lot 42-SE : des œuvres d'art.",
-   "say": "Deux cent douze arches attendent en orbite qu'elle guérisse. Dans nos soutes, il y a des graines, des livres, et le lot quarante-deux, S E : des œuvres d'art.",
-   "d": 8.04
+   "t": "Deux cent douze arches ont fait le voyage avec nous. Dans nos soutes, il y a des graines, des livres, et le lot 42-SE : des œuvres d'art.",
+   "say": "Deux cent douze arches ont fait le voyage avec nous. Dans nos soutes, il y a des graines, des livres, et le lot quarante-deux, S E : des œuvres d'art.",
+   "d": 7.72
   },
   "g08a": {
    "t": "Parce qu'une œuvre ne sert à rien d'autre qu'à faire réagir un corps. C'est exactement l'outil qu'il me faut pour rallumer le tien.",
@@ -114,9 +114,9 @@
    "d": 12.73
   },
   "g02a": {
-   "t": "Deck 12, cryo bay C, aboard the SPES: the Station for Awakening the Senses. An ark of the HOPE programme, in low orbit around what is left of Earth.",
-   "say": "Deck twelve, cryo bay C, aboard the Spess: the Station for Awakening the Senses. An ark of the Hope programme, in low orbit around what is left of Earth.",
-   "d": 9.42
+   "t": "Deck 12, cryo bay C, aboard the SPES: the Station for Awakening the Senses. An ark of the HOPE programme. We left Earth's orbit three hundred and sixty years ago.",
+   "say": "Deck twelve, cryo bay C, aboard the Spess: the Station for Awakening the Senses. An ark of the Hope programme. We left Earth's orbit three hundred and sixty years ago.",
+   "d": 10.6
   },
   "g02b": {
    "t": "Four hundred and seventy-four years. You fell asleep in 2026, with cohort R-26. It is now the year 2500, and I counted every single day.",
@@ -132,18 +132,18 @@
    "d": 9.43
   },
   "g05": {
-   "t": "Follow the lines on the floor to the observation bay. You need to see why we left.",
-   "d": 4.71
+   "t": "Follow the lines on the floor to the observation bay. You need to see what is waiting for us.",
+   "d": 4.9
   },
   "g06": {
-   "t": "There is Earth. Veil index: 9.7. The Great Dust has covered the continents, and the oceans have drawn back. It can no longer carry us.",
-   "say": "There is Earth. Veil index: nine point seven. The Great Dust has covered the continents, and the oceans have drawn back. It can no longer carry us.",
-   "d": 9.36
+   "t": "That is not Earth. The Great Dust covered it: Veil index 9.7. It could no longer carry us. This is Alma. Water, air, living soil. We go down in one year.",
+   "say": "That is not Earth. The Great Dust covered it: Veil index, nine point seven. It could no longer carry us. This is Alma. Water, air, living soil. We go down in one year.",
+   "d": 11.49
   },
   "g07": {
-   "t": "Two hundred and twelve arks are waiting in orbit for it to heal. In our holds there are seeds, books, and batch 42-SE: works of art.",
-   "say": "Two hundred and twelve arks are waiting in orbit for it to heal. In our holds there are seeds, books, and batch forty-two, S E: works of art.",
-   "d": 8.95
+   "t": "Two hundred and twelve arks made the journey with us. In our holds there are seeds, books, and batch 42-SE: works of art.",
+   "say": "Two hundred and twelve arks made the journey with us. In our holds there are seeds, books, and batch forty-two, S E: works of art.",
+   "d": 8.43
   },
   "g08a": {
    "t": "Because an artwork has no other purpose than to make a body react. That is exactly the tool I need to switch yours back on.",
@@ -222,9 +222,9 @@
    "d": 13.62
   },
   "g02a": {
-   "t": "Cubierta 12, bahía crio C, a bordo de la SPES: Estación para el Despertar de los Sentidos. Un arca del programa HOPE, en órbita baja alrededor de lo que queda de la Tierra.",
-   "say": "Cubierta doce, bahía crio C, a bordo de la Espes: Estación para el Despertar de los Sentidos. Un arca del programa Hope, en órbita baja alrededor de lo que queda de la Tierra.",
-   "d": 10.99
+   "t": "Cubierta 12, bahía crio C, a bordo de la SPES: Estación para el Despertar de los Sentidos. Un arca del programa HOPE. Dejamos la órbita de la Tierra hace trescientos sesenta años.",
+   "say": "Cubierta doce, bahía crio C, a bordo de la Espes: Estación para el Despertar de los Sentidos. Un arca del programa Hope. Dejamos la órbita de la Tierra hace trescientos sesenta años.",
+   "d": 11.66
   },
   "g02b": {
    "t": "Cuatrocientos setenta y cuatro años. Te dormiste en 2026, con la cohorte R-26. Estamos en el año 2500, y he contado cada día.",
@@ -240,18 +240,18 @@
    "d": 11.36
   },
   "g05": {
-   "t": "Sigue las líneas del suelo hasta la bahía de observación. Tienes que ver por qué nos fuimos.",
-   "d": 5.23
+   "t": "Sigue las líneas del suelo hasta la bahía de observación. Tienes que ver lo que nos espera.",
+   "d": 5.21
   },
   "g06": {
-   "t": "Ahí está la Tierra. Índice de Velo: 9,7. El Gran Polvo cubrió los continentes, y los océanos se retiraron. Ya no puede sostenernos.",
-   "say": "Ahí está la Tierra. Índice de Velo: nueve coma siete. El Gran Polvo cubrió los continentes, y los océanos se retiraron. Ya no puede sostenernos.",
-   "d": 9.96
+   "t": "No es la Tierra. El Gran Polvo la cubrió: índice de Velo 9,7. Ya no podía sostenernos. Esta es Alma. Agua, aire, un suelo vivo. Bajaremos dentro de un año.",
+   "say": "No es la Tierra. El Gran Polvo la cubrió: índice de Velo, nueve coma siete. Ya no podía sostenernos. Esta es Alma. Agua, aire, un suelo vivo. Bajaremos dentro de un año.",
+   "d": 13.19
   },
   "g07": {
-   "t": "Doscientas doce arcas esperan en órbita a que se cure. En nuestras bodegas hay semillas, libros, y el lote 42-SE: obras de arte.",
-   "say": "Doscientas doce arcas esperan en órbita a que se cure. En nuestras bodegas hay semillas, libros, y el lote cuarenta y dos, S E: obras de arte.",
-   "d": 9.39
+   "t": "Doscientas doce arcas hicieron el viaje con nosotros. En nuestras bodegas hay semillas, libros, y el lote 42-SE: obras de arte.",
+   "say": "Doscientas doce arcas hicieron el viaje con nosotros. En nuestras bodegas hay semillas, libros, y el lote cuarenta y dos, S E: obras de arte.",
+   "d": 9.5
   },
   "g08a": {
    "t": "Porque una obra no sirve para otra cosa que para hacer reaccionar a un cuerpo. Es exactamente la herramienta que necesito para volver a encender el tuyo.",
