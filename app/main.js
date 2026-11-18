@@ -98,9 +98,9 @@ async function say(id) {
 /* ============================== HUD ============================== */
 const hud = $('#hud'), promptEl = $('#prompt'), promptT = $('#promptT'), callEl = $('#call'), callS = $('#callS'), callT = $('#callT'), choEl = $('#choices');
 let pending = null, callStart = 0, pick = null;
-function ask(label) { return new Promise((res) => { promptT.textContent = label; promptEl.classList.add('on'); pending = () => { pending = null; promptEl.classList.remove('on'); sfx.blip(); res(); }; if (AUTO && HOLD !== 'ask:' + label) setTimeout(() => pending && pending(), QUICK ? 150 : 900); }); }
+function ask(label) { return new Promise((res) => { promptT.textContent = label; promptEl.inert = false; promptEl.classList.add('on'); pending = () => { pending = null; promptEl.inert = true; promptEl.classList.remove('on'); sfx.blip(); res(); }; if (AUTO && HOLD !== 'ask:' + label) setTimeout(() => pending && pending(), QUICK ? 150 : 900); }); }
 function choose(opts) { return new Promise((res) => { choEl.innerHTML = ''; opts.forEach((o, i) => { const b = document.createElement('button'); b.type = 'button'; b.innerHTML = '<kbd>' + (i + 1) + '</kbd><span></span>'; b.lastChild.textContent = o; b.addEventListener('click', () => pick && pick(i)); choEl.appendChild(b); });
-  choEl.classList.add('on'); pick = (i) => { if (i >= opts.length) return; pick = null; choEl.classList.remove('on'); sfx.blip(); res(i); }; if (AUTO) setTimeout(() => pick && pick(+Q.get('c') || 0), QUICK ? 150 : 1200); }); }
+  choEl.inert = false; choEl.classList.add('on'); pick = (i) => { if (i >= opts.length) return; pick = null; choEl.inert = true; choEl.classList.remove('on'); sfx.blip(); res(i); }; if (AUTO) setTimeout(() => pick && pick(+Q.get('c') || 0), QUICK ? 150 : 1200); }); }
 function quest(title, obj) { $('#qT').textContent = title; const o = $('#qO'); o.classList.remove('in'); void o.offsetWidth; o.textContent = obj; o.classList.add('in'); }
 function card(n, t) { $('#cardN').textContent = n; $('#cardT').textContent = t; const c = $('#card'); c.classList.remove('on'); void c.offsetWidth; c.classList.add('on'); }
 function callState(s) { callEl.dataset.s = s; callEl.classList.toggle('on', s !== 'off'); callS.textContent = s === 'ring' ? UI.ring : UI.live; if (s === 'live') callStart = performance.now(); }
@@ -507,11 +507,11 @@ async function act3() {
   await say('g12'); await end; S.walk = 0; await dbg('end'); await wait(1); await tween(1.6, (k) => { fx.uniforms.uWhite.value = k; });
 }
 async function run() {
-  hud.classList.add('on'); clock.getDelta(); if (!running) { running = true; frame(); }
+  hud.inert = false; hud.classList.add('on'); clock.getDelta(); if (!running) { running = true; frame(); }
   if (ACT <= 1) await act1(); else { S.pos.set(0, 1.68, -10.6); S.yaw = 0; S.pitch = 0.05; fx.uniforms.uFade.value = 1; }
   if (ACT <= 2) await act2();
   await act3();
-  hud.classList.remove('on'); callState('off'); BODY.set({ vis: false }); $('#outro').classList.add('on'); theme('#06080c'); if (synth) synth.cancel();
+  hud.classList.remove('on'); hud.inert = true; callState('off'); BODY.set({ vis: false }); $('#outro').classList.add('on'); theme('#06080c'); if (synth) synth.cancel();
   MENU = { yaw: S.yaw, pitch: S.pitch, amp: 0.04 }; S.free = 0.5; { const m = MENU, y0 = S.yaw, wide = innerWidth > 900 ? 0.36 : 0; tween(2.6, (k) => { fx.uniforms.uWhite.value = 1 - k; }); tween(5, (k) => { m.yaw = y0 + wide * k; }); } /* l'éclair retombe : la nef reste là, derrière le terminal de fin */
 }
 
