@@ -333,7 +333,10 @@ async function prologue() {
   }
   skipLine = null; el.classList.remove('on'); await new Promise((r) => setTimeout(r, 900));
 }
-const POD = [-4.0, 1.71, 1.3, -PI / 2], RIM = [-3.95, 1.5, 1.72, -PI]; // appuis du corps dans le caisson : assis sur le matelas, puis sur le rebord
+// Appuis du corps dans le caisson, cotes relevées sur le modèle : matelas à 0,72 m, large de z = 0,80 à 1,78 ; assis, les yeux sont à 1,59 m.
+// Le visiteur regarde vers +x : sa gauche est vers -z, sa droite (le côté de la sortie) vers +z.
+const POD = [-4.0, 1.59, 1.3, -PI / 2], RIM = [-3.95, 1.59, 1.72, -PI], MAT = 0.745; // MAT : hauteur de la paume posée sur le matelas
+const flat = (x, z, o) => Object.assign({ p: [x, MAT, z], tw: 1.5, wr: 1.15, grip: 0.04, dur: 0.7, pole: [0, -0.3, -1] }, o); // main à plat, bras tendu, coude vers l'arrière
 async function act1() {
   W.setScene('ship'); S.pos.set(-4.32, 0.94, 1.3); S.yaw = -PI / 2; S.pitch = 1.28; S.free = 0.22; S.fov = 66; vit.loc = UI.loc[0]; vitals();
   quest(P1, UI.q.thaw); card('01', UI.card[0]);
@@ -348,20 +351,27 @@ async function act1() {
   quest(P1, UI.q.exit); await ask(UI.a.exit); await dbg('wake');
   sfx.hiss(); W.wakeHold = false; tween(3, (k) => { W.frost.value = 1 + k * 0.4; }); W.guideMat.color.setHex(COL.safran).multiplyScalar(1.5);
   tween(8, (k) => { W.beacon.intensity = 26 * Math.abs(Math.sin(k * 14)) * (1 - k * k); }, lin);
-  await tween(2.6, (k) => { W.lidPivot.rotation.x = -k * 1.9; }, out); quest(P1, UI.q.sit); BODY.set({ pose: 'sit', seat: POD, rust: 1 }); wait(2.05).then(() => BODY.set({ vis: true })); /* le corps n'entre dans le champ qu'une fois le buste presque droit : allongé, la caméra n'est pas à la place anatomique de la tête */
-  // se redresser : le menton rentre, la tête décrit un arc autour des hanches, on marque un temps à mi-course, puis on finit de s'asseoir
-  await camPath([{ t: 0.3, pos: new V3(-4.3, 1.18, 1.3), pitch: 0.82 }, { t: 0.62, pos: new V3(-4.15, 1.53, 1.3), pitch: 0.08 }, { t: 1, pos: new V3(-4.0, 1.71, 1.3), yaw: -PI / 2, pitch: -0.2 }], 3.6, effort); /* 1,71 : assis sur le matelas, pas dedans */ S.free = 1; await dbg('sit');
-  // ce corps n'a pas bougé depuis 474 ans : on baisse les yeux, on lève ses mains qui tremblent, on les regarde
-  quest(P1, UI.q.hands); const l1 = say('g04'); BODY.set({ pose: 'hands', seat: POD }); await look({ pitch: -0.68 }, 1.0); await dbg('hands'); await wait(2.8); BODY.set({ pose: 'sit', seat: POD }); /* les mains redescendent pendant que le regard part déjà vers le bord */
-  // sortir du caisson : on cherche le bord des yeux, les mains s'y posent ; on pivote sur le bassin, les jambes passent par-dessus le rebord
-  quest(P1, UI.q.exit); await look({ yaw: -PI / 2 - 0.5, pitch: -0.8 }, 0.9); BODY.set({ pose: 'grip', seat: POD }); W.vent(); await wait(0.45);
-  sfx.servo(0.9); BODY.set({ pose: 'edge', seat: RIM, rate: 1.6 }); await camPath([{ t: 0.5, pos: new V3(-4.0, 1.63, 1.5), yaw: -PI / 2 - 1.0, pitch: -0.7 }, { t: 1, pos: new V3(-3.95, 1.5, 1.72), yaw: -PI, pitch: -0.95 }], 2.3); await look({ pitch: -1.1 }, 0.5); await dbg('edge'); await wait(0.3);
-  // se lever : on se penche, les pieds prennent le sol, on pousse sur les bras ; la tête passe devant, monte, dépasse d'un rien et retombe
-  quest(P1, UI.q.look); await camPath([{ t: 1, pos: new V3(-3.94, 1.43, 1.96), pitch: -1.2 }], 0.7); sfx.thump(); BODY.set({ pose: 'stand', rate: 4.5 }); tween(3.6, (k) => { S.sway = Math.sin(k * PI) * 0.03; }, lin); // on tient debout, mais ça tangue
-  await camPath([{ t: 0.7, pos: new V3(-3.9, 1.69, 2.26), pitch: -1.26 }, { t: 1, pos: new V3(-3.9, 1.66, 2.28), pitch: -1.3 }], 1.5, out); await dbg('debout'); await wait(0.3); await look({ pitch: -0.05 }, 1.0);
-  // deux pas vers le caisson voisin, on se penche sur le dormeur — on s'approche, on ne zoome pas
-  { const n1 = new V3(-3.3, 1.66, 2.5), n2 = new V3(-3.76, 1.48, 3.02), a1 = aim(n1, new V3(-4.2, 0.95, 3.9)), a2 = aim(n2, new V3(-4.36, 0.86, 3.9)); // d'un seul mouvement : deux pas, et le buste se penche sur le dormeur, pieds au sol
-    S.walk = 1; wait(1.5).then(() => BODY.set({ lean: 0.5 })); await camPath([{ t: 0.45, pos: n1, yaw: a1.yaw, pitch: a1.pitch }, { t: 1, pos: n2, yaw: a2.yaw, pitch: a2.pitch }], 3.5, trap); S.walk = 0; await dbg('voisin'); await wait(2.2); BODY.set({ lean: 0 }); }
+  await tween(2.6, (k) => { W.lidPivot.rotation.x = -k * 1.9; }, out); quest(P1, UI.q.sit); BODY.set({ pose: 'sit', seat: POD, rust: 1 });
+  // se redresser : le menton rentre, la tête décrit un arc autour des hanches, on marque un temps à mi-course, puis on finit de s'asseoir en poussant
+  // des deux mains sur le matelas. (Le corps n'entre dans le champ qu'une fois le buste presque droit : allongé, la caméra n'est pas à la place anatomique de la tête.)
+  wait(2.05).then(() => BODY.set({ vis: true, hands: { l: flat(-4.06, 1.04, { dur: 0.3 }), r: flat(-4.06, 1.56, { dur: 0.3 }) } }));
+  await camPath([{ t: 0.3, pos: new V3(-4.3, 1.14, 1.3), pitch: 0.82 }, { t: 0.62, pos: new V3(-4.15, 1.44, 1.3), pitch: 0.08 }, { t: 1, pos: new V3(-4.0, 1.59, 1.3), yaw: -PI / 2, pitch: -0.2 }], 3.6, effort); S.free = 1; BODY.set({ pose: 'sit', seat: POD }); await dbg('sit');
+  // ce corps n'a pas bougé depuis 474 ans : on lève ses mains qui tremblent, on les regarde, on les retourne, on serre les poings pour voir si elles obéissent
+  quest(P1, UI.q.hands); const l1 = say('g04'); BODY.set({ pose: 'hands', seat: POD }); await look({ pitch: -0.68 }, 1.0); await dbg('hands'); await wait(1.0);
+  BODY.set({ pose: 'handsB', seat: POD }); await wait(1.2); BODY.set({ pose: 'handsF', seat: POD }); await wait(0.9); BODY.set({ pose: 'hands', seat: POD }); await wait(0.7); BODY.set({ pose: 'sit', seat: POD }); /* les mains redescendent pendant que le regard part déjà vers le bord */
+  // sortir du caisson : on cherche le bord des yeux, la main droite se pose près du bord, la gauche pousse ; on pivote sur le bassin, les jambes passent par-dessus
+  quest(P1, UI.q.exit); await look({ yaw: -PI / 2 - 0.5, pitch: -0.8 }, 0.9); BODY.set({ pose: 'grip', seat: POD, hands: { r: flat(-3.98, 1.66) } }); W.vent(); await wait(0.3); BODY.set({ hands: { l: flat(-4.1, 1.02) } }); await wait(0.45);
+  sfx.servo(0.9); BODY.set({ pose: 'edge', seat: RIM, rate: 1.6, hands: { l: flat(-4.1, 1.02), r: flat(-4.21, 1.6, { dur: 0.9 }) } }); wait(0.9).then(() => BODY.set({ hands: { l: flat(-3.69, 1.6, { dur: 0.9 }) } })); // la droite se replace d'abord, la gauche suit quand le buste a tourné
+  await camPath([{ t: 0.5, pos: new V3(-4.0, 1.56, 1.5), yaw: -PI / 2 - 1.0, pitch: -0.7 }, { t: 1, pos: new V3(-3.95, 1.59, 1.72), yaw: -PI, pitch: -0.95 }], 2.3); await look({ pitch: -1.1 }, 0.5); await dbg('edge'); await wait(0.3);
+  // se lever : on se penche (les mains toujours en appui derrière soi), on glisse du bord, les pieds prennent le sol et y restent, on pousse ; les mains lâchent
+  // d'elles-mêmes quand le matelas sort de portée ; la tête passe devant, monte, dépasse d'un rien et retombe
+  quest(P1, UI.q.look); await camPath([{ t: 1, pos: new V3(-3.94, 1.5, 1.98), pitch: -1.2 }], 0.7); sfx.thump();
+  BODY.set({ pose: 'stand', rate: 4.5, feet: [-3.9, 0, 2.14], hands: { l: flat(-3.69, 1.6), r: flat(-4.21, 1.6) } }); tween(3.6, (k) => { S.sway = Math.sin(k * PI) * 0.03; }, lin); // on tient debout, mais ça tangue
+  await camPath([{ t: 0.7, pos: new V3(-3.9, 1.69, 2.26), pitch: -1.26 }, { t: 1, pos: new V3(-3.9, 1.66, 2.28), pitch: -1.3 }], 1.6, out); await dbg('debout'); await wait(0.3); await look({ pitch: -0.05 }, 1.0); BODY.set({ pose: 'stand' });
+  // deux pas vers le caisson voisin, d'un seul mouvement ; le buste se penche sur le dormeur, une main à plat sur sa verrière
+  { const n1 = new V3(-3.3, 1.66, 2.5), n2 = new V3(-3.76, 1.48, 3.02), a1 = aim(n1, new V3(-4.2, 0.95, 3.9)), a2 = aim(n2, new V3(-4.36, 0.86, 3.9));
+    S.walk = 1; wait(1.5).then(() => BODY.set({ lean: 0.5 })); wait(2.5).then(() => BODY.set({ hands: { l: { p: [-3.64, 1.0, 3.52], tw: 1.5, wr: 0.85, grip: 0.03, dur: 0.9 } } }));
+    await camPath([{ t: 0.45, pos: n1, yaw: a1.yaw, pitch: a1.pitch }, { t: 1, pos: n2, yaw: a2.yaw, pitch: a2.pitch }], 3.5, trap); S.walk = 0; await dbg('voisin'); await wait(2.4); BODY.set({ lean: 0, hands: { l: null } }); await wait(0.25); }
   S.walk = 1; await camTo({ pos: new V3(-1.3, 1.68, 1.9), yaw: -PI / 2 + 0.4, pitch: 0.04, lead: 0.4 }, 2.8, trap); S.walk = 0; await l1; await dbg('stand');
   quest(P1, UI.q.obs); GOAL = [0, -11.6]; await ask(UI.a.walk); vit.loc = UI.loc[1]; vitals();
   S.walk = 1; await camTo({ pos: new V3(0, 1.68, 0.6), yaw: -0.5, pitch: -1.36, lead: 0.4 }, 3.6, trap); await dbg('aisle'); // premiers pas : on regarde ses pieds avancer
@@ -379,9 +389,12 @@ async function act2() {
   BODY.set({ pose: 'stand', vis: true, rust: 0 }); S.fov = 66; W.lidPivot.rotation.x = -1.9; W.frost.value = 1.4; W.wakeHold = false; vit.bpm = 92; vit.tmp = 36.8; vit.loc = UI.loc[2]; vitals(); callState('live');
   card('02', UI.card[1]); quest(P2, UI.q.earth); GOAL = null;
   // on s'avance jusqu'au garde-corps, on y pose les mains ; en relevant les yeux, on croise son propre reflet dans le verre, puis la Terre
-  await dbg('window'); S.walk = 1; await camTo({ pos: new V3(0.12, 1.72, -13.04), yaw: 0.03, pitch: -0.55, lead: 0.6 }, 2.6, trap); S.walk = 0;
-  // les mains se posent sur la barre et s'y referment ; on s'y appuie, le buste avance d'un rien. Le corps reste ancré là : seule la tête bouge ensuite.
-  BODY.set({ pose: 'rail', lock: [0.12, -13.2, 0.03] }); await look({ pitch: -0.92 }, 0.6); await camPath([{ t: 1, pos: new V3(0.12, 1.7, -13.2) }], 0.9, out); sfx.thump(); W.reflect(renderer, S.pos); await dbg('rail'); await wait(0.6);
+  await dbg('window'); S.walk = 1; await camTo({ pos: new V3(0.12, 1.71, -13.3), yaw: 0.03, pitch: -0.6, lead: 0.6 }, 2.9, trap); S.walk = 0;
+  // La barre (relevée à 1,08 m de haut, z = -13,65). La main droite s'y pose, la gauche suit, les doigts se referment ; puis on s'y appuie : le buste avance,
+  // les mains ne bougent plus d'un millimètre. Le corps reste ancré là, seule la tête regarde ensuite.
+  { const bar = (x, o) => Object.assign({ p: [x, 1.088, -13.652], tw: 1.5, wr: 0.2, grip: 1, dur: 0.55, pole: [x > 0.12 ? -0.7 : 0.7, -0.7, -0.15] }, o);
+    BODY.set({ pose: 'rail', lock: [0.12, -13.34, 0.03], hands: { r: bar(0.35) } }); look({ pitch: -0.95 }, 0.6); await wait(0.28); BODY.set({ hands: { l: bar(-0.11) } }); await wait(0.5); }
+  await camPath([{ t: 1, pos: new V3(0.12, 1.7, -13.41) }], 0.9, out); sfx.thump(); W.reflect(renderer, S.pos); await dbg('rail'); await wait(0.6);
   await look({ look: new V3(0.12, 1.69, -15.3) }, 1.0); await dbg('reflet'); await wait(1.8);
   await look({ look: new V3(-0.55, 2.05, -15) }, 1.1); await dbg('earth');
   // le soleil se lève derrière la Terre : un fil de lumière au limbe, puis il perce, la baie s'éclaire, la flotte sort de l'ombre
@@ -392,21 +405,24 @@ async function act2() {
   const pan = camTo({ look: new V3(-0.25, 3.25, -15) }, 7); await say('g07'); await pan; await dbg('fleet'); /* poursuite lente : on suit l'arche des yeux */
   quest(P2, UI.q.askG); const c = await choose(UI.ch2); await say(c ? 'g08b' : 'g08a');
   await say('g09');
-  quest(P2, UI.q.link); GOAL = [W.seat.chair.x, W.seat.chair.z]; const l = say('g10'); look({ pitch: -0.4 }, 0.5); BODY.set({ pose: 'stand' }); await wait(0.45); S.walk = 1; /* les mains lâchent la barre pendant que le regard se détourne */ sfx.servo(1.6); tween(2.6, (k) => W.seatWake(k)); // le poste s'éveille à l'approche
+  quest(P2, UI.q.link); GOAL = [W.seat.chair.x, W.seat.chair.z]; const l = say('g10'); look({ pitch: -0.4 }, 0.5); BODY.set({ hands: { l: null } }); await wait(0.25); BODY.set({ pose: 'stand' }); await wait(0.35); S.walk = 1; /* une main lâche la barre, puis l'autre, pendant que le regard se détourne */ sfx.servo(1.6); tween(2.6, (k) => W.seatWake(k)); // le poste s'éveille à l'approche
   await camTo({ pos: W.seat.front.clone().setY(1.68), look: W.seat.chair, lead: 0.35 }, 3.8, trap); S.walk = 0; await l; await dbg('link');
   await ask(UI.a.seat); GOAL = null; vit.loc = UI.loc[3]; vitals();
-  await camTo({ yaw: W.seat.yaw, pitch: -0.2 }, 1.5); // demi-tour : dos au fauteuil
-  // s'asseoir : le bassin recule, la tête part d'abord en avant pour faire contrepoids, puis descend ; mains sur les cuisses tant que les accoudoirs sont ouverts
-  { const f = W.seat.front, e = W.seat.eye; BODY.set({ pose: 'lap', seat: [e.x, e.y, e.z, W.seat.yaw], rate: 2.2 }); sfx.servo(1.4);
-    await camPath([{ t: 0.45, pos: new V3(f.x + (e.x - f.x) * 0.3, 1.68 - (1.68 - e.y) * 0.5, f.z + (e.z - f.z) * 0.3), pitch: -0.8 }, { t: 1, pos: e.clone(), yaw: W.seat.yaw, pitch: -0.98 }], 2.1, out); sfx.thump(); }
+  // Le fauteuil (assise à 0,53 m, marchepied à 0,11 m devant) : on s'avance jusqu'à lui, on monte sur le marchepied, on se retourne en piétinant,
+  // puis on s'assoit — le bassin recule de trente centimètres et descend, la tête part d'abord en avant, les pieds ne quittent pas le marchepied.
+  { const e = W.seat.eye, y = W.seat.yaw, fx = -Math.sin(y), fz = -Math.cos(y), at = (a, h) => new V3(e.x + fx * a, h, e.z + fz * a), SEAT = [e.x, e.y, e.z, y], FEET = [e.x + fx * 0.27, 0.11, e.z + fz * 0.27]; W.seatPose = { seat: SEAT, feet: FEET };
+    S.walk = 1; await camPath([{ t: 0.62, pos: at(0.95, 1.68), yaw: y + PI, pitch: -0.5 }, { t: 1, pos: at(0.42, 1.77), yaw: y + PI, pitch: -0.62 }], 2.9, trap); S.walk = 0; await wait(0.2);
+    await camTo({ yaw: y, pitch: -0.3 }, 1.6); // demi-tour sur le marchepied : dos au fauteuil
+    BODY.set({ pose: 'lap', seat: SEAT, feet: FEET, rate: 2.4 }); sfx.servo(1.4);
+    await camPath([{ t: 0.42, pos: at(0.34, 1.63), pitch: -0.85 }, { t: 1, pos: e.clone(), yaw: y, pitch: -0.98 }], 2.0, out); sfx.thump(); }
   await wait(0.25); sfx.servo(1); await tween(1.1, (k) => W.setArms(k)); sfx.thump(); // les accoudoirs se referment…
-  BODY.set({ pose: 'seat', seat: [W.seat.eye.x, W.seat.eye.y, W.seat.eye.z, W.seat.yaw] }); await wait(0.85); // …puis les avant-bras viennent s'y poser, les mains sur les manches
+  BODY.set(Object.assign({ pose: 'seat' }, W.seatPose)); await wait(0.85); // …puis les avant-bras viennent s'y poser, les mains sur les manches
   sfx.clack(); await tween(0.45, (k) => W.setClamp(k), out); await dbg('clamp'); await wait(0.5); // les bracelets, sur les poignets
   await look({ pitch: 0.06 }, 0.9); S.free = 0.45; await dbg('seat');
   // lien neural : la fiche du câble cervical se présente devant toi, ouvre ses griffes, puis va se verrouiller derrière la nuque
   quest(P2, UI.q.cable); const l2 = say('g10b'); sfx.servo(2.4);
   await tween(2.6, (k) => W.setCable(k * 0.52)); await dbg('plug'); await wait(0.9); await tween(0.6, (k) => W.setCable(0.52 + k * 0.48), out);
-  sfx.clack(); sfx.glitch(0.5); W.cableOn(1); tween(2.4, (k) => W.seatWake(1 + 1.2 * (1 - k)), out); vit.bpm = 118; vitals(); sense(UI.sense.l[0], UI.sense.l[1], UI.sense.l[2], '#7fe3e6');
+  sfx.clack(); sfx.glitch(0.5); BODY.pulse(1); W.cableOn(1); tween(2.4, (k) => W.seatWake(1 + 1.2 * (1 - k)), out); vit.bpm = 118; vitals(); sense(UI.sense.l[0], UI.sense.l[1], UI.sense.l[2], '#7fe3e6');
   { const q0 = S.pitch; tween(2.4, (k) => { const e = Math.exp(-k * 5), b = Math.exp(-Math.pow((k - 0.07) / 0.06, 2)); S.pitch = q0 - 0.05 * Math.sin(k * 22) * e; S.roll = 0.012 * Math.sin(k * 17) * e; fx.uniforms.uFade.value = 1 - 0.6 * b - 0.18 * e; fx.uniforms.uGlitch.value = 0.16 * e; fx.uniforms.uTunnel.value = 0.4 * e; }, lin).then(() => { fx.uniforms.uFade.value = 1; fx.uniforms.uTunnel.value = 0; fx.uniforms.uGlitch.value = 0; S.roll = 0; }); } // la nuque encaisse, la vue se voile une fraction de seconde, puis tout se recale
   await dbg('cable'); await wait(1.9); sense(null); tween(3, (k) => { vit.bpm = 118 - 14 * k; });
   // Le casque : un objet, pas un effet. Le verrou lâche (à-coup), la coque sombre bascule devant les yeux et ferme la lumière de la baie, les mousses
@@ -463,11 +479,12 @@ async function act3() {
     await walk(i, st.stop.look, (k) => { if (k > (i === 2 ? 0.86 : 0.55)) st.k = 1; // l'œuvre s'imprime à l'approche
       if (i === 0 && k > 0.5) setLoc(5); if (i === 2) { if (k > 0.58 && !line) line = say('g11b'); if (k > 0.8) setLoc(6); } });
     S.walk = 0; st.k = 1; if (line) await line; if (i === 2) quest(P3, label); await scanArt(i); await dbg('st' + i);
-    await say(w.id + 'a'); await ask(w.verb); const p = S.pos.clone(); st.fx.on = true; st.near = true; let live = null, back = async () => { S.walk = 1; await camTo({ pos: p, look: st.stop.look, fov: 60, lead: 0.5 }, 2.2, trap); S.walk = 0; }; const step = (pos, dur) => { S.walk = 1; camTo({ pos, look: st.stop.look, lead: 0.4 }, dur, trap).then(() => { S.walk = 0; }); }; /* on s'approche en marchant, sans zoomer */
+    await say(w.id + 'a'); await ask(w.verb); const p = S.pos.clone(); st.fx.on = true; st.near = true; let live = null, back = async () => { BODY.set({ hands: { l: null, r: null } }); S.walk = 1; await camTo({ pos: p, look: st.stop.look, fov: 60, lead: 0.5 }, 2.2, trap); S.walk = 0; }; const step = (pos, dur) => { S.walk = 1; camTo({ pos, look: st.stop.look, lead: 0.4 }, dur, trap).then(() => { S.walk = 0; }); }; /* on s'approche en marchant, sans zoomer */
     if (i === 0) { // kinesthésie : le regard s'accroche à une plume qui tombe, et le corps tombe avec elle (roulis, glissement, affaissement)
       live = tween(900, () => { const f = st.fx, a = aim(S.pos, f.hero), k = Math.min(1, f.t / 2.2) * 0.07; S.yaw = lerpA(S.yaw, a.yaw, k); S.pitch += (a.pitch - S.pitch) * k; S.roll += (-f.sway * 0.3 - S.roll) * 0.06; S.pos.z = p.z + f.sway * 0.5; S.pos.y = p.y - f.drop * 0.2; S.fov += (44 - S.fov) * 0.012;
         sfx.air(0.3 + Math.abs(f.sway) * 2, 380 + Math.abs(f.sway) * 900); sense(SN.k[0], SN.k[2] + ' ' + num(f.drop) + ' m', SN.k[1], w.css); }, lin); }
-    if (i === 1) { const near = st.wallPos.clone().addScaledVector(st.n, 0.66); near.y += DSY - 0.04; step(near, 3.2); } // toucher : à trente centimètres, la suite se joue dans touchFx()
+    if (i === 1) { const near = st.wallPos.clone().addScaledVector(st.n, 0.66); near.y += DSY - 0.04; step(near, 3.2); // « Ne touche pas » : la main droite s'avance quand même vers la matière, et s'arrête à vingt-cinq centimètres
+      const rt = new V3().crossVectors(new V3(0, 1, 0), st.n).normalize(), hp = st.wallPos.clone().addScaledVector(st.n, 0.27).addScaledVector(rt, 0.15); wait(3.5).then(() => { if (st.fx.on) BODY.set({ hands: { r: { p: [hp.x, hp.y + DSY - 0.12, hp.z], tw: 1.5, wr: 1.2, grip: 0.05, dur: 1.6, pole: [-0.3, -1, -0.2] } } }); }); } // toucher : à trente centimètres, la suite se joue dans touchFx()
     if (i === 2) { // proprioception : la galerie grandit autour de toi, les troncs sortent du cuivre, la brume rose de la photographie envahit la salle
       const fy = DSY + st.lv; camTo({ pos: p, pitch: 0.52, fov: 82 }, 4.5); sfx.servo(4);
       tween(5, (k) => { const s = 1 + 1.45 * k; W.setScale(s, p.x, fy, p.z); scene.fog.color.lerpColors(LK.fog, LK.forest, k); scene.fog.density = LK.density + k * 0.085; W.dsDim(k); sense(SN.p[0], SN.p[1] + ' ' + num(1.72 / s) + ' m', Math.round(100 / s) + ' %', w.css); });
