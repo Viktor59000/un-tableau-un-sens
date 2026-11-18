@@ -1,6 +1,6 @@
 // SPES — portrait de Gladys dans le cadre d'appel : un visage de femme en 3D, rendu dans son propre petit canevas.
-// Le buste vient des « Human Base Meshes » de la Blender Foundation (CC0), préparé par tools/humains_blender.py :
-// trois maillages nommés par leur matière — « visage », « yeux », « chevelure » — origine au centre de la tête, en mètres.
+// Le buste vient des « Human Base Meshes » de la Blender Foundation (CC0), préparé par tools/humains_blender.py : maillages « visage » et
+// « yeux », origine au centre de la tête, en mètres. La chevelure est un fichier à part, fait de mèches (tools/cheveux_blender.py).
 // Gladys est une androïde, mais c'est d'abord un visage : sourcils, paupières lourdes et cils, lèvres, naissance des cheveux et mèches
 // fines sont peints dans la matière (le maillage n'en a pas) ; son regard reste posé sur nous quand sa tête bouge, elle cligne des yeux,
 // hoche la tête en parlant. De la machine il reste une peau de porcelaine, des joints lumineux à la mâchoire et au cou, des iris qui
@@ -24,7 +24,7 @@ export function createGladys(canvas) {
   scene.environment = new THREE.PMREMGenerator(renderer).fromScene(new RoomEnvironment(), 0.04).texture;
   // éclairage de portrait : une lumière froide de trois quarts, haute, qui creuse l'orbite et la joue ; un contre-jour corail ; presque pas de remplissage
   const key = new THREE.DirectionalLight(0xdcefff, 3.1); key.position.set(-0.9, 1.1, 1.2); scene.add(key);
-  const rim = new THREE.DirectionalLight(0xff6a48, 2.9); rim.position.set(1.3, 0.3, -1.1); scene.add(rim);
+  const rim = new THREE.DirectionalLight(0xff6a48, 2.6); rim.position.set(1.3, 0.3, -1.1); scene.add(rim);
   const under = new THREE.DirectionalLight(0x58d8e0, 0.55); under.position.set(0.3, -1, 0.7); scene.add(under); // la lueur des écrans, par en dessous
   scene.add(new THREE.HemisphereLight(0x9cc0de, 0x10141a, 0.22));
 
@@ -35,22 +35,22 @@ export function createGladys(canvas) {
       float ga=smoothstep(-.33,-.2,vObj.y+.012*sin(vObj.x*60.+uTime*1.3)); float gs=step(.45,fract(vObj.y*210.-uTime*.5)); ga*=mix(gs*.75,1.,smoothstep(.45,.95,ga));
       float gy=dot(gl_FragColor.rgb,vec3(.3,.59,.11)); gl_FragColor.rgb=mix(gl_FragColor.rgb,uRing*(gy*1.5+.12)*(.55+.45*gs),uHolo); gl_FragColor.a*=ga*mix(1.,.8,uHolo);`;
   const HEAD_V = 'varying vec3 vObj;uniform float uMouth,uHolo,uTime;\nfloat gh(float p){return fract(sin(p*127.1)*43758.5453);}\n';
-  // fonctions communes aux trois matières : bruit à une dimension (mèches), et loi du bord de la chevelure (la même que dans tools/humains_blender.py)
+  // fonctions communes aux trois matières : bruit à une dimension, et loi du bord du cuir chevelu (la même que dans tools/cheveux_blender.py)
   const HEAD_F = `varying vec3 vObj;uniform mat3 normalMatrix;uniform float uTime,uHolo,uMouth,uLid,uBrow;uniform vec3 uSeam,uRing;uniform vec2 uGaze;
     float gh(float p){return fract(sin(p*127.1)*43758.5453);} float gn(float p){float i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(gh(i),gh(i+1.),f);}
-    float hairMax(float fr){return radians(50.+96.*(1.-smoothstep(.1,.62,fr)));}
+    float hairMax(float fr){return radians(54.+50.*(1.-smoothstep(.1,.62,fr)));}
     const vec3 HAIR=vec3(.016,.022,.032);\n`;
   const JIT = '\n      transformed.x+=uHolo*(gh(floor(position.y*100.)+floor(uTime*9.))-.5)*.012*step(.82,gh(floor(position.y*100.)*1.7+floor(uTime*9.)));';
-  const hook = (key, mat, vert, frag, emis, nrm) => { mat.transparent = true; mat.customProgramCacheKey = () => 'gladys2-' + key; /* sans clé propre, les trois matières partageraient le même programme */ mat.onBeforeCompile = (sh) => { Object.assign(sh.uniforms, U);
-    sh.vertexShader = HEAD_V + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n      vObj=position;' + vert + JIT);
-    sh.fragmentShader = HEAD_F + sh.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>' + frag).replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>' + (nrm || '')).replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>' + emis).replace('#include <dithering_fragment>', END); }; return mat; };
+  const hook = (key, mat, vert, frag, emis, nrm, decl) => { mat.transparent = true; mat.customProgramCacheKey = () => 'gladys2-' + key; /* sans clé propre, les trois matières partageraient le même programme */ mat.onBeforeCompile = (sh) => { Object.assign(sh.uniforms, U);
+    sh.vertexShader = HEAD_V + (decl ? decl[0] : '') + sh.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n      vObj=position;' + vert + JIT);
+    sh.fragmentShader = HEAD_F + (decl ? decl[1] : '') + sh.fragmentShader.replace('#include <color_fragment>', '#include <color_fragment>' + frag).replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>' + (nrm || '')).replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>' + emis).replace('#include <dithering_fragment>', END); }; return mat; };
 
   const skin = hook('visage', new THREE.MeshPhysicalMaterial({ color: 0xe9e2dc, roughness: 0.42, metalness: 0, clearcoat: 0.5, clearcoatRoughness: 0.28, envMapIntensity: 0.38 }),
     `\n      float jw=smoothstep(${(MOUTH_Y + 0.003).toFixed(3)},${(MOUTH_Y - 0.012).toFixed(3)},position.y)*smoothstep(.01,.06,position.z)*smoothstep(-.15,-.125,position.y); transformed.y-=uMouth*.0065*jw; transformed.z-=uMouth*.0015*jw; // mâchoire`,
     `\n      float ax=abs(vObj.x); float gFront=smoothstep(.0,.03,vObj.z);
-      // naissance des cheveux : le crâne est sombre sous la coque, et la ligne descend sur le front en mèches (une raie au milieu la creuse)
+      // cuir chevelu : sombre sous les mèches, avec un bord en racines fines (on ne doit jamais voir de peau claire entre deux mèches)
       vec3 hd=normalize(vObj); float ha=acos(clamp(hd.y,-1.,1.)); float hfr=hd.z/max(length(hd.xz),1e-4); float hph=atan(hd.x,hd.z);
-      float hEdge=hairMax(hfr)+radians(8.5)*smoothstep(.35,.9,hfr)*(1.-.55*exp(-hph*hph*60.))+radians(1.5)*(gn(hph*46.)+.6*gn(hph*150.)-.8);
+      float hEdge=hairMax(hfr)+radians(4.)+radians(1.5)*(gn(hph*46.)+.6*gn(hph*150.)-.8);
       float gHair=smoothstep(hEdge,hEdge-radians(3.2),ha)*(.55+.45*gn(hph*260.));gHair=max(gHair,smoothstep(hEdge-radians(3.),hEdge-radians(5.),ha)); float gStr=.75+.5*gn(hph*210.+ha*6.);
       // sourcils : un arc fin, plus épais à la tête qu'à la queue, fait de poils ; ils montent un peu quand elle insiste
       float bt=clamp((ax-.011)/.045,0.,1.); float by=-.0052+.0058*sin(bt*2.05)-.0058*bt*bt+uBrow*.0022*(1.-bt*.5);
@@ -86,19 +86,25 @@ export function createGladys(canvas) {
       float lidY=${f3(EYE[1])}+.0042-.0104*uLid-(vObj.x-ec.x)*(vObj.x-ec.x)*14.; float eLid=smoothstep(lidY-.0006,lidY+.0003,vObj.y); float eLash=smoothstep(.0022,.0004,abs(vObj.y-lidY+.0006));
       eRing*=1.-eLid; diffuseColor.rgb*=mix(.4,1.,smoothstep(0.,.0045,lidY-vObj.y)); /* l'ombre de la paupière sur le globe */ diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.5,.44,.45),eLid); diffuseColor.rgb=mix(diffuseColor.rgb,HAIR,eLash*.9);`,
     '\n      totalEmissiveRadiance+=(uSeam*(.1+.5*eFib)*(1.-eLimb*.8)+vec3(.8,1.,1.)*smoothstep(.27,.235,ea)*smoothstep(.18,.235,ea)*.45)*eRing*(1.+.9*uMouth);');
-  const hair = hook('chevelure', new THREE.MeshPhysicalMaterial({ color: 0x0b1016, roughness: 0.6, metalness: 0.05, clearcoat: 0.12, clearcoatRoughness: 0.5, envMapIntensity: 0.6, side: THREE.DoubleSide }), '',
-    `\n      vec3 hd=normalize(vObj); float ha=acos(clamp(hd.y,-1.,1.)); float hfr=hd.z/max(length(hd.xz),1e-4); float hph=atan(hd.x,hd.z);
-      float hs=gn(hph*210.+ha*6.), hs2=gn(hph*70.+3.); diffuseColor.rgb*=.55+.9*hs*hs;                         // mèches
-      // le bord n'est plus une lèvre de casque : il s'effile en mèches, devant (frange) comme en bas (pointes)
-      float hE=ha/hairMax(hfr); float hTip=clamp((-.012-vObj.y)/(.02+.075*(1.-smoothstep(-.2,.5,hfr))),0.,1.); float hOut=max(smoothstep(.8,1.,hE)*step(vObj.y,-.012)*0.+smoothstep(.72,1.,hE)*step(-.012,vObj.y),smoothstep(.5,1.,hTip)*step(vObj.y,-.012));
-      float hCut=smoothstep(hOut-.06,hOut+.06,.25+.75*gn(hph*150.)*(.6+.4*hs2)); diffuseColor.a*=mix(1.,hCut,step(.001,hOut));
-      float hFib=smoothstep(.985,1.,gn(hph*38.+1.7))*smoothstep(.2,.5,hE);                                         // quelques fibres de lumière`,
-    '\n      totalEmissiveRadiance+=uSeam*hFib*(.25+.75*smoothstep(.6,1.,sin(ha*16.-uTime*1.6+hph*5.)))*(.5+1.6*uMouth);',
-    '\n      normal=normalize(normal+normalize(normalMatrix*vec3(hd.z,0.,-hd.x))*(hs-.5)*.9+normalize(normalMatrix*vec3(0.,1.,0.))*(hs2-.5)*.25); // chaque mèche renvoie la lumière à sa façon');
+  // La chevelure : des rubans (tools/cheveux_blender.py). vH = (travers de la mèche, racine → pointe, hasard de la mèche, couche : 0 fond, 1 mèche).
+  // La matière dessine les cheveux un à un dans chaque ruban, effile les bords et les pointes, et « peigne » la normale pour que chaque
+  // cheveu renvoie la lumière à sa façon. Quelques mèches portent une fibre de lumière, qui bat avec la voix.
+  const hair = hook('chevelure', new THREE.MeshPhysicalMaterial({ color: 0x0b0f15, roughness: 0.55, metalness: 0.05, clearcoat: 0.15, clearcoatRoughness: 0.5, envMapIntensity: 0.6, side: THREE.DoubleSide, alphaTest: 0.5 }),
+    '\n      vH=vec4(uv,uv1);',
+    `\n      float hAc=vH.x, hAl=vH.y, hR=vH.z, hLay=vH.w; float hN=mix(4.,8.,gh(hR*91.))*mix(2.2,1.,hLay); float hId=floor(hAc*hN), hF=fract(hAc*hN); float hs=gh(hId*7.3+hR*53.);
+      diffuseColor.rgb*=(.3+.62*hs*hs)*(.7+.6*gh(hR*17.))*mix(.6,1.1,smoothstep(0.,.35,hAl))*(.55+.45*smoothstep(0.,.5,min(hF,1.-hF)*2.));
+      float hEd=min(hAc,1.-hAc)*2.; float hTip=hAl+(hs-.5)*mix(.34,.26,hLay)+(gh(hR*5.)-.5)*.05;
+      diffuseColor.a*=(1.-smoothstep(.86,.95,hTip))*mix(1.,smoothstep(.02,.3,hEd+(hs-.5)*.35),hLay);
+      float hFib=step(.968,gh(hR*3.1))*hLay*smoothstep(.2,.05,abs(hAc-.5));`,
+    '\n      totalEmissiveRadiance+=uSeam*hFib*(.2+.8*smoothstep(.55,1.,sin(hAl*22.-uTime*1.8+hR*40.)))*(.45+1.7*uMouth);',
+    '\n      { vec3 hx=dFdx(vViewPosition), hy=dFdy(vViewPosition); vec3 hT=hx*dFdx(vH.x)+hy*dFdy(vH.x); float hl=length(hT); if(hl>1e-9) normal=normalize(normal+hT/hl*((hF-.5)*.9+(hAc-.5)*.7)); } // chaque cheveu bombe sa mèche',
+    ['varying vec4 vH;\n', 'varying vec4 vH;\n']);
+  hair.transparent = false; hair.alphaToCoverage = true; /* découpe nette et bords lissés par l'anticrénelage : pas de tri de transparence à faire */
 
   const head = new THREE.Group(); scene.add(head); let ready = false;
-  new GLTFLoader().load('assets/models/gladys.glb', (gl) => { gl.scene.updateMatrixWorld(true); const mats = { visage: skin, yeux: eyes, chevelure: hair };
-    gl.scene.traverse((o) => { if (o.isMesh) { const g = o.geometry.clone(); g.applyMatrix4(o.matrixWorld); const m = new THREE.Mesh(g, mats[o.material.name] || skin); m.renderOrder = o.material.name === 'chevelure' ? 2 : 0; head.add(m); } }); ready = true; });
+  const bake = (gl, pick) => { gl.scene.updateMatrixWorld(true); gl.scene.traverse((o) => { const m = o.isMesh && pick(o.material.name); if (m) { const g = o.geometry.clone(); g.applyMatrix4(o.matrixWorld); head.add(new THREE.Mesh(g, m)); } }); };
+  new GLTFLoader().load('assets/models/gladys.glb', (gl) => { bake(gl, (n) => ({ visage: skin, yeux: eyes })[n]); ready = true; }); /* l'ancienne coque « chevelure » du fichier n'est plus affichée */
+  new GLTFLoader().load('assets/models/gladys-cheveux.glb', (gl) => bake(gl, () => hair));
 
   // Le vivant : regard, clignements, hochements. Tout est tiré d'horloges propres au portrait (déterministe, sans état caché dans le récit).
   const rnd = (n) => { const x = Math.sin(n * 127.1 + 31.7) * 43758.5453; return x - Math.floor(x); };

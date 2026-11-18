@@ -80,7 +80,7 @@ Retour du commanditaire : « Gladys peut être beaucoup plus travaillée ». Le 
 
 - **Le vivant** : le regard compense la rotation de la tête pour rester posé sur nous ; elle cligne des yeux (paupière peinte sur le globe, `uLid`), ses yeux font de petites saccades, elle regarde parfois ses instruments (les yeux partent avant la tête), hoche la tête et lève un peu les sourcils en parlant.
 - **Banc d'essai** : `tools/gladys-essai.html` montre le portrait en grand, hors du récit (`?ring`, `?mute`, `?t=` pour figer). C'est là qu'on règle le visage ; les cotes utiles : globe de l'œil centré en (±0,033 ; −0,021 ; 0,061), rayon 12 mm ; bouche à y = −0,086.
-- Limites : la chevelure reste une coque moulée (pas de vraies mèches en volume) ; refaire la coiffure demanderait de régénérer le buste dans Blender, et les fichiers source des Human Base Meshes ne sont pas dans `tools/sources/`.
+- **Chevelure refaite en volume le même jour** (`tools/cheveux_blender.py` → `assets/models/gladys-cheveux.glb`, 1,3 Mo, 0,6 Mo transféré) : un carré à frange fait de 920 rubans. Chaque mèche naît sur le cuir chevelu, part du tourbillon du sommet du crâne, glisse sur la tête sous la gravité (collision par lancer de rayons sur le maillage « visage » de `gladys.glb` : pas besoin des fichiers source des Human Base Meshes), puis tombe jusqu'à la ligne de coupe `cut_y` (frange au-dessus des sourcils, mèches du visage, mâchoire). Deux couches : un fond de rubans larges, des mèches fines par-dessus. La matière dessine les cheveux un à un dans chaque ruban, effile bords et pointes (découpe + anticrénelage, donc aucun tri de transparence), peigne la normale ; quelques mèches portent une fibre de lumière qui bat avec la voix. L'ancienne coque « chevelure » est toujours dans `gladys.glb` mais n'est plus affichée. Pour changer de coiffure : `cut_y`, `scalp`, `WHORL` et les deux boucles de fin du script (~10 s dans Blender, `-- apercu` pour quatre vues dans `tools/sources/`).
 
 ## 5. La galerie reconstituée
 
@@ -267,6 +267,7 @@ Pièges déjà payés :
 |---|---|---|
 | Visiteurs de la galerie `tools/sources/Xbot.glb` → `visiteur.glb` | mannequin X Bot, Mixamo (Adobe), via les exemples three.js | conditions d'utilisation Mixamo |
 | Gladys, dormeurs, corps du visiteur : `gladys.glb`, `dormeuse.glb`, `dormeur.glb`, `corps.glb` | Human Base Meshes, Blender Foundation (download.blender.org) | CC0 |
+| Chevelure de Gladys `gladys-cheveux.glb` | modélisée pour le projet par `tools/cheveux_blender.py` | aucune ressource tierce |
 | Arches, navette, pont avant, fauteuil, baie, caisson, robots, mur des hublots, équipements : `arche.glb`, `arche-lod.glb`, `navette.glb`, `pont.glb`, `fauteuil.glb`, `baie.glb`, `caisson.glb`, `robots.glb`, `hublots.glb`, `equipements.glb` | modélisés pour le projet par les scripts `tools/*_blender.py` | aucune ressource tierce |
 | Logo `assets/Ceysson.svg` | galerie Ceysson & Bénétière | marque de la galerie, usage lié au projet |
 | Logo `assets/brand/telecom-saint-etienne.svg` | Télécom Saint-Étienne (telecom-st-etienne.fr) | marque de l'école, usage lié au projet |
