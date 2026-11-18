@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { drawEmblem } from './embleme.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { buildGallery } from './galerie.js';
 
@@ -117,8 +118,13 @@ export function buildWorld(scene, loader, works, TX, opts = {}) {
   W.beacon = { intensity: 0 }; // gyrophare de réveil : il teinte le projecteur principal (voir update)
   // signalétique holographique (contexte)
   const sgn = textPlane(TX.bay, { color: '#7fe3e6', w: 620, size: 54, sub: 27, scale: 2.1, align: 'center' }); sgn.position.set(0, 3.0, -5.2); bay.add(sgn);
+  // l'emblème du programme HOPE : projeté au-dessus de l'enseigne de la baie, et peint au sol à l'entrée de l'allée
+  { const ec = document.createElement('canvas'); ec.width = ec.height = 512; const et = new THREE.CanvasTexture(drawEmblem(ec)); et.colorSpace = THREE.SRGBColorSpace; et.anisotropy = 8;
+    const eh = new THREE.Mesh(new THREE.PlaneGeometry(0.86, 0.86), new THREE.MeshBasicMaterial({ map: et, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.85 })); eh.position.set(0, 3.86, -5.2); bay.add(eh);
+    const ef = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.7), new THREE.MeshBasicMaterial({ map: et, transparent: true, depthWrite: false, opacity: 0.34, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })); ef.rotation.x = -PI / 2; ef.position.set(0, 0.036, 5.4); bay.add(ef); }
   const chrono = textPlane(TX.log, { color: '#f5c400', w: 660, size: 44, sub: 27, scale: 2.5 });
   chrono.position.set(-BW / 2 + 0.3, 2.5, -11.6); chrono.rotation.y = PI / 2; bay.add(chrono);
+  { const ch = textPlane(TX.charte, { color: '#7fe3e6', w: 700, size: 40, sub: 27, scale: 2.3 }); ch.position.set(BW / 2 - 0.3, 2.62, -8.4); ch.rotation.y = -PI / 2; bay.add(ch); } /* l'article de la charte qui explique pourquoi il y a de l'art à bord, sur la cloison d'en face */
   // l'école qui porte le projet : son logo, projeté sur la même cloison que le journal de bord (fichier officiel, assets/brand)
   new THREE.TextureLoader().load('assets/brand/telecom-saint-etienne.svg', (tex) => { tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
     const lm = new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.8 }), logo = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5 * 103.6 / 362.2), lm);

@@ -9,6 +9,7 @@ import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { buildWorld, COL } from './world.js';
 import { createGladys } from './gladys.js';
+import { drawEmblem } from './embleme.js';
 import { createBody } from './corps.js';
 import { LANG, T as UI, WTX, LOG, TX, SPEECH, DEC, QUO, localizeDom } from './i18n.js';
 
@@ -549,7 +550,7 @@ function menu() { if (MENU || started || running || LITE || reduce || AUTO || !W
 const startBtn = $('#start'), bootMsg = $('#bootMsg'), theme = (c) => { const m = document.querySelector('meta[name="theme-color"]'); if (m) m.content = c; };
 async function boot() {
   try { await Promise.race([document.fonts.load('600 20px Rajdhani').then(() => document.fonts.load('20px "Krona One"')), new Promise((r) => setTimeout(r, 2500))]); } catch (e) { /* polices de secours */ }
-  localizeDom(); startBtn.textContent = UI.loading; $('#bPerf span').textContent = UI.perf[0];
+  localizeDom(); document.querySelectorAll('canvas.emb').forEach((c) => drawEmblem(c)); startBtn.textContent = UI.loading; /* l'emblème du programme, dessiné une fois les polices là */ $('#bPerf span').textContent = UI.perf[0];
   try { const all = await (await fetch('app/lines.json')).json(); LINES = all[LANG] || all.fr || {}; } catch (e) { LINES = {}; }
   let ok = true; try { initGL(); } catch (e) { ok = false; console.error(e); }
   if (!ok) { bootMsg.textContent = UI.noGL; startBtn.disabled = true; toDossier(); return; }
